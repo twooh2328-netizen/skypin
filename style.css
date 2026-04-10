@@ -13,18 +13,24 @@ top:10px;
 left:10px;
 z-index:1000;
 background:white;
-padding:10px;
+padding:12px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.3);
+width:200px;
 }
 
 #searchBox{
-width:180px;
-padding:5px;
+width:100%;
+padding:6px;
 }
 
 select,button{
-width:190px;
+width:100%;
 margin-top:5px;
 padding:6px;
+}
+
+img{
+margin-top:5px;
+border-radius:8px;
 }
