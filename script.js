@@ -9,7 +9,7 @@ spots.forEach(function(spot){
 var marker = L.marker([spot.lat,spot.lng]).addTo(map);
 
 marker.bindPopup(
-"<b>"+spot.name+"</b><br>"+spot.desc
+"<b>"+spot.name+"</b><br>"+spot.description
 );
 
 });
