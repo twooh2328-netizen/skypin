@@ -1,45 +1,86 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="ko">
 <head>
 
 <meta charset="utf-8">
+<title>SkyPin 7.5 Drone Map</title>
 
-<title>SkyPin 7.0</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
 
-<link rel="stylesheet"
-href="style.css">
+body{
+margin:0;
+font-family:sans-serif;
+}
 
+#map{
+height:100vh;
+}
+
+/* 상단 컨트롤 */
+
+#controls{
+
+position:absolute;
+top:10px;
+left:10px;
+z-index:1000;
+
+background:white;
+padding:10px;
+border-radius:10px;
+
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+/* 검색창 */
+
+#searchBox{
+
+width:160px;
+padding:5px;
+margin-bottom:5px;
+}
+
+/* 버튼 */
+
+button{
+
+padding:5px 8px;
+margin:2px;
+cursor:pointer;
+}
+
+/* 날씨 */
+
+#weatherBox{
+
+margin-top:5px;
+font-size:12px;
+background:#f3f3f3;
+padding:6px;
+border-radius:6px;
+}
+
+</style>
 </head>
 
 <body>
 
-<div id="panel">
+<div id="controls">
 
-<h3>🚁 SkyPin 7.0</h3>
+<input id="searchBox" placeholder="촬영지 검색">
 
-<input id="searchBox"
-placeholder="촬영지 검색">
-
-<select id="categoryFilter">
-
-<option value="all">전체</option>
-<option value="sunrise">🌅 일출</option>
-<option value="sunset">🌇 노을</option>
-<option value="beach">🏖 해변</option>
-<option value="mountain">⛰ 산</option>
-<option value="night">🌃 야경</option>
-
-</select>
+<br>
 
 <button id="locBtn">📍 내 위치</button>
 
-<button id="satBtn">🛰 위성지도</button>
-
 <button id="nfBtn">🚫 비행금지</button>
+
+<div id="weatherBox">
+🌤 날씨 확인중
+</div>
 
 </div>
 
@@ -47,10 +88,208 @@ placeholder="촬영지 검색">
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<script src="spots.js"></script>
-<script src="nofly.js"></script>
-<script src="script.js"></script>
+<script>
+
+/* 지도 생성 */
+
+var map = L.map("map").setView([37.5665,126.9780],10);
+
+/* 지도 스타일 */
+
+L.tileLayer(
+
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+{
+maxZoom:19
+}
+
+).addTo(map);
+
+/* 드론 아이콘 */
+
+var droneIcon = L.icon({
+
+iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
+
+iconSize:[32,32]
+
+});
+
+/* 촬영지 데이터 */
+
+var spots=[
+
+{
+name:"서울숲",
+lat:37.5444,
+lng:127.0374,
+description:"드론 촬영 인기 장소"
+},
+
+{
+name:"남산",
+lat:37.5512,
+lng:126.9882,
+description:"서울 야경 촬영"
+},
+
+{
+name:"양양 서피비치",
+lat:38.0703,
+lng:128.6319,
+description:"서핑 촬영"
+},
+
+{
+name:"제부도",
+lat:37.1690,
+lng:126.6290,
+description:"바닷길 촬영"
+}
+
+];
+
+/* 마커 저장 */
+
+var markers=[];
+
+/* 촬영지 추가 */
+
+function addSpot(spot){
+
+var marker = L.marker(
+
+[spot.lat,spot.lng],
+
+{icon:droneIcon}
+
+)
+
+.addTo(map)
+
+.bindPopup(
+
+"<b>"+spot.name+"</b><br>"+spot.description
+
+);
+
+markers.push(marker);
+
+}
+
+/* 초기 촬영지 */
+
+spots.forEach(addSpot);
+
+/* 지도 클릭 추가 */
+
+map.on("click",function(e){
+
+var name = prompt("촬영지 이름");
+
+if(!name) return;
+
+var desc = prompt("촬영 설명");
+
+var spot={
+
+name:name,
+lat:e.latlng.lat,
+lng:e.latlng.lng,
+description:desc
+
+};
+
+addSpot(spot);
+
+});
+
+/* 내 위치 */
+
+var myLocationMarker;
+
+document.getElementById("locBtn").onclick=function(){
+
+map.locate({setView:true,maxZoom:13});
+
+};
+
+map.on("locationfound",function(e){
+
+if(myLocationMarker){
+
+map.removeLayer(myLocationMarker);
+
+}
+
+myLocationMarker=L.marker(e.latlng)
+
+.addTo(map)
+
+.bindPopup("📍 현재 위치")
+
+.openPopup();
+
+});
+
+/* 검색 */
+
+document.getElementById("searchBox")
+
+.addEventListener("keyup",function(){
+
+var keyword=this.value.toLowerCase();
+
+markers.forEach(function(m){
+
+var text=m.getPopup().getContent().toLowerCase();
+
+if(text.includes(keyword)){
+
+m.setOpacity(1);
+
+}else{
+
+m.setOpacity(0.2);
+
+}
+
+});
+
+});
+
+/* 비행금지 표시 */
+
+document.getElementById("nfBtn").onclick=function(){
+
+L.circle(
+
+[37.5665,126.9780],
+
+{
+
+radius:5000,
+
+color:"red"
+
+}
+
+)
+
+.addTo(map)
+
+.bindPopup("🚫 비행 제한 가능 지역");
+
+};
+
+/* 간단 날씨 표시 */
+
+document.getElementById("weatherBox").innerHTML=
+
+"🌤 바람 약함<br>🚁 드론 비행 가능";
+
+</script>
 
 </body>
-
 </html>
