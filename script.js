@@ -28,7 +28,7 @@ spot.description
 );
 
 markers.push({
-name:spot.name,
+data:spot,
 marker:marker
 });
 
@@ -36,7 +36,7 @@ marker:marker
 
 spots.forEach(addSpot);
 
-/* 검색 기능 */
+/* 검색 */
 
 document.getElementById("searchBox")
 .addEventListener("keyup",function(){
@@ -45,7 +45,7 @@ var keyword=this.value.toLowerCase();
 
 markers.forEach(function(item){
 
-if(item.name.toLowerCase().includes(keyword)){
+if(item.data.name.toLowerCase().includes(keyword)){
 
 map.setView(item.marker.getLatLng(),10);
 item.marker.openPopup();
@@ -55,6 +55,29 @@ item.marker.openPopup();
 });
 
 });
+
+/* 필터 */
+
+document.getElementById("filter")
+.onchange=function(){
+
+var type=this.value;
+
+markers.forEach(function(item){
+
+if(type==="all" || item.data.type===type){
+
+map.addLayer(item.marker);
+
+}else{
+
+map.removeLayer(item.marker);
+
+}
+
+});
+
+};
 
 /* 지도 클릭 촬영지 추가 */
 
@@ -69,6 +92,7 @@ var spot={
 name:name,
 lat:e.latlng.lat,
 lng:e.latlng.lng,
+type:"beach",
 description:desc,
 image:"https://cdn-icons-png.flaticon.com/512/854/854878.png"
 };
@@ -79,8 +103,9 @@ addSpot(spot);
 
 /* 내 위치 */
 
-document.getElementById("locBtn")
-.onclick=function(){
+var myLocationMarker;
+
+document.getElementById("locBtn").onclick=function(){
 
 map.locate({setView:true,maxZoom:12});
 
@@ -88,9 +113,17 @@ map.locate({setView:true,maxZoom:12});
 
 map.on("locationfound",function(e){
 
-L.marker(e.latlng)
-.addTo(map)
-.bindPopup("현재 위치")
+if(myLocationMarker){
+map.removeLayer(myLocationMarker);
+}
+
+myLocationMarker=L.marker(
+e.latlng,
+{icon:droneIcon}
+).addTo(map);
+
+myLocationMarker
+.bindPopup("📍 현재 위치")
 .openPopup();
 
 });
