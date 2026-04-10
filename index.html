@@ -5,7 +5,7 @@
 
 <meta charset="utf-8">
 
-<title>SkyPin 6.0</title>
+<title>SkyPin 7.0</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -18,6 +18,8 @@ href="style.css">
 <body>
 
 <div id="panel">
+
+<h3>🚁 SkyPin 7.0</h3>
 
 <input id="searchBox"
 placeholder="촬영지 검색">
@@ -33,13 +35,11 @@ placeholder="촬영지 검색">
 
 </select>
 
-<button id="locBtn">
-📍 내 위치
-</button>
+<button id="locBtn">📍 내 위치</button>
 
-<button id="satBtn">
-🛰 위성지도
-</button>
+<button id="satBtn">🛰 위성지도</button>
+
+<button id="nfBtn">🚫 비행금지</button>
 
 </div>
 
@@ -48,7 +48,7 @@ placeholder="촬영지 검색">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script src="spots.js"></script>
-
+<script src="nofly.js"></script>
 <script src="script.js"></script>
 
 </body>
