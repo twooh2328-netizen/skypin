@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>SkyPin 4.5</title>
+<title>SkyPin 5.0</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -23,7 +23,7 @@ top:10px;
 left:10px;
 z-index:1000;
 background:white;
-padding:10px;
+padding:12px;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
@@ -33,10 +33,22 @@ width:180px;
 padding:5px;
 }
 
-button{
-padding:5px 10px;
+select{
 margin-top:5px;
+width:190px;
+}
+
+button{
+margin-top:5px;
+padding:6px;
+width:190px;
 cursor:pointer;
+}
+
+.popup-img{
+width:200px;
+border-radius:8px;
+margin-top:5px;
 }
 
 </style>
@@ -51,6 +63,18 @@ cursor:pointer;
 
 <br>
 
+<select id="categoryFilter">
+
+<option value="all">전체</option>
+<option value="sunrise">🌅 일출</option>
+<option value="night">🌃 야경</option>
+<option value="beach">🏖 해변</option>
+<option value="mountain">⛰ 산</option>
+
+</select>
+
+<br>
+
 <button id="locBtn">📍 내 위치</button>
 
 </div>
@@ -61,7 +85,7 @@ cursor:pointer;
 
 <script>
 
-/* 지도 생성 */
+/* 지도 */
 
 var map = L.map('map').setView([36.5,127.8],7);
 
@@ -77,119 +101,138 @@ var droneIcon = L.icon({
 
 iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
 
-iconSize:[32,32]
+iconSize:[34,34]
 
 });
 
 
-/* 기본 촬영지 데이터 */
+/* 기본 촬영지 */
 
-var defaultSpots = [
+var defaultSpots=[
 
-{name:"양양 서핑비치",lat:38.061,lng:128.669,description:"서핑 드론 촬영지"},
+{
+name:"성산일출봉",
+lat:33.458,
+lng:126.942,
+category:"sunrise",
+description:"제주 일출 촬영 명소",
+image:"https://upload.wikimedia.org/wikipedia/commons/3/3b/Seongsan_Ilchulbong.jpg"
+},
 
-{name:"부산 광안리",lat:35.153,lng:129.118,description:"야경 드론 촬영지"},
+{
+name:"광안리 해변",
+lat:35.153,
+lng:129.118,
+category:"night",
+description:"광안대교 야경 촬영",
+image:"https://upload.wikimedia.org/wikipedia/commons/e/e4/Gwangan_Bridge.jpg"
+},
 
-{name:"제주 성산일출봉",lat:33.458,lng:126.942,description:"일출 촬영 명소"},
+{
+name:"양양 서핑비치",
+lat:38.061,
+lng:128.669,
+category:"beach",
+description:"서핑 드론 촬영",
+image:"https://upload.wikimedia.org/wikipedia/commons/5/5f/Yangyang_Surfyy_Beach.jpg"
+},
 
-{name:"대부도",lat:37.236,lng:126.582,description:"갯벌 드론 촬영"}
+{
+name:"설악산",
+lat:38.119,
+lng:128.465,
+category:"mountain",
+description:"산악 드론 촬영",
+image:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Seoraksan.jpg"
+}
 
 ];
 
 
-/* 사용자 촬영지 불러오기 */
+/* 저장 데이터 */
 
-var saved = localStorage.getItem("skypin");
+var saved=localStorage.getItem("skypin");
 
-var spots = saved ? JSON.parse(saved) : defaultSpots;
+var spots=saved?JSON.parse(saved):defaultSpots;
+
+var markers=[];
 
 
-/* 마커 추가 함수 */
+/* 마커 표시 */
 
-function addSpot(spot){
+function drawSpots(list){
 
-var marker = L.marker(
+markers.forEach(function(m){
 
-[spot.lat,spot.lng],
+map.removeLayer(m);
 
-{icon:droneIcon}
+});
 
-).addTo(map);
+markers=[];
+
+list.forEach(function(s){
+
+var marker=L.marker([s.lat,s.lng],{icon:droneIcon}).addTo(map);
 
 marker.bindPopup(
 
-"<b>"+spot.name+"</b><br>"+spot.description
+"<b>"+s.name+"</b><br>"+s.description+
+"<br><img class='popup-img' src='"+s.image+"'>"
 
 );
+
+markers.push(marker);
+
+});
+
+}
+
+drawSpots(spots);
+
+
+/* 지도 클릭 추가 */
+
+map.on("click",function(e){
+
+var name=prompt("촬영지 이름");
+
+if(!name) return;
+
+var desc=prompt("촬영 설명");
+
+var category=prompt("카테고리 (sunrise/night/beach/mountain)");
+
+var spot={
+
+name:name,
+lat:e.latlng.lat,
+lng:e.latlng.lng,
+description:desc,
+category:category,
+image:"https://cdn-icons-png.flaticon.com/512/854/854878.png"
+
+};
 
 spots.push(spot);
 
 localStorage.setItem("skypin",JSON.stringify(spots));
 
-}
-
-
-/* 기존 촬영지 표시 */
-
-spots.forEach(function(s){
-
-L.marker(
-
-[s.lat,s.lng],
-
-{icon:droneIcon}
-
-)
-
-.addTo(map)
-
-.bindPopup(
-
-"<b>"+s.name+"</b><br>"+s.description
-
-);
+drawSpots(spots);
 
 });
 
 
-/* 지도 클릭 → 촬영지 추가 */
-
-map.on("click",function(e){
-
-var name = prompt("촬영지 이름");
-
-if(!name) return;
-
-var desc = prompt("촬영 설명");
-
-var spot = {
-
-name:name,
-
-lat:e.latlng.lat,
-
-lng:e.latlng.lng,
-
-description:desc
-
-};
-
-addSpot(spot);
-
-});
-
-
-/* 검색 기능 */
+/* 검색 */
 
 document.getElementById("searchBox")
 
 .addEventListener("keyup",function(e){
 
-if(e.key !== "Enter") return;
+if(e.key!=="Enter")return;
 
-var keyword = this.value.toLowerCase();
+var keyword=this.value.toLowerCase();
 
-var found = spots.find(function(s){
+var found=spots.find(function(s){
 
 return s.name.toLowerCase().includes(keyword);
 
@@ -199,28 +242,39 @@ if(found){
 
 map.setView([found.lat,found.lng],13);
 
-L.popup()
-
-.setLatLng([found.lat,found.lng])
-
-.setContent(
-
-"📍 "+found.name+"<br>"+found.description
-
-)
-
-.openOn(map);
-
-}else{
-
-alert("촬영지를 찾을 수 없습니다");
-
 }
 
 });
 
 
-/* 내 위치 */
+/* 카테고리 필터 */
+
+document.getElementById("categoryFilter")
+
+.onchange=function(){
+
+var value=this.value;
+
+if(value==="all"){
+
+drawSpots(spots);
+
+return;
+
+}
+
+var filtered=spots.filter(function(s){
+
+return s.category===value;
+
+});
+
+drawSpots(filtered);
+
+};
+
+
+/* 현재 위치 */
 
 var myLocation;
 
@@ -238,13 +292,7 @@ map.removeLayer(myLocation);
 
 }
 
-myLocation = L.marker(
-
-e.latlng,
-
-{icon:droneIcon}
-
-)
+myLocation=L.marker(e.latlng,{icon:droneIcon})
 
 .addTo(map)
 
@@ -253,7 +301,6 @@ e.latlng,
 .openPopup();
 
 });
-
 
 </script>
 
