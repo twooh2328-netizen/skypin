@@ -32,7 +32,7 @@ name:"설악산",
 lat:38.119,
 lng:128.465,
 category:"mountain",
-description:"산악 드론 촬영",
+description:"산악 촬영지",
 image:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Seoraksan.jpg"
 }
 
