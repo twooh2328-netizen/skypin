@@ -127,3 +127,32 @@ myLocationMarker
 .openPopup();
 
 });
+/* 검색 기능 */
+
+document.getElementById("searchBox")
+.addEventListener("keyup", function(e){
+
+if(e.key !== "Enter") return;
+
+var keyword = this.value.toLowerCase();
+
+var found = spots.find(function(s){
+return s.name.toLowerCase().includes(keyword);
+});
+
+if(found){
+
+map.setView([found.lat,found.lng],13);
+
+L.popup()
+.setLatLng([found.lat,found.lng])
+.setContent("📍 "+found.name+"<br>"+found.description)
+.openOn(map);
+
+}else{
+
+alert("촬영지를 찾을 수 없습니다.");
+
+}
+
+});
