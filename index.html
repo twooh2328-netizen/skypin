@@ -1,40 +1,57 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <meta charset="utf-8">
+<title>SkyPin 4.5</title>
 
-<title>SkyPin 4.0 Drone Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-<link rel="stylesheet" href="style.css">
+<style>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+body{
+margin:0;
+font-family:sans-serif;
+}
+
+#map{
+height:100vh;
+}
+
+#panel{
+position:absolute;
+top:10px;
+left:10px;
+z-index:1000;
+background:white;
+padding:10px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+#searchBox{
+width:180px;
+padding:5px;
+}
+
+button{
+padding:5px 10px;
+margin-top:5px;
+cursor:pointer;
+}
+
+</style>
 
 </head>
 
 <body>
 
-<h1>🚁 SkyPin 4.0 Drone Map</h1>
-
-<div class="topbar">
+<div id="panel">
 
 <input id="searchBox" placeholder="촬영지 검색">
 
-<select id="filter">
+<br>
 
-<option value="all">전체</option>
-<option value="sunrise">일출</option>
-<option value="sunset">노을</option>
-<option value="beach">해변</option>
-<option value="mountain">산</option>
-
-</select>
-
-<button id="locBtn">
-📍 내 위치
-</button>
+<button id="locBtn">📍 내 위치</button>
 
 </div>
 
@@ -42,9 +59,203 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<script src="spots.js"></script>
-<script src="script.js"></script>
+<script>
+
+/* 지도 생성 */
+
+var map = L.map('map').setView([36.5,127.8],7);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{maxZoom:19}
+).addTo(map);
+
+
+/* 드론 아이콘 */
+
+var droneIcon = L.icon({
+
+iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
+
+iconSize:[32,32]
+
+});
+
+
+/* 기본 촬영지 데이터 */
+
+var defaultSpots = [
+
+{name:"양양 서핑비치",lat:38.061,lng:128.669,description:"서핑 드론 촬영지"},
+
+{name:"부산 광안리",lat:35.153,lng:129.118,description:"야경 드론 촬영지"},
+
+{name:"제주 성산일출봉",lat:33.458,lng:126.942,description:"일출 촬영 명소"},
+
+{name:"대부도",lat:37.236,lng:126.582,description:"갯벌 드론 촬영"}
+
+];
+
+
+/* 사용자 촬영지 불러오기 */
+
+var saved = localStorage.getItem("skypin");
+
+var spots = saved ? JSON.parse(saved) : defaultSpots;
+
+
+/* 마커 추가 함수 */
+
+function addSpot(spot){
+
+var marker = L.marker(
+
+[spot.lat,spot.lng],
+
+{icon:droneIcon}
+
+).addTo(map);
+
+marker.bindPopup(
+
+"<b>"+spot.name+"</b><br>"+spot.description
+
+);
+
+spots.push(spot);
+
+localStorage.setItem("skypin",JSON.stringify(spots));
+
+}
+
+
+/* 기존 촬영지 표시 */
+
+spots.forEach(function(s){
+
+L.marker(
+
+[s.lat,s.lng],
+
+{icon:droneIcon}
+
+)
+
+.addTo(map)
+
+.bindPopup(
+
+"<b>"+s.name+"</b><br>"+s.description
+
+);
+
+});
+
+
+/* 지도 클릭 → 촬영지 추가 */
+
+map.on("click",function(e){
+
+var name = prompt("촬영지 이름");
+
+if(!name) return;
+
+var desc = prompt("촬영 설명");
+
+var spot = {
+
+name:name,
+
+lat:e.latlng.lat,
+
+lng:e.latlng.lng,
+
+description:desc
+
+};
+
+addSpot(spot);
+
+});
+
+
+/* 검색 기능 */
+
+document.getElementById("searchBox")
+
+.addEventListener("keyup",function(e){
+
+if(e.key !== "Enter") return;
+
+var keyword = this.value.toLowerCase();
+
+var found = spots.find(function(s){
+
+return s.name.toLowerCase().includes(keyword);
+
+});
+
+if(found){
+
+map.setView([found.lat,found.lng],13);
+
+L.popup()
+
+.setLatLng([found.lat,found.lng])
+
+.setContent(
+
+"📍 "+found.name+"<br>"+found.description
+
+)
+
+.openOn(map);
+
+}else{
+
+alert("촬영지를 찾을 수 없습니다");
+
+}
+
+});
+
+
+/* 내 위치 */
+
+var myLocation;
+
+document.getElementById("locBtn").onclick=function(){
+
+map.locate({setView:true,maxZoom:13});
+
+};
+
+map.on("locationfound",function(e){
+
+if(myLocation){
+
+map.removeLayer(myLocation);
+
+}
+
+myLocation = L.marker(
+
+e.latlng,
+
+{icon:droneIcon}
+
+)
+
+.addTo(map)
+
+.bindPopup("📍 현재 위치")
+
+.openPopup();
+
+});
+
+
+</script>
 
 </body>
-
 </html>
