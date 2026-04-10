@@ -17,6 +17,7 @@ iconSize:[32,32]
 
 });
 
+
 var markers=[];
 
 function drawSpots(list){
@@ -78,7 +79,7 @@ map.setView([found.lat,found.lng],13);
 });
 
 
-/* 필터 */
+/* 카테고리 */
 
 document.getElementById("categoryFilter")
 
@@ -134,7 +135,48 @@ sat=false;
 };
 
 
-/* 내 위치 */
+/* 비행금지구역 */
+
+var nf=false;
+var nfLayers=[];
+
+document.getElementById("nfBtn")
+
+.onclick=function(){
+
+if(!nf){
+
+noflyZones.forEach(function(z){
+
+var circle=L.circle(
+[z.lat,z.lng],
+{radius:z.radius,color:"red"}
+).addTo(map);
+
+nfLayers.push(circle);
+
+});
+
+nf=true;
+
+}else{
+
+nfLayers.forEach(function(l){
+
+map.removeLayer(l);
+
+});
+
+nfLayers=[];
+
+nf=false;
+
+}
+
+};
+
+
+/* 현재 위치 */
 
 var myLocation;
 
@@ -161,8 +203,38 @@ e.latlng,
 
 .addTo(map)
 
-.bindPopup("현재 위치")
+.bindPopup("📍 현재 위치")
 
 .openPopup();
+
+});
+
+
+/* 촬영지 추가 */
+
+map.on("click",function(e){
+
+var name=prompt("촬영지 이름");
+
+if(!name)return;
+
+var desc=prompt("촬영 설명");
+
+var category=prompt("카테고리");
+
+var spot={
+
+name:name,
+lat:e.latlng.lat,
+lng:e.latlng.lng,
+description:desc,
+category:category,
+image:"https://cdn-icons-png.flaticon.com/512/854/854878.png"
+
+};
+
+spots.push(spot);
+
+drawSpots(spots);
 
 });
