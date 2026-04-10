@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="utf-8">
-<title>SkyPin 3.0 Drone Map</title>
+
+<title>SkyPin 4.0 Drone Map</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -14,11 +16,21 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <body>
 
-<h1>🚁 SkyPin 3.0 Drone Map</h1>
+<h1>🚁 SkyPin 4.0 Drone Map</h1>
 
 <div class="topbar">
 
 <input id="searchBox" placeholder="촬영지 검색">
+
+<select id="filter">
+
+<option value="all">전체</option>
+<option value="sunrise">일출</option>
+<option value="sunset">노을</option>
+<option value="beach">해변</option>
+<option value="mountain">산</option>
+
+</select>
 
 <button id="locBtn">
 📍 내 위치
@@ -34,4 +46,5 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="script.js"></script>
 
 </body>
+
 </html>
