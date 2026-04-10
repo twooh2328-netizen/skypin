@@ -2,7 +2,7 @@ body{
 margin:0;
 font-family:Arial;
 text-align:center;
-background:#f4f6f8;
+background:#f2f4f7;
 }
 
 h1{
@@ -15,8 +15,13 @@ margin-bottom:10px;
 
 #searchBox{
 padding:8px;
-font-size:16px;
-width:250px;
+font-size:15px;
+width:200px;
+}
+
+#filter{
+padding:8px;
+font-size:15px;
 }
 
 button{
