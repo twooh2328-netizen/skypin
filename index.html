@@ -4,8 +4,7 @@
 <head>
 
 <meta charset="utf-8">
-<title>SkyPin Drone Map MVP 2.0</title>
-
+<title>SkyPin Drone Map 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet"
@@ -25,58 +24,103 @@ font-family:Arial;
 height:100vh;
 }
 
-/* 컨트롤 패널 */
+/* 상단 검색바 */
 
-#controls{
+#topBar{
 position:absolute;
 top:10px;
-left:10px;
+left:50%;
+transform:translateX(-50%);
 z-index:1000;
 background:white;
 padding:10px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-
-/* 검색창 */
-
-#searchBox{
-width:180px;
-padding:6px;
-margin-bottom:6px;
-}
-
-/* 버튼 */
-
-button{
-padding:6px 8px;
-margin:2px;
-cursor:pointer;
-}
-
-/* 📱 모바일 최적화 */
-
-@media (max-width:768px){
-
-#controls{
-left:50%;
-transform:translateX(-50%);
-width:90%;
+border-radius:12px;
+box-shadow:0 0 10px rgba(0,0,0,0.25);
 text-align:center;
 }
 
 #searchBox{
-width:95%;
-padding:12px;
-font-size:18px;
-border-radius:8px;
-margin-bottom:8px;
+width:260px;
+padding:10px;
+font-size:16px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+/* 버튼 영역 */
+
+#buttons{
+margin-top:6px;
 }
 
 button{
-padding:10px 12px;
+padding:8px 10px;
+margin:3px;
+cursor:pointer;
+border:none;
+border-radius:6px;
+background:#f2f2f2;
+}
+
+/* 촬영지 패널 */
+
+#panel{
+position:absolute;
+left:0;
+top:0;
+width:260px;
+height:100%;
+background:white;
+z-index:1100;
+overflow:auto;
+box-shadow:2px 0 8px rgba(0,0,0,0.3);
+display:none;
+}
+
+#panel h3{
+margin:10px;
+}
+
+#spotList{
+list-style:none;
+padding:0;
+}
+
+#spotList li{
+padding:10px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
+
+#menuBtn{
+position:absolute;
+top:15px;
+left:10px;
+z-index:1200;
+font-size:22px;
+background:white;
+padding:6px 10px;
+border-radius:8px;
+cursor:pointer;
+}
+
+/* 모바일 */
+
+@media (max-width:768px){
+
+#searchBox{
+width:90%;
+font-size:18px;
+padding:12px;
+}
+
+button{
 font-size:16px;
-margin:4px;
+padding:10px;
+}
+
+#panel{
+width:80%;
 }
 
 }
@@ -87,17 +131,29 @@ margin:4px;
 
 <body>
 
-<div id="controls">
+<div id="menuBtn">☰</div>
+
+<div id="panel">
+
+<h3>촬영지 목록</h3>
+
+<ul id="spotList"></ul>
+
+</div>
+
+<div id="topBar">
 
 <input id="searchBox" placeholder="촬영지 검색">
 
-<br>
+<div id="buttons">
 
-<button id="locBtn">📍 내 위치</button>
-<button id="nfBtn">🚫 비행금지</button>
-<button id="flyBtn">🚁 비행가능</button>
-<button id="sunBtn">🌅 일출</button>
-<button id="satBtn">🛰 위성</button>
+<button id="locBtn">📍</button>
+<button id="nfBtn">🚫</button>
+<button id="flyBtn">🚁</button>
+<button id="sunBtn">🌅</button>
+<button id="satBtn">🛰</button>
+
+</div>
 
 </div>
 
@@ -109,49 +165,45 @@ margin:4px;
 
 <script>
 
-/* 지도 생성 */
+/* 지도 */
 
 var map=L.map("map").setView([37.5665,126.9780],8);
 
-/* 기본 지도 */
+/* 지도 타일 */
 
 var normal=L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {maxZoom:19}
 ).addTo(map);
 
-/* 위성 지도 */
-
-var satellite=L.tileLayer(
+var terrain=L.tileLayer(
 "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
 {maxZoom:17}
 );
 
 var sat=false;
 
-/* 지도 검색 */
+/* 검색 */
 
-L.Control.geocoder({
-defaultMarkGeocode:true
-}).addTo(map);
+L.Control.geocoder().addTo(map);
 
 /* 드론 아이콘 */
 
 var droneIcon=L.icon({
 iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
-iconSize:[32,32]
+iconSize:[30,30]
 });
 
-/* 촬영지 저장 */
+/* 저장 데이터 */
 
 var saved=localStorage.getItem("skypin_spots");
 
 var spots=saved?JSON.parse(saved):[
 
 {name:"서울숲",lat:37.5444,lng:127.0374,desc:"드론 촬영 명소"},
-{name:"남산",lat:37.5512,lng:126.9882,desc:"서울 야경 촬영"},
+{name:"남산",lat:37.5512,lng:126.9882,desc:"서울 야경"},
 {name:"양양 서피비치",lat:38.0703,lng:128.6319,desc:"서핑 촬영"},
-{name:"제부도",lat:37.1690,lng:126.6290,desc:"바닷길 촬영"}
+{name:"제부도",lat:37.169,lng:126.629,desc:"바닷길 촬영"}
 
 ];
 
@@ -163,7 +215,7 @@ function saveSpots(){
 localStorage.setItem("skypin_spots",JSON.stringify(spots));
 }
 
-/* 마커 생성 */
+/* 마커 */
 
 function addMarker(spot){
 
@@ -177,11 +229,38 @@ markers.push(marker);
 
 }
 
-/* 초기 마커 */
+/* 리스트 */
+
+function updateList(){
+
+var list=document.getElementById("spotList");
+
+list.innerHTML="";
+
+spots.forEach(function(s){
+
+var li=document.createElement("li");
+
+li.textContent=s.name;
+
+li.onclick=function(){
+
+map.flyTo([s.lat,s.lng],13);
+
+};
+
+list.appendChild(li);
+
+});
+
+}
+
+/* 초기 */
 
 spots.forEach(addMarker);
+updateList();
 
-/* 지도 클릭 촬영지 추가 */
+/* 지도 클릭 */
 
 map.on("click",function(e){
 
@@ -199,9 +278,12 @@ desc:desc
 };
 
 spots.push(spot);
+
 saveSpots();
 
 addMarker(spot);
+
+updateList();
 
 });
 
@@ -212,12 +294,13 @@ document.getElementById("searchBox")
 
 var keyword=this.value.toLowerCase();
 
-markers.forEach(function(marker){
+markers.forEach(function(m){
 
-if(marker.spotName.includes(keyword)){
+if(m.spotName.includes(keyword)){
 
-map.flyTo(marker.getLatLng(),13);
-marker.openPopup();
+map.flyTo(m.getLatLng(),13);
+
+m.openPopup();
 
 }
 
@@ -241,23 +324,20 @@ if(myMarker) map.removeLayer(myMarker);
 
 myMarker=L.marker(e.latlng)
 .addTo(map)
-.bindPopup("📍 현재 위치")
+.bindPopup("현재 위치")
 .openPopup();
 
 });
 
-/* 비행금지 구역 */
+/* 비행금지 */
 
 document.getElementById("nfBtn").onclick=function(){
 
 var zones=[
-
 [37.5665,126.9780],
-[37.4602,126.4407],
 [37.5583,126.7906],
 [35.1796,129.0756],
 [33.5113,126.4928]
-
 ];
 
 zones.forEach(function(z){
@@ -268,22 +348,20 @@ color:"red",
 fillOpacity:0.3
 })
 .addTo(map)
-.bindPopup("🚫 드론 비행 제한 구역");
+.bindPopup("비행 제한 구역");
 
 });
 
 };
 
-/* 비행 가능 구역 */
+/* 비행 가능 */
 
 document.getElementById("flyBtn").onclick=function(){
 
 var zones=[
-
 [38.0703,128.6319],
-[37.1690,126.6290],
+[37.169,126.629],
 [36.5,127.5]
-
 ];
 
 zones.forEach(function(z){
@@ -294,13 +372,13 @@ color:"green",
 fillOpacity:0.2
 })
 .addTo(map)
-.bindPopup("🚁 드론 비행 가능 지역");
+.bindPopup("비행 가능 지역");
 
 });
 
 };
 
-/* 일출 방향 */
+/* 일출 */
 
 document.getElementById("sunBtn").onclick=function(){
 
@@ -308,32 +386,39 @@ var c=map.getCenter();
 
 var sunrise=[c.lat+0.05,c.lng+0.05];
 
-L.polyline(
-[[c.lat,c.lng],sunrise],
-{color:"orange"}
-)
-.addTo(map)
-.bindPopup("🌅 일출 방향");
+L.polyline([[c.lat,c.lng],sunrise],
+{color:"orange"}).addTo(map);
 
 };
 
-/* 위성 지도 */
+/* 지도 전환 */
 
 document.getElementById("satBtn").onclick=function(){
 
 if(!sat){
 
 map.removeLayer(normal);
-satellite.addTo(map);
+terrain.addTo(map);
 sat=true;
 
 }else{
 
-map.removeLayer(satellite);
+map.removeLayer(terrain);
 normal.addTo(map);
 sat=false;
 
 }
+
+};
+
+/* 패널 */
+
+var panel=document.getElementById("panel");
+
+document.getElementById("menuBtn").onclick=function(){
+
+panel.style.display=
+panel.style.display==="block"?"none":"block";
 
 };
 
