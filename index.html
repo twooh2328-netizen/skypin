@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="utf-8">
-<title>SkyPin Drone Map 3.0</title>
+<title>SkyPin Drone Map 4.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet"
@@ -24,7 +24,22 @@ font-family:Arial;
 height:100vh;
 }
 
-/* 상단 검색바 */
+/* 메뉴 버튼 */
+
+#menuBtn{
+position:absolute;
+top:15px;
+left:10px;
+z-index:1200;
+background:white;
+padding:8px 12px;
+border-radius:8px;
+font-size:20px;
+cursor:pointer;
+box-shadow:0 0 6px rgba(0,0,0,0.3);
+}
+
+/* 상단 검색창 */
 
 #topBar{
 position:absolute;
@@ -36,30 +51,34 @@ background:white;
 padding:10px;
 border-radius:12px;
 box-shadow:0 0 10px rgba(0,0,0,0.25);
+width:320px;
 text-align:center;
 }
 
 #searchBox{
-width:260px;
+width:95%;
 padding:10px;
 font-size:16px;
 border-radius:6px;
 border:1px solid #ccc;
+margin-bottom:8px;
 }
 
-/* 버튼 영역 */
+/* 버튼 2줄 정렬 */
 
 #buttons{
-margin-top:6px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:6px;
 }
 
 button{
-padding:8px 10px;
-margin:3px;
-cursor:pointer;
+padding:10px;
 border:none;
-border-radius:6px;
+border-radius:8px;
 background:#f2f2f2;
+font-size:14px;
+cursor:pointer;
 }
 
 /* 촬영지 패널 */
@@ -92,31 +111,22 @@ border-bottom:1px solid #ddd;
 cursor:pointer;
 }
 
-#menuBtn{
-position:absolute;
-top:15px;
-left:10px;
-z-index:1200;
-font-size:22px;
-background:white;
-padding:6px 10px;
-border-radius:8px;
-cursor:pointer;
-}
-
 /* 모바일 */
 
 @media (max-width:768px){
 
-#searchBox{
+#topBar{
 width:90%;
+}
+
+#searchBox{
 font-size:18px;
 padding:12px;
 }
 
 button{
 font-size:16px;
-padding:10px;
+padding:12px;
 }
 
 #panel{
@@ -134,11 +144,8 @@ width:80%;
 <div id="menuBtn">☰</div>
 
 <div id="panel">
-
 <h3>촬영지 목록</h3>
-
 <ul id="spotList"></ul>
-
 </div>
 
 <div id="topBar">
@@ -149,8 +156,10 @@ width:80%;
 
 <button id="locBtn">📍 현재위치</button>
 <button id="nfBtn">🚫 비행금지</button>
+
 <button id="flyBtn">🚁 비행가능</button>
 <button id="sunBtn">🌅 일출방향</button>
+
 <button id="satBtn">🛰 위성지도</button>
 
 </div>
@@ -194,17 +203,15 @@ iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
 iconSize:[30,30]
 });
 
-/* 저장 데이터 */
+/* 저장 */
 
 var saved=localStorage.getItem("skypin_spots");
 
 var spots=saved?JSON.parse(saved):[
-
 {name:"서울숲",lat:37.5444,lng:127.0374,desc:"드론 촬영 명소"},
 {name:"남산",lat:37.5512,lng:126.9882,desc:"서울 야경"},
 {name:"양양 서피비치",lat:38.0703,lng:128.6319,desc:"서핑 촬영"},
 {name:"제부도",lat:37.169,lng:126.629,desc:"바닷길 촬영"}
-
 ];
 
 var markers=[];
@@ -234,19 +241,15 @@ markers.push(marker);
 function updateList(){
 
 var list=document.getElementById("spotList");
-
 list.innerHTML="";
 
 spots.forEach(function(s){
 
 var li=document.createElement("li");
-
 li.textContent=s.name;
 
 li.onclick=function(){
-
 map.flyTo([s.lat,s.lng],13);
-
 };
 
 list.appendChild(li);
@@ -255,17 +258,14 @@ list.appendChild(li);
 
 }
 
-/* 초기 */
-
 spots.forEach(addMarker);
 updateList();
 
-/* 지도 클릭 */
+/* 지도 클릭 촬영지 추가 */
 
 map.on("click",function(e){
 
 var name=prompt("촬영지 이름");
-
 if(!name) return;
 
 var desc=prompt("촬영 설명");
@@ -287,7 +287,7 @@ updateList();
 
 });
 
-/* 촬영지 검색 */
+/* 검색 */
 
 document.getElementById("searchBox")
 .addEventListener("keyup",function(){
@@ -297,25 +297,20 @@ var keyword=this.value.toLowerCase();
 markers.forEach(function(m){
 
 if(m.spotName.includes(keyword)){
-
 map.flyTo(m.getLatLng(),13);
-
 m.openPopup();
-
 }
 
 });
 
 });
 
-/* 내 위치 */
+/* 현재 위치 */
 
 var myMarker;
 
 document.getElementById("locBtn").onclick=function(){
-
 map.locate({setView:true,maxZoom:13});
-
 };
 
 map.on("locationfound",function(e){
@@ -346,9 +341,7 @@ L.circle(z,{
 radius:5000,
 color:"red",
 fillOpacity:0.3
-})
-.addTo(map)
-.bindPopup("비행 제한 구역");
+}).addTo(map);
 
 });
 
@@ -370,9 +363,7 @@ L.circle(z,{
 radius:4000,
 color:"green",
 fillOpacity:0.2
-})
-.addTo(map)
-.bindPopup("비행 가능 지역");
+}).addTo(map);
 
 });
 
@@ -386,8 +377,10 @@ var c=map.getCenter();
 
 var sunrise=[c.lat+0.05,c.lng+0.05];
 
-L.polyline([[c.lat,c.lng],sunrise],
-{color:"orange"}).addTo(map);
+L.polyline(
+[[c.lat,c.lng],sunrise],
+{color:"orange"}
+).addTo(map);
 
 };
 
@@ -396,17 +389,13 @@ L.polyline([[c.lat,c.lng],sunrise],
 document.getElementById("satBtn").onclick=function(){
 
 if(!sat){
-
 map.removeLayer(normal);
 terrain.addTo(map);
 sat=true;
-
 }else{
-
 map.removeLayer(terrain);
 normal.addTo(map);
 sat=false;
-
 }
 
 };
