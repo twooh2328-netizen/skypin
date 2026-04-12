@@ -6,6 +6,8 @@
 <meta charset="utf-8">
 <title>SkyPin Drone Map MVP 2.0</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -23,6 +25,8 @@ font-family:Arial;
 height:100vh;
 }
 
+/* 컨트롤 패널 */
+
 #controls{
 position:absolute;
 top:10px;
@@ -34,16 +38,47 @@ border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
+/* 검색창 */
+
 #searchBox{
 width:180px;
 padding:6px;
 margin-bottom:6px;
 }
 
+/* 버튼 */
+
 button{
 padding:6px 8px;
 margin:2px;
 cursor:pointer;
+}
+
+/* 📱 모바일 최적화 */
+
+@media (max-width:768px){
+
+#controls{
+left:50%;
+transform:translateX(-50%);
+width:90%;
+text-align:center;
+}
+
+#searchBox{
+width:95%;
+padding:12px;
+font-size:18px;
+border-radius:8px;
+margin-bottom:8px;
+}
+
+button{
+padding:10px 12px;
+font-size:16px;
+margin:4px;
+}
+
 }
 
 </style>
