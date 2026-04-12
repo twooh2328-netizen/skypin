@@ -1,13 +1,16 @@
-```html
 <!DOCTYPE html>
 <html lang="ko">
-<head>  
+
+<head>
+
+<meta charset="utf-8">
+<title>SkyPin Drone Map MVP 2.0</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-<meta charset="utf-8">
-<title>SkyPin 9.1 Drone Map</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
 
@@ -67,20 +70,22 @@ cursor:pointer;
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script>
 
 /* 지도 생성 */
 
 var map=L.map("map").setView([37.5665,126.9780],8);
 
-/* 일반 지도 */
+/* 기본 지도 */
 
 var normal=L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {maxZoom:19}
 ).addTo(map);
 
-/* 위성 스타일 */
+/* 위성 지도 */
 
 var satellite=L.tileLayer(
 "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
@@ -88,6 +93,12 @@ var satellite=L.tileLayer(
 );
 
 var sat=false;
+
+/* 지도 검색 */
+
+L.Control.geocoder({
+defaultMarkGeocode:true
+}).addTo(map);
 
 /* 드론 아이콘 */
 
@@ -162,7 +173,6 @@ addMarker(spot);
 /* 촬영지 검색 */
 
 document.getElementById("searchBox")
-
 .addEventListener("keyup",function(){
 
 var keyword=this.value.toLowerCase();
@@ -171,7 +181,7 @@ markers.forEach(function(marker){
 
 if(marker.spotName.includes(keyword)){
 
-map.setView(marker.getLatLng(),13);
+map.flyTo(marker.getLatLng(),13);
 marker.openPopup();
 
 }
@@ -296,4 +306,3 @@ sat=false;
 
 </body>
 </html>
-```
