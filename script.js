@@ -120,7 +120,7 @@ var keyword=this.value.toLowerCase();
 
 markers.forEach(function(m){
 
-if(m.spotName.includes(keyword.toLowerCase())){
+if(m.spotName.includes(keyword)){
 map.flyTo(m.getLatLng(),13);
 m.openPopup();
 }
@@ -129,7 +129,7 @@ m.openPopup();
 
 /* 지도 지명 검색 */
 
-fetch("https://nominatim.openstreetmap.org/search?format=json&q="+keyword)
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+encodeURIComponent(keyword))
 
 .then(res=>res.json())
 
