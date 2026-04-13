@@ -8,12 +8,53 @@
   <style>
     html,body{height:100%;margin:0;font-family:Arial;}
     #map{width:100%;height:100%;}
-    #topBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;background:white;padding:14px;border-radius:14px;box-shadow:0 0 10px rgba(0,0,0,0.25);width:400px;text-align:center;}
-    #searchBox{width:95%;padding:14px;font-size:18px;border-radius:8px;border:1px solid #ccc;margin-bottom:10px;}
-    #buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    #buttons button{padding:14px;border:none;border-radius:10px;background:#f2f2f2;font-size:16px;cursor:pointer;}
+    #topBar{
+      position:absolute;
+      top:10px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:1000;
+      background:white;
+      padding:14px;
+      border-radius:14px;
+      box-shadow:0 0 10px rgba(0,0,0,0.25);
+      width:500px;
+      text-align:center;
+    }
+    #searchBox{
+      width:95%;
+      padding:14px;
+      font-size:18px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      margin-bottom:10px;
+    }
+    #buttons{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+    }
+    #buttons button{
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      background:#f2f2f2;
+      font-size:16px;
+      cursor:pointer;
+    }
     #buttons button:hover{background:#e5e5e5;}
-    #panel{position:absolute;left:0;top:0;width:260px;height:100%;background:white;z-index:1100;overflow:auto;box-shadow:2px 0 8px rgba(0,0,0,0.3);display:none;}
+    #panel{
+      position:absolute;
+      left:0;
+      top:0;
+      width:260px;
+      height:100%;
+      background:white;
+      z-index:1100;
+      overflow:auto;
+      box-shadow:2px 0 8px rgba(0,0,0,0.3);
+      display:none;
+    }
     #panel h3{margin:12px;}
     #spotList{list-style:none;padding:0;margin:0;}
     #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;}
@@ -34,7 +75,7 @@
     <button id="flyBtn">🚁 비행가능</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
-    <button id="listBtn">📑 촬영지 목록</button> <!-- 새 버튼 -->
+    <button id="listBtn">📑 촬영지 목록</button>
   </div>
 </div>
 
@@ -55,12 +96,28 @@
   var nfZone = [37.5509, 126.9903]; // 남산
   var flyZone = [37.1710, 126.5720]; // 제부도
 
-  // 촬영지 목록 (비행 가능 지역)
+  // 촬영지 목록 (20곳)
   var spots = [
     {name: "제부도", lat: 37.1710, lon: 126.5720},
-    {name: "양양", lat: 38.0754, lon: 128.6270},
+    {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
     {name: "서울숲", lat: 37.5446, lon: 127.0376},
-    {name: "부산 광안대교", lat: 35.1531, lon: 129.1185}
+    {name: "부산 광안대교", lat: 35.1531, lon: 129.1185},
+    {name: "제주 성산일출봉", lat: 33.4589, lon: 126.9425},
+    {name: "속초 영금정", lat: 38.2070, lon: 128.5910},
+    {name: "경주 불국사", lat: 35.7902, lon: 129.3325},
+    {name: "안동 하회마을", lat: 36.5400, lon: 128.5180},
+    {name: "인천 송도 센트럴파크", lat: 37.3925, lon: 126.6345},
+    {name: "남해 독일마을", lat: 34.8370, lon: 127.8920},
+    {name: "담양 죽녹원", lat: 35.3210, lon: 126.9870},
+    {name: "순천만 습지", lat: 34.9330, lon: 127.5000},
+    {name: "보성 녹차밭", lat: 34.7510, lon: 127.0850},
+    {name: "강릉 경포대", lat: 37.7950, lon: 128.8960},
+    {name: "춘천 소양강 스카이워크", lat: 37.8940, lon: 127.7340},
+    {name: "포항 호미곶", lat: 36.0670, lon: 129.5690},
+    {name: "울산 대왕암", lat: 35.4980, lon: 129.4360},
+    {name: "여수 돌산대교", lat: 34.7390, lon: 127.7510},
+    {name: "군산 새만금 방조제", lat: 35.9000, lon: 126.7000},
+    {name: "태안 꽃지해변", lat: 36.4930, lon: 126.3310}
   ];
 
   // 목록 표시
@@ -120,43 +177,4 @@
 
   // 일출 방향
   document.getElementById('sunBtn').addEventListener('click', function() {
-    var center = map.getCenter();
-    var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
-    var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
-    var angle = sunrisePos.azimuth;
-
-    var length = 0.05;
-    var dx = length * Math.cos(angle);
-    var dy = length * Math.sin(angle);
-
-    var endLat = center.lat + dy;
-    var endLon = center.lng + dx;
-
-    L.polyline([[center.lat, center.lng], [endLat, endLon]], {color: 'orange'}).addTo(map)
-      .bindPopup("일출 방향").openPopup();
-  });
-
-  // 지도 전환
-  document.getElementById('satBtn').addEventListener('click', function() {
-    if (map.hasLayer(osmLayer)) {
-      map.removeLayer(osmLayer);
-      satLayer.addTo(map);
-    } else {
-      map.removeLayer(satLayer);
-      osmLayer.addTo(map);
-    }
-  });
-
-  // 촬영지 목록 버튼 토글
-  document.getElementById('listBtn').addEventListener('click', function() {
-    var panel = document.getElementById('panel');
-    if (panel.style.display === "none" || panel.style.display === "") {
-      panel.style.display = "block";
-    } else {
-      panel.style.display = "none";
-    }
-  });
-</script>
-
-</body>
-</html>
+    var center =
