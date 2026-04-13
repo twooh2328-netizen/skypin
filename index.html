@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="utf-8">
-<title>SkyPin Drone Map 4.0</title>
+<title>SkyPin Drone Map 4.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet"
@@ -13,72 +13,19 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 
-/* ===== 모바일 UI 확대 ===== */
+<style>
 
-@media (max-width:768px){
+/* 기본 */
 
-#topBar{
-width:95%;
-padding:14px;
+body{
+margin:0;
+font-family:Arial;
 }
 
-#searchBox{
-font-size:20px;
-padding:14px;
+#map{
+height:100vh;
 }
 
-#buttons{
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-#buttons button{
-font-size:18px;
-padding:14px;
-border-radius:10px;
-}
-
-#menuBtn{
-font-size:26px;
-padding:10px 14px;
-}
-
-#panel{
-width:85%;
-font-size:18px;
-}
-
-#spotList li{
-padding:14px;
-}
-
-}
-#buttons{
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-#buttons button{
-font-size:18px;
-padding:14px;
-border-radius:10px;
-}
-
-#menuBtn{
-font-size:26px;
-padding:10px 14px;
-}
-
-#panel{
-width:85%;
-font-size:18px;
-}
-
-#spotList li{
-padding:14px;
-}
-
-}
 /* 메뉴 버튼 */
 
 #menuBtn{
@@ -87,14 +34,14 @@ top:15px;
 left:10px;
 z-index:1200;
 background:white;
-padding:8px 12px;
-border-radius:8px;
-font-size:20px;
+padding:10px 14px;
+border-radius:10px;
+font-size:22px;
 cursor:pointer;
 box-shadow:0 0 6px rgba(0,0,0,0.3);
 }
 
-/* 상단 검색창 */
+/* 검색창 */
 
 #topBar{
 position:absolute;
@@ -103,42 +50,38 @@ left:50%;
 transform:translateX(-50%);
 z-index:1000;
 background:white;
-padding:10px;
+padding:12px;
 border-radius:12px;
 box-shadow:0 0 10px rgba(0,0,0,0.25);
-width:320px;
+width:340px;
 text-align:center;
 }
 
 #searchBox{
 width:95%;
-padding:10px;
-font-size:16px;
+padding:12px;
+font-size:18px;
 border-radius:6px;
 border:1px solid #ccc;
 margin-bottom:8px;
 }
 
-/* 버튼 2줄 정렬 */
+/* 버튼 */
 
 #buttons{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:8px;
-margin-top:10px;
-justify-items:center;
 }
-  
 
 #buttons button{
 width:100%;
-padding:10px;
+padding:12px;
 border:none;
 border-radius:8px;
 background:#f2f2f2;
-font-size:14px;
+font-size:16px;
 cursor:pointer;
-transition:0.2s;
 }
 
 #buttons button:hover{
@@ -170,7 +113,7 @@ padding:0;
 }
 
 #spotList li{
-padding:10px;
+padding:12px;
 border-bottom:1px solid #ddd;
 cursor:pointer;
 }
@@ -180,17 +123,18 @@ cursor:pointer;
 @media (max-width:768px){
 
 #topBar{
-width:90%;
+width:95%;
+padding:14px;
 }
 
 #searchBox{
-font-size:18px;
-padding:12px;
+font-size:20px;
+padding:14px;
 }
 
-button{
-font-size:16px;
-padding:12px;
+#buttons button{
+font-size:18px;
+padding:14px;
 }
 
 #panel{
@@ -224,7 +168,7 @@ width:80%;
 <button id="flyBtn">🚁 비행가능</button>
 <button id="sunBtn">🌅 일출방향</button>
 
-<button id="satBtn">🛰 위성지도</button>
+<button id="satBtn">🛰 지도전환</button>
 
 </div>
 
@@ -233,7 +177,6 @@ width:80%;
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
@@ -433,7 +376,7 @@ fillOpacity:0.2
 
 };
 
-/* 일출 */
+/* 일출 방향 */
 
 document.getElementById("sunBtn").onclick=function(){
 
