@@ -175,8 +175,44 @@
     L.marker(flyZone).addTo(map).bindPopup("제부도 비행가능 구역").openPopup();
   });
 
-  // 일출 방향
+   // 일출 방향
   document.getElementById('sunBtn').addEventListener('click', function() {
     var center = map.getCenter();
     var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
-    var sunrisePos = SunCalc.get
+    var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
+    var angle = sunrisePos.azimuth;
+
+    var length = 0.05; // 선 길이
+    var dx = length * Math.cos(angle);
+    var dy = length * Math.sin(angle);
+
+    var endLat = center.lat + dy;
+    var endLon = center.lng + dx;
+
+    L.polyline([[center.lat, center.lng], [endLat, endLon]], {color: 'orange'}).addTo(map)
+      .bindPopup("일출 방향").openPopup();
+  });
+
+  // 지도 전환 버튼
+  document.getElementById('satBtn').addEventListener('click', function() {
+    if (map.hasLayer(osmLayer)) {
+      map.removeLayer(osmLayer);
+      satLayer.addTo(map);
+    } else {
+      map.removeLayer(satLayer);
+      osmLayer.addTo(map);
+    }
+  });
+
+  // 촬영지 목록 토글 버튼
+  document.getElementById('listBtn').addEventListener('click', function() {
+    var panel = document.getElementById('panel');
+    if (panel.style.display === "none" || panel.style.display === "") {
+      panel.style.display = "block";
+    } else {
+      panel.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>
