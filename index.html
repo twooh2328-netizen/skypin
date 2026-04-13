@@ -171,4 +171,12 @@
   // 비행가능 버튼
   document.getElementById('flyBtn').addEventListener('click', function() {
     map.setView(flyZone, 14);
-    L.circle(flyZone, {color:'green', fillColor:'#0f3', fillOpacity:0.3, radius
+    L.circle(flyZone, {color:'green', fillColor:'#0f3', fillOpacity:0.3, radius:800}).addTo(map);
+    L.marker(flyZone).addTo(map).bindPopup("제부도 비행가능 구역").openPopup();
+  });
+
+  // 일출 방향
+  document.getElementById('sunBtn').addEventListener('click', function() {
+    var center = map.getCenter();
+    var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
+    var sunrisePos = SunCalc.get
