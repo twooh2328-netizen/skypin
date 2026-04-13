@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
 
 <meta charset="utf-8">
-<title>SkyPin Drone Map 4.1</title>
+<title>SkyPin Drone Map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 
-/* 기본 */
+/* 화면 기본 */
 
-body{
+html,body{
+height:100%;
 margin:0;
 font-family:Arial;
 }
 
 #map{
-height:100vh;
+width:100%;
+height:100%;
 }
 
 /* 메뉴 버튼 */
@@ -41,7 +39,7 @@ cursor:pointer;
 box-shadow:0 0 6px rgba(0,0,0,0.3);
 }
 
-/* 검색창 */
+/* 상단 UI */
 
 #topBar{
 position:absolute;
@@ -75,7 +73,6 @@ gap:8px;
 }
 
 #buttons button{
-width:100%;
 padding:12px;
 border:none;
 border-radius:8px;
@@ -124,7 +121,6 @@ cursor:pointer;
 
 #topBar{
 width:95%;
-padding:14px;
 }
 
 #searchBox{
@@ -176,32 +172,27 @@ width:80%;
 
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-/* 지도 */
+/* 지도 생성 */
 
-var map=L.map("map").setView([37.5665,126.9780],8);
+var map = L.map("map").setView([37.5665,126.9780],8);
 
 /* 지도 타일 */
 
-var normal=L.tileLayer(
+var normal = L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {maxZoom:19}
 ).addTo(map);
 
-var terrain=L.tileLayer(
-"https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-{maxZoom:17}
+var satellite = L.tileLayer(
+"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+{maxZoom:19}
 );
 
 var sat=false;
-
-/* 검색 */
-
-L.Control.geocoder().addTo(map);
 
 /* 드론 아이콘 */
 
@@ -210,15 +201,14 @@ iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
 iconSize:[30,30]
 });
 
-/* 저장 */
+/* 저장 데이터 */
 
 var saved=localStorage.getItem("skypin_spots");
 
 var spots=saved?JSON.parse(saved):[
 {name:"서울숲",lat:37.5444,lng:127.0374,desc:"드론 촬영 명소"},
 {name:"남산",lat:37.5512,lng:126.9882,desc:"서울 야경"},
-{name:"양양 서피비치",lat:38.0703,lng:128.6319,desc:"서핑 촬영"},
-{name:"제부도",lat:37.169,lng:126.629,desc:"바닷길 촬영"}
+{name:"제부도",lat:37.169,lng:126.629,desc:"바다 촬영"}
 ];
 
 var markers=[];
@@ -337,7 +327,6 @@ document.getElementById("nfBtn").onclick=function(){
 
 var zones=[
 [37.5665,126.9780],
-[37.5583,126.7906],
 [35.1796,129.0756],
 [33.5113,126.4928]
 ];
@@ -354,7 +343,7 @@ fillOpacity:0.3
 
 };
 
-/* 비행 가능 */
+/* 비행가능 */
 
 document.getElementById("flyBtn").onclick=function(){
 
@@ -397,10 +386,10 @@ document.getElementById("satBtn").onclick=function(){
 
 if(!sat){
 map.removeLayer(normal);
-terrain.addTo(map);
+satellite.addTo(map);
 sat=true;
 }else{
-map.removeLayer(terrain);
+map.removeLayer(satellite);
 normal.addTo(map);
 sat=false;
 }
