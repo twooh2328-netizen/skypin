@@ -114,7 +114,7 @@ document.getElementById("searchBox")
 
 if(e.key==="Enter"){
 
-var keyword=this.value;
+var keyword=this.value.toLowerCase();
 
 /* 저장된 촬영지 검색 */
 
