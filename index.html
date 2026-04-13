@@ -13,17 +13,72 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 
-<style>
+/* ===== 모바일 UI 확대 ===== */
 
-body{
-margin:0;
-font-family:Arial;
+@media (max-width:768px){
+
+#topBar{
+width:95%;
+padding:14px;
 }
 
-#map{
-height:100vh;
+#searchBox{
+font-size:20px;
+padding:14px;
 }
 
+#buttons{
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+#buttons button{
+font-size:18px;
+padding:14px;
+border-radius:10px;
+}
+
+#menuBtn{
+font-size:26px;
+padding:10px 14px;
+}
+
+#panel{
+width:85%;
+font-size:18px;
+}
+
+#spotList li{
+padding:14px;
+}
+
+}
+#buttons{
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+#buttons button{
+font-size:18px;
+padding:14px;
+border-radius:10px;
+}
+
+#menuBtn{
+font-size:26px;
+padding:10px 14px;
+}
+
+#panel{
+width:85%;
+font-size:18px;
+}
+
+#spotList li{
+padding:14px;
+}
+
+}
 /* 메뉴 버튼 */
 
 #menuBtn{
