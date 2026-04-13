@@ -1,67 +1,65 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <title>SkyPin Drone Map</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <style>
-    html,body{height:100%;margin:0;font-family:Arial;}
-    #map{width:100%;height:100%;}
-    #topBar{
-      position:absolute;
-      top:10px;
-      left:50%;
-      transform:translateX(-50%);
-      z-index:1000;
-      background:white;
-      padding:14px;
-      border-radius:14px;
-      box-shadow:0 0 10px rgba(0,0,0,0.25);
-      width:500px;
-      text-align:center;
-    }
-    #searchBox{
-      width:95%;
-      padding:14px;
-      font-size:18px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      margin-bottom:10px;
-    }
-    #buttons{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:10px;
-    }
-    #buttons button{
-      padding:14px;
-      border:none;
-      border-radius:10px;
-      background:#f2f2f2;
-      font-size:16px;
-      cursor:pointer;
-    }
-    #buttons button:hover{background:#e5e5e5;}
-    #panel{
-      position:absolute;
-      left:0;
-      top:0;
-      width:260px;
-      height:100%;
-      background:white;
-      z-index:1100;
-      overflow:auto;
-      box-shadow:2px 0 8px rgba(0,0,0,0.3);
-      display:none;
-    }
-    #panel h3{margin:12px;}
-    #spotList{list-style:none;padding:0;margin:0;}
-    #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;}
-  </style>
-</head>
-<body>
+<script>
+  // 기본 지도 중심 (서울숲)
+  var defaultCenter = [37.5446, 127.0376];
+  var map = L.map('map').setView(defaultCenter, 12);
 
-<div id="panel">
-  <h3>촬영지 목록</h3>
-  <ul id="spotList">
+  var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png');
+
+  // 좌표 변수
+  var nfZone = [37.5509, 126.9903]; // 남산
+  var flyZone = [37.1710, 126.5720]; // 제부도
+
+  // 촬영지 목록 (20곳)
+  var spots = [
+    {name: "제부도", lat: 37.1710, lon: 126.5720},
+    {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
+    {name: "서울숲", lat: 37.5446, lon: 127.0376},
+    {name: "부산 광안대교", lat: 35.1531, lon: 129.1185},
+    {name: "제주 성산일출봉", lat: 33.4589, lon: 126.9425},
+    {name: "속초 영금정", lat: 38.2070, lon: 128.5910},
+    {name: "경주 불국사", lat: 35.7902, lon: 129.3325},
+    {name: "안동 하회마을", lat: 36.5400, lon: 128.5180},
+    {name: "인천 송도 센트럴파크", lat: 37.3925, lon: 126.6345},
+    {name: "남해 독일마을", lat: 34.8370, lon: 127.8920},
+    {name: "담양 죽녹원", lat: 35.3210, lon: 126.9870},
+    {name: "순천만 습지", lat: 34.9330, lon: 127.5000},
+    {name: "보성 녹차밭", lat: 34.7510, lon: 127.0850},
+    {name: "강릉 경포대", lat: 37.7950, lon: 128.8960},
+    {name: "춘천 소양강 스카이워크", lat: 37.8940, lon: 127.7340},
+    {name: "포항 호미곶", lat: 36.0670, lon: 129.5690},
+    {name: "울산 대왕암", lat: 35.4980, lon: 129.4360},
+    {name: "여수 돌산대교", lat: 34.7390, lon: 127.7510},
+    {name: "군산 새만금 방조제", lat: 35.9000, lon: 126.7000},
+    {name: "태안 꽃지해변", lat: 36.4930, lon: 126.3310}
+  ];
+
+  // 목록 표시
+  var spotList = document.getElementById('spotList');
+  spots.forEach(function(spot){
+    var li = document.createElement('li');
+    li.textContent = spot.name;
+    li.addEventListener('click', function(){
+      moveToSpot(spot);
+    });
+    spotList.appendChild(li);
+  });
+
+  // 검색 기능
+  document.getElementById('searchBox').addEventListener('keyup', function(e){
+    if(e.key === "Enter"){
+      var keyword = e.target.value.trim();
+      var found = spots.find(s => s.name.includes(keyword));
+      if(found){
+        moveToSpot(found);
+      } else {
+        alert("검색 결과가 없습니다.");
+      }
+    }
+  });
+
+  function moveToSpot(spot){
+    map.setView([spot.lat, spot.lon], 14);
+    L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
+  }
+</script>
