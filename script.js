@@ -109,27 +109,50 @@ drawSpots(spots);
 /* 촬영지 검색 */
 
 document.getElementById("searchBox")
+.addEventListener("keypress",function(e){
 
-.addEventListener("keyup",function(e){
+if(e.key==="Enter"){
 
-if(e.key!=="Enter") return;
+var keyword=this.value;
 
-var keyword=this.value.toLowerCase();
+/* 저장된 촬영지 검색 */
 
-var found=spots.find(function(s){
+markers.forEach(function(m){
 
-return s.name.toLowerCase().includes(keyword);
+if(m.spotName.includes(keyword.toLowerCase())){
+map.flyTo(m.getLatLng(),13);
+m.openPopup();
+}
 
 });
 
-if(found){
+/* 지도 지명 검색 */
 
-map.flyTo([found.lat,found.lng],13);
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+keyword)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.length>0){
+
+var lat=data[0].lat;
+var lon=data[0].lon;
+
+map.flyTo([lat,lon],13);
+
+L.marker([lat,lon])
+.addTo(map)
+.bindPopup(keyword)
+.openPopup();
 
 }
 
 });
 
+}
+
+});
 
 /* 카테고리 필터 */
 
