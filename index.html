@@ -54,15 +54,59 @@
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  // 지도 초기화
-  var map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 좌표 예시
+<!-- SunCalc JS (태양 위치 계산 라이브러리) -->
+<script src="https://unpkg.com/suncalc/suncalc.js"></script>
 
-  // 기본 타일 레이어 추가
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+<script>
+  // 지도 초기화 (기본 서울 좌표)
+  var map = L.map('map').setView([37.5665, 126.9780], 13);
+
+  // 기본 타일 레이어
+  var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
   }).addTo(map);
+
+  // 지도 전환 버튼 (위성 지도)
+  var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap HOT'
+  });
+
+  document.getElementById('satBtn').addEventListener('click', function() {
+    if (map.hasLayer(osmLayer)) {
+      map.removeLayer(osmLayer);
+      satLayer.addTo(map);
+    } else {
+      map.removeLayer(satLayer);
+      osmLayer.addTo(map);
+    }
+  });
+
+  // 현재위치 버튼
+  document.getElementById('locBtn').addEventListener('click', function() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        map.setView([lat, lon], 15);
+        L.marker([lat, lon]).addTo(map).bindPopup("현재 위치").openPopup();
+      }, function(err) {
+        alert("위치 정보를 가져올 수 없습니다: " + err.message);
+      });
+    } else {
+      alert("브라우저에서 위치 정보를 지원하지 않습니다.");
+    }
+  });
+
+  // 일출 방향 버튼
+  document.getElementById('sunBtn').addEventListener('click', function() {
+    var center = map.getCenter();
+    var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
+    var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
+    var angle = sunrisePos.azimuth * 180 / Math.PI; // 방위각 (도 단위)
+    alert("오늘 일출 방향은 대략 " + Math.round(angle) + "° 입니다.");
+  });
 </script>
 
 </body>
