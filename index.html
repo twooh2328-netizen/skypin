@@ -11,7 +11,7 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 
-/* 화면 기본 */
+/* 기본 */
 
 html,body{
 height:100%;
@@ -24,7 +24,7 @@ width:100%;
 height:100%;
 }
 
-/* 메뉴 버튼 */
+/* 메뉴 */
 
 #menuBtn{
 position:absolute;
@@ -32,9 +32,9 @@ top:15px;
 left:10px;
 z-index:1200;
 background:white;
-padding:10px 14px;
-border-radius:10px;
-font-size:22px;
+padding:12px 16px;
+border-radius:12px;
+font-size:24px;
 cursor:pointer;
 box-shadow:0 0 6px rgba(0,0,0,0.3);
 }
@@ -48,20 +48,20 @@ left:50%;
 transform:translateX(-50%);
 z-index:1000;
 background:white;
-padding:12px;
-border-radius:12px;
+padding:14px;
+border-radius:14px;
 box-shadow:0 0 10px rgba(0,0,0,0.25);
-width:340px;
+width:360px;
 text-align:center;
 }
 
 #searchBox{
 width:95%;
-padding:12px;
+padding:14px;
 font-size:18px;
-border-radius:6px;
+border-radius:8px;
 border:1px solid #ccc;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 /* 버튼 */
@@ -69,13 +69,13 @@ margin-bottom:8px;
 #buttons{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:8px;
+gap:10px;
 }
 
 #buttons button{
-padding:12px;
+padding:14px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#f2f2f2;
 font-size:16px;
 cursor:pointer;
@@ -85,7 +85,7 @@ cursor:pointer;
 background:#e5e5e5;
 }
 
-/* 촬영지 패널 */
+/* 패널 */
 
 #panel{
 position:absolute;
@@ -101,40 +101,47 @@ display:none;
 }
 
 #panel h3{
-margin:10px;
+margin:12px;
 }
 
 #spotList{
 list-style:none;
 padding:0;
+margin:0;
 }
 
 #spotList li{
-padding:12px;
+padding:14px;
 border-bottom:1px solid #ddd;
 cursor:pointer;
 }
 
-/* 모바일 */
+/* 모바일 UI 확대 */
 
 @media (max-width:768px){
 
 #topBar{
 width:95%;
+padding:16px;
 }
 
 #searchBox{
 font-size:20px;
-padding:14px;
+padding:16px;
 }
 
 #buttons button{
 font-size:18px;
-padding:14px;
+padding:16px;
 }
 
 #panel{
-width:80%;
+width:85%;
+}
+
+#menuBtn{
+font-size:26px;
+padding:12px 16px;
 }
 
 }
@@ -178,16 +185,22 @@ width:80%;
 
 /* 지도 생성 */
 
-var map = L.map("map").setView([37.5665,126.9780],8);
+var map=L.map("map").setView([37.5665,126.9780],8);
+
+/* 지도 오류 방지 */
+
+setTimeout(function(){
+map.invalidateSize();
+},500);
 
 /* 지도 타일 */
 
-var normal = L.tileLayer(
+var normal=L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {maxZoom:19}
 ).addTo(map);
 
-var satellite = L.tileLayer(
+var satellite=L.tileLayer(
 "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 {maxZoom:19}
 );
@@ -198,7 +211,7 @@ var sat=false;
 
 var droneIcon=L.icon({
 iconUrl:"https://cdn-icons-png.flaticon.com/512/854/854878.png",
-iconSize:[30,30]
+iconSize:[32,32]
 });
 
 /* 저장 데이터 */
@@ -219,7 +232,7 @@ function saveSpots(){
 localStorage.setItem("skypin_spots",JSON.stringify(spots));
 }
 
-/* 마커 */
+/* 마커 생성 */
 
 function addMarker(spot){
 
@@ -233,7 +246,7 @@ markers.push(marker);
 
 }
 
-/* 리스트 */
+/* 목록 */
 
 function updateList(){
 
