@@ -71,8 +71,7 @@
   <input id="searchBox" placeholder="촬영지 검색 (Enter)">
   <div id="buttons">
     <button id="locBtn">📍 현재위치</button>
-    <button id="nfBtn">🚫 비행금지</button>
-    <button id="flyBtn">🚁 비행가능</button>
+    <button id="addSpotBtn">➕ 촬영지 등록</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
     <button id="listBtn">📑 촬영지 목록</button>
@@ -92,11 +91,7 @@
   var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png');
 
-  // 좌표 변수
-  var nfZone = [37.5509, 126.9903]; // 남산
-  var flyZone = [37.1710, 126.5720]; // 제부도
-
-  // 촬영지 목록 (20곳)
+  // 촬영지 목록 (20곳 기본)
   var spots = [
     {name: "제부도", lat: 37.1710, lon: 126.5720},
     {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
@@ -120,16 +115,20 @@
     {name: "태안 꽃지해변", lat: 36.4930, lon: 126.3310}
   ];
 
-  // 목록 표시
-  var spotList = document.getElementById('spotList');
-  spots.forEach(function(spot){
-    var li = document.createElement('li');
-    li.textContent = spot.name;
-    li.addEventListener('click', function(){
-      moveToSpot(spot);
+  // 목록 표시 함수
+  function refreshSpotList() {
+    var spotList = document.getElementById('spotList');
+    spotList.innerHTML = "";
+    spots.forEach(function(spot){
+      var li = document.createElement('li');
+      li.textContent = spot.name;
+      li.addEventListener('click', function(){
+        moveToSpot(spot);
+      });
+      spotList.appendChild(li);
     });
-    spotList.appendChild(li);
-  });
+  }
+  refreshSpotList();
 
   // 검색 기능
   document.getElementById('searchBox').addEventListener('keyup', function(e){
@@ -149,7 +148,7 @@
     L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
   }
 
-  // 현재위치
+  // 현재위치 버튼
   document.getElementById('locBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -161,18 +160,24 @@
     }
   });
 
-  // 비행금지 버튼
-  document.getElementById('nfBtn').addEventListener('click', function() {
-    map.setView(nfZone, 14);
-    L.circle(nfZone, {color:'red', fillColor:'#f03', fillOpacity:0.3, radius:800}).addTo(map);
-    L.marker(nfZone).addTo(map).bindPopup("남산 비행금지 구역").openPopup();
-  });
-
-  // 비행가능 버튼
-  document.getElementById('flyBtn').addEventListener('click', function() {
-    map.setView(flyZone, 14);
-    L.circle(flyZone, {color:'green', fillColor:'#0f3', fillOpacity:0.3, radius:800}).addTo(map);
-    L.marker(flyZone).addTo(map).bindPopup("제부도 비행가능 구역").openPopup();
+  // 촬영지 등록 버튼 (내 위치와 연동)
+  document.getElementById('addSpotBtn').addEventListener('click', function() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        var name = prompt("촬영지 이름을 입력하세요:");
+        if(name) {
+          var newSpot = {name: name, lat: lat, lon: lon};
+          spots.push(newSpot);
+          refreshSpotList();
+          L.marker([lat, lon]).addTo(map).bindPopup(name).openPopup();
+          alert("새 촬영지가 등록되었습니다!");
+        }
+      });
+    } else {
+      alert("현재 위치를 가져올 수 없습니다.");
+    }
   });
 
    // 일출 방향
