@@ -54,12 +54,15 @@
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- SunCalc JS (태양 위치 계산 라이브러리) -->
+<!-- SunCalc JS -->
 <script src="https://unpkg.com/suncalc/suncalc.js"></script>
 
 <script>
-  // 지도 초기화 (기본 서울 좌표)
-  var map = L.map('map').setView([37.5665, 126.9780], 13);
+  // 죽전탄천 좌표 (예시: 용인시 수지구 죽전동 인근)
+  var jukjeonTancheon = [37.3225, 127.1080];
+
+  // 지도 초기화
+  var map = L.map('map').setView(jukjeonTancheon, 15);
 
   // 기본 타일 레이어
   var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -67,12 +70,13 @@
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  // 지도 전환 버튼 (위성 지도)
+  // 위성 레이어
   var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap HOT'
   });
 
+  // 지도 전환 버튼
   document.getElementById('satBtn').addEventListener('click', function() {
     if (map.hasLayer(osmLayer)) {
       map.removeLayer(osmLayer);
@@ -99,12 +103,23 @@
     }
   });
 
+  // 비행금지 버튼 (죽전탄천 위치로 이동 + 원 표시)
+  document.getElementById('nfBtn').addEventListener('click', function() {
+    map.setView(jukjeonTancheon, 15);
+    L.circle(jukjeonTancheon, {
+      color: 'red',
+      fillColor: '#f03',
+      fillOpacity: 0.3,
+      radius: 500
+    }).addTo(map).bindPopup("죽전탄천 비행금지 구역");
+  });
+
   // 일출 방향 버튼
   document.getElementById('sunBtn').addEventListener('click', function() {
     var center = map.getCenter();
     var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
     var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
-    var angle = sunrisePos.azimuth * 180 / Math.PI; // 방위각 (도 단위)
+    var angle = sunrisePos.azimuth * 180 / Math.PI;
     alert("오늘 일출 방향은 대략 " + Math.round(angle) + "° 입니다.");
   });
 </script>
