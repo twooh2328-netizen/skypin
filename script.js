@@ -85,8 +85,9 @@ var marker=L.marker(
 
 ).addTo(map);
 
-marker.bindPopup(
+marker.spotName = s.name.toLowerCase();   // ⭐ 이 줄 추가
 
+marker.bindPopup(
 "<b>"+s.name+"</b><br>"+
 
 s.description+
