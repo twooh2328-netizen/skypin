@@ -8,12 +8,12 @@
   <style>
     html,body{height:100%;margin:0;font-family:Arial;}
     #map{width:100%;height:100%;}
-    #topBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;background:white;padding:14px;border-radius:14px;box-shadow:0 0 10px rgba(0,0,0,0.25);width:360px;text-align:center;}
+    #topBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;background:white;padding:14px;border-radius:14px;box-shadow:0 0 10px rgba(0,0,0,0.25);width:400px;text-align:center;}
     #searchBox{width:95%;padding:14px;font-size:18px;border-radius:8px;border:1px solid #ccc;margin-bottom:10px;}
     #buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     #buttons button{padding:14px;border:none;border-radius:10px;background:#f2f2f2;font-size:16px;cursor:pointer;}
     #buttons button:hover{background:#e5e5e5;}
-    #panel{position:absolute;left:0;top:0;width:260px;height:100%;background:white;z-index:1100;overflow:auto;box-shadow:2px 0 8px rgba(0,0,0,0.3);}
+    #panel{position:absolute;left:0;top:0;width:260px;height:100%;background:white;z-index:1100;overflow:auto;box-shadow:2px 0 8px rgba(0,0,0,0.3);display:none;}
     #panel h3{margin:12px;}
     #spotList{list-style:none;padding:0;margin:0;}
     #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;}
@@ -34,6 +34,7 @@
     <button id="flyBtn">🚁 비행가능</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
+    <button id="listBtn">📑 촬영지 목록</button> <!-- 새 버튼 -->
   </div>
 </div>
 
@@ -143,6 +144,16 @@
     } else {
       map.removeLayer(satLayer);
       osmLayer.addTo(map);
+    }
+  });
+
+  // 촬영지 목록 버튼 토글
+  document.getElementById('listBtn').addEventListener('click', function() {
+    var panel = document.getElementById('panel');
+    if (panel.style.display === "none" || panel.style.display === "") {
+      panel.style.display = "block";
+    } else {
+      panel.style.display = "none";
     }
   });
 </script>
