@@ -21,13 +21,6 @@
     #panel h3{margin:12px;}
     #spotList{list-style:none;padding:0;margin:0;}
     #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;}
-    @media (max-width:768px){
-      #topBar{width:95%;padding:16px;}
-      #searchBox{font-size:20px;padding:16px;}
-      #buttons button{font-size:18px;padding:16px;}
-      #panel{width:85%;}
-      #menuBtn{font-size:26px;padding:12px 16px;}
-    }
   </style>
 </head>
 <body>
@@ -103,7 +96,7 @@
     }
   });
 
-  // 비행금지 버튼
+  // 비행금지 버튼 (죽전탄천 위치로 이동 + 빨간 원 + 마커 표시)
   document.getElementById('nfBtn').addEventListener('click', function() {
     map.setView(jukjeonTancheon, 15);
     L.circle(jukjeonTancheon, {
@@ -111,7 +104,22 @@
       fillColor: '#f03',
       fillOpacity: 0.3,
       radius: 500
-    }).addTo(map).bindPopup("죽전탄천 비행금지 구역");
+    }).addTo(map);
+    L.marker(jukjeonTancheon, {icon: L.icon({iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png'})})
+      .addTo(map).bindPopup("죽전탄천 비행금지 구역").openPopup();
+  });
+
+  // 비행가능 버튼 (죽전탄천 위치로 이동 + 녹색 원 + 마커 표시)
+  document.getElementById('flyBtn').addEventListener('click', function() {
+    map.setView(jukjeonTancheon, 15);
+    L.circle(jukjeonTancheon, {
+      color: 'green',
+      fillColor: '#0f3',
+      fillOpacity: 0.3,
+      radius: 500
+    }).addTo(map);
+    L.marker(jukjeonTancheon, {icon: L.icon({iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png'})})
+      .addTo(map).bindPopup("죽전탄천 비행가능 구역").openPopup();
   });
 
   // 일출 방향 버튼 (지도에 선 표시)
@@ -121,7 +129,7 @@
     var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
     var angle = sunrisePos.azimuth;
 
-    var length = 0.01; // 약 1km
+    var length = 0.02; // 약 2km
     var dx = length * Math.cos(angle);
     var dy = length * Math.sin(angle);
 
