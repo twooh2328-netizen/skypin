@@ -106,4 +106,46 @@
   // 비행금지 버튼
   document.getElementById('nfBtn').addEventListener('click', function() {
     map.setView(nfZone, 14);
-    L.circle
+    L.circle(nfZone, {color:'red', fillColor:'#f03', fillOpacity:0.3, radius:800}).addTo(map);
+    L.marker(nfZone).addTo(map).bindPopup("남산 비행금지 구역").openPopup();
+  });
+
+  // 비행가능 버튼
+  document.getElementById('flyBtn').addEventListener('click', function() {
+    map.setView(flyZone, 14);
+    L.circle(flyZone, {color:'green', fillColor:'#0f3', fillOpacity:0.3, radius:800}).addTo(map);
+    L.marker(flyZone).addTo(map).bindPopup("제부도 비행가능 구역").openPopup();
+  });
+
+  // 일출 방향
+  document.getElementById('sunBtn').addEventListener('click', function() {
+    var center = map.getCenter();
+    var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
+    var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
+    var angle = sunrisePos.azimuth;
+
+    var length = 0.05;
+    var dx = length * Math.cos(angle);
+    var dy = length * Math.sin(angle);
+
+    var endLat = center.lat + dy;
+    var endLon = center.lng + dx;
+
+    L.polyline([[center.lat, center.lng], [endLat, endLon]], {color: 'orange'}).addTo(map)
+      .bindPopup("일출 방향").openPopup();
+  });
+
+  // 지도 전환
+  document.getElementById('satBtn').addEventListener('click', function() {
+    if (map.hasLayer(osmLayer)) {
+      map.removeLayer(osmLayer);
+      satLayer.addTo(map);
+    } else {
+      map.removeLayer(satLayer);
+      osmLayer.addTo(map);
+    }
+  });
+</script>
+
+</body>
+</html>
