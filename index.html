@@ -120,7 +120,7 @@
   var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png');
 
-    var spots = [
+  var spots = [
     {name: "제부도", lat: 37.1710, lon: 126.5720},
     {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
     {name: "서울숲", lat: 37.5446, lon: 127.0376},
@@ -168,7 +168,7 @@
           var delBtn = document.createElement('span');
           delBtn.textContent =
 
-         // 검색 기능
+  // 검색 기능
   document.getElementById('searchBox').addEventListener('keyup', function(e){
     if(e.key === "Enter"){
       var keyword = e.target.value.trim();
@@ -193,7 +193,7 @@
     }
   });
 
-    // 내 촬영지 등록
+  // 내 촬영지 등록
   document.getElementById('addSpotBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -270,5 +270,4 @@
 </script>
 </body>
 </html>
-        
-                        
+          
