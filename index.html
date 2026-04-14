@@ -2,65 +2,63 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>SkyPin Drone Map - 2단계 완성본</title>
+  <title>SkyPin Drone Map - 완성본</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     html, body {height:100%;margin:0;}
     #map {width:100%;height:100%;}
+
+    /* 메뉴 버튼 */
     #toggleMenu {
-      position:absolute;bottom:20px;right:20px;z-index:1200;
-      padding:12px 18px;font-size:18px;border:none;border-radius:8px;
+      position:absolute;top:20px;left:20px;z-index:1200;
+      padding:10px 15px;font-size:16px;border:none;border-radius:6px;
       background:#f2f2f2;cursor:pointer;
     }
-#slideMenu {
-  position:absolute;
-  top:0;
-  left:-250px;   /* 처음엔 화면 왼쪽 밖 */
-  width:250px;   /* 패널 너비 줄임 */
-  height:100%;   /* 세로 전체 */
-  background:white;
-  transition:left 0.3s ease;
-  z-index:1100;
-  padding:10px;
-  overflow-y:auto; /* 목록이 길면 스크롤 */
-}
-#slideMenu.open {left:0;} /* 열릴 때 왼쪽에서 나타남 */
 
-#closeMenu {
-  display:block;
-  margin-bottom:10px;
-  padding:8px;
-  font-size:14px;
-  border:none;
-  border-radius:6px;
-  background:#ddd;
-  cursor:pointer;
-}
+    /* 왼쪽 패널 */
+    #slideMenu {
+      position:absolute;
+      top:0;
+      left:-250px;   /* 처음엔 화면 왼쪽 밖 */
+      width:250px;   /* 패널 너비 */
+      height:100%;   /* 세로 전체 */
+      background:white;
+      transition:left 0.3s ease;
+      z-index:1100;
+      padding:10px;
+      overflow-y:auto; /* 목록이 길면 스크롤 */
+    }
+    #slideMenu.open {left:0;} /* 열릴 때 왼쪽에서 나타남 */
 
-  transform:translateY(0); /* 열릴 때 올라옴 */
-}
+    /* 닫기 버튼 */
+    #closeMenu {
+      display:block;
+      margin-bottom:10px;
+      padding:8px;
+      font-size:14px;
+      border:none;
+      border-radius:6px;
+      background:#ddd;
+      cursor:pointer;
+    }
 
-#buttons {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-}
-#buttons button {
-  padding:10px;
-  font-size:14px;
-  border:none;
-  border-radius:6px;
-  background:#f2f2f2;
-  cursor:pointer;
-}
-  
+    /* 버튼 영역 */
+    #buttons {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+    #buttons button {
+      padding:10px;font-size:14px;border:none;border-radius:6px;
+      background:#f2f2f2;cursor:pointer;
+    }
+
+    /* 검색창 */
     #searchBox {
       position:absolute;top:20px;left:50%;transform:translateX(-50%);
-      z-index:1200;width:80%;padding:10px;font-size:14px;
+      z-index:1200;width:60%;padding:8px;font-size:14px;
       border-radius:6px;border:1px solid #ccc;
     }
+
+    /* 명소 목록 */
     #spotList {margin-top:10px;}
     #spotList li {padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
   </style>
@@ -85,9 +83,6 @@
   <!-- 지도 -->
   <div id="map"></div>
 
-  <!-- 지도 -->
-  <div id="map"></div>
-
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -95,12 +90,15 @@
     var map = L.map('map').setView([37.5446,127.0376],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // 메뉴 토글 기능
+    // 메뉴 열기 버튼
     document.getElementById('toggleMenu').addEventListener('click', function(){
-      document.getElementById('slideMenu').classList.toggle('open');
+      document.getElementById('slideMenu').classList.add('open');
     });
 
-    // 2단계: 명소 데이터 + 검색 + 현재 위치 버튼 추가
+    // 닫기 버튼
+    document.getElementById('closeMenu').addEventListener('click', function(){
+      document.getElementById('slideMenu').classList.remove('open');
+    });
 
     // 명소 데이터 (20개)
     var spots = [
