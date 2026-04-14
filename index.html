@@ -11,7 +11,7 @@
 
     /* 메뉴 버튼: 화면 오른쪽 하단 고정 */
     #toggleMenu {
-      position:fixed;   /* 화면 기준으로 고정 */
+      position:fixed;
       bottom:20px;
       right:20px;
       z-index:1200;
@@ -21,6 +21,19 @@
       border-radius:6px;
       background:#f2f2f2;
       cursor:pointer;
+    }
+
+    /* 검색창: 화면 오른쪽 상단 고정 */
+    #searchBox {
+      position:fixed;
+      top:20px;
+      right:20px;
+      z-index:1200;
+      width:250px;
+      padding:8px;
+      font-size:14px;
+      border-radius:6px;
+      border:1px solid #ccc;
     }
 
     /* 왼쪽 패널 */
@@ -34,14 +47,14 @@
       transition:left 0.3s ease;
       z-index:1100;
       padding:10px;
-      display:flex;             /* 닫기 버튼을 아래로 밀기 위해 flex 사용 */
+      display:flex;
       flex-direction:column;
     }
     #slideMenu.open {left:0;}
 
     /* 닫기 버튼: 패널 맨 아래 */
     #closeMenu {
-      margin-top:auto;          /* 항상 패널 맨 아래 */
+      margin-top:auto;
       padding:8px;
       font-size:14px;
       border:none;
@@ -56,21 +69,15 @@
       background:#f2f2f2;cursor:pointer;
     }
 
-    #searchBox {
-      position:absolute;top:20px;left:50%;transform:translateX(-50%);
-      z-index:1200;width:60%;padding:8px;font-size:14px;
-      border-radius:6px;border:1px solid #ccc;
-    }
-
     #spotList {margin-top:10px;}
     #spotList li {padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
   </style>
 </head>
 <body>
-  <!-- 메뉴 버튼: 화면 오른쪽 하단 -->
+  <!-- 메뉴 버튼 -->
   <button id="toggleMenu">☰ 메뉴</button>
 
-  <!-- 검색창 -->
+  <!-- 검색창: 오른쪽 상단 -->
   <input id="searchBox" placeholder="촬영지 검색 (Enter)">
 
   <!-- 왼쪽 패널 -->
@@ -80,7 +87,7 @@
       <button id="listBtn">📑 명소 목록</button>
     </div>
     <ul id="spotList"></ul>
-    <button id="closeMenu">닫기 ✖</button> <!-- 패널 맨 아래 -->
+    <button id="closeMenu">닫기 ✖</button>
   </div>
 
   <!-- 지도 -->
