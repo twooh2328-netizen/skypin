@@ -144,8 +144,11 @@
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
         map.setView([lat, lon], 15);
-        L.marker
-          document.getElementById('addSpotBtn').addEventListener('click', function() {
+        L.marker([lat, lon]).addTo(map).bindPopup("현재 위치").openPopup();
+      });
+    }
+  });
+  document.getElementById('addSpotBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
         var lat = pos.coords.latitude;
@@ -190,13 +193,12 @@
         var lon = pos.coords.longitude;
         var times = SunCalc.getTimes(new Date(), lat, lon);
         var azimuth = SunCalc.getPosition(times.sunrise, lat, lon).azimuth; 
-        // azimuth는 라디안, 북쪽=0, 동쪽=90도
-        var angle = azimuth * 180 / Math.PI;
-        var length = 5000; // 5km 길이로 표시
+        // azimuth는 라디안, 북쪽=0
+        var length = 5000; // 5km 길이
         var dx = length * Math.sin(azimuth);
         var dy = length * Math.cos(azimuth);
-        var endLat = lat + (dy/111320); // 위도 변환
-        var endLon = lon + (dx/(111320*Math.cos(lat*Math.PI/180))); // 경도 변환
+        var endLat = lat + (dy/111320);
+        var endLon = lon + (dx/(111320*Math.cos(lat*Math.PI/180)));
 
         if(sunriseLine){
           map.removeLayer(sunriseLine);
