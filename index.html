@@ -53,6 +53,7 @@
 
   var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png');
+
   var spots = [
     {name: "제부도", lat: 37.1710, lon: 126.5720},
     {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
@@ -126,7 +127,8 @@
     map.setView([spot.lat, spot.lon], 14);
     L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
   }
-  document.getElementById('searchBox').addEventListener('keyup', function(e){
+
+    document.getElementById('searchBox').addEventListener('keyup', function(e){
     if(e.key === "Enter"){
       var keyword = e.target.value.trim();
       var found = spots.find(s => s.name.includes(keyword)) || mySpots.find(s => s.name.includes(keyword));
@@ -148,7 +150,8 @@
       });
     }
   });
-  document.getElementById('addSpotBtn').addEventListener('click', function() {
+
+    document.getElementById('addSpotBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
         var lat = pos.coords.latitude;
