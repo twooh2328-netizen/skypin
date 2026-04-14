@@ -33,11 +33,11 @@
   <input id="searchBox" placeholder="촬영지 검색 (Enter)">
   <div id="buttons">
     <button id="locBtn">📍 현재위치</button>
-    <button id="addSpotBtn">➕ 촬영지 등록</button>
+    <button id="addSpotBtn">➕ 내 촬영지 등록</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
     <button id="listBtn">📑 드론 촬영 명소</button>
-    <button id="myListBtn">📑 내 촬영지 등록</button>
+    <button id="myListBtn">📑 내 촬영지 목록</button>
   </div>
 </div>
 
@@ -57,8 +57,22 @@
     {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
     {name: "서울숲", lat: 37.5446, lon: 127.0376},
     {name: "부산 광안대교", lat: 35.1531, lon: 129.1185},
-    {name: "제주 성산일출봉", lat: 33.4589, lon: 126.9425}
-    // … 필요시 추가
+    {name: "제주 성산일출봉", lat: 33.4589, lon: 126.9425},
+    {name: "속초 영금정", lat: 38.2070, lon: 128.5910},
+    {name: "경주 불국사", lat: 35.7902, lon: 129.3325},
+    {name: "안동 하회마을", lat: 36.5400, lon: 128.5180},
+    {name: "인천 송도 센트럴파크", lat: 37.3925, lon: 126.6345},
+    {name: "남해 독일마을", lat: 34.8370, lon: 127.8920},
+    {name: "담양 죽녹원", lat: 35.3210, lon: 126.9870},
+    {name: "순천만 습지", lat: 34.9330, lon: 127.5000},
+    {name: "보성 녹차밭", lat: 34.7510, lon: 127.0850},
+    {name: "강릉 경포대", lat: 37.7950, lon: 128.8960},
+    {name: "춘천 소양강 스카이워크", lat: 37.8940, lon: 127.7340},
+    {name: "포항 호미곶", lat: 36.0670, lon: 129.5690},
+    {name: "울산 대왕암", lat: 35.4980, lon: 129.4360},
+    {name: "여수 돌산대교", lat: 34.7390, lon: 127.7510},
+    {name: "군산 새만금 방조제", lat: 35.9000, lon: 126.7000},
+    {name: "태안 꽃지해변", lat: 36.4930, lon: 126.3310}
   ];
 
   var mySpots = [];
@@ -69,7 +83,7 @@
     spotList.innerHTML = "";
 
     if(showMyList){
-      panelTitle.textContent = "내 촬영지 등록";
+      panelTitle.textContent = "내 촬영지 목록";
       if(mySpots.length === 0){
         var li = document.createElement('li');
         li.textContent = "등록된 촬영지가 없습니다.";
@@ -137,43 +151,4 @@
   document.getElementById('addSpotBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
-        var lat = pos.coords.latitude;
-        var lon = pos.coords.longitude;
-        var name = prompt("촬영지 이름을 입력하세요:");
-        if(name) {
-          var newSpot = {name: name, lat: lat, lon: lon};
-          mySpots.push(newSpot);
-          refreshSpotList(true);
-          moveToSpot(newSpot);
-        }
-      });
-    }
-  });
-
-  document.getElementById('listBtn').addEventListener('click', function(){
-    document.getElementById('panel').style.display = "block";
-    refreshSpotList(false);
-  });
-
-  document.getElementById('myListBtn').addEventListener('click', function(){
-    document.getElementById('panel').style.display = "block";
-    refreshSpotList(true);
-  });
-
-  document.getElementById('satBtn').addEventListener('click', function(){
-    if(map.hasLayer(osmLayer)){
-      map.removeLayer(osmLayer);
-      satLayer.addTo(map);
-    } else {
-      map.removeLayer(satLayer);
-      osmLayer.addTo(map);
-    }
-  });
-
-  document.getElementById('sunBtn').addEventListener('click', function(){
-    var times = SunCalc.getTimes(new Date(), map.getCenter().lat, map.getCenter().lng);
-    alert("오늘 일출 시간: " + times.sunrise.getHours() + ":" + times.sunrise.getMinutes());
-  });
-</script>
-</body>
-</html>
+        var lat = pos.coords
