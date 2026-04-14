@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>SkyPin Drone Map - 완성본</title>
+  <title>SkyPin Drone Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -90,12 +90,12 @@
     var map = L.map('map').setView([37.5446,127.0376],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // 메뉴 열기 버튼
+    // 메뉴 열기 버튼 → 항상 열기만 담당
     document.getElementById('toggleMenu').addEventListener('click', function(){
       document.getElementById('slideMenu').classList.add('open');
     });
 
-    // 닫기 버튼
+    // 닫기 버튼 → 닫기 담당
     document.getElementById('closeMenu').addEventListener('click', function(){
       document.getElementById('slideMenu').classList.remove('open');
     });
