@@ -4,15 +4,14 @@
   <meta charset="utf-8">
   <title>SkyPin Drone Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     html, body {height:100%;margin:0;}
     #map {width:100%;height:100%;}
 
-    /* 메뉴 버튼 (왼쪽 위) */
+    /* 메뉴 버튼 (화면 오른쪽 아래) */
     #toggleMenu {
-      position:absolute;top:20px;left:20px;z-index:1200;
+      position:absolute;bottom:20px;right:20px;z-index:1200;
       padding:10px 15px;font-size:16px;border:none;border-radius:6px;
       background:#f2f2f2;cursor:pointer;
     }
@@ -21,21 +20,21 @@
     #slideMenu {
       position:absolute;
       top:0;
-      left:-250px;   /* 처음엔 화면 왼쪽 밖 */
-      width:250px;   /* 패널 너비 */
-      height:100%;   /* 세로 전체 */
+      left:-250px;
+      width:250px;
+      height:100%;
       background:white;
       transition:left 0.3s ease;
       z-index:1100;
       padding:10px;
-      overflow-y:auto; /* 목록이 길면 스크롤 */
+      overflow-y:auto;
     }
-    #slideMenu.open {left:0;} /* 열릴 때 왼쪽에서 나타남 */
+    #slideMenu.open {left:0;}
 
-    /* 닫기 버튼 (패널 안 맨 위) */
+    /* 닫기 버튼 (패널 아래쪽) */
     #closeMenu {
       display:block;
-      margin-bottom:10px;
+      margin-top:20px;
       padding:8px;
       font-size:14px;
       border:none;
@@ -44,21 +43,18 @@
       cursor:pointer;
     }
 
-    /* 버튼 영역 */
     #buttons {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
     #buttons button {
       padding:10px;font-size:14px;border:none;border-radius:6px;
       background:#f2f2f2;cursor:pointer;
     }
 
-    /* 검색창 */
     #searchBox {
       position:absolute;top:20px;left:50%;transform:translateX(-50%);
       z-index:1200;width:60%;padding:8px;font-size:14px;
       border-radius:6px;border:1px solid #ccc;
     }
 
-    /* 명소 목록 */
     #spotList {margin-top:10px;}
     #spotList li {padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
   </style>
@@ -70,24 +66,21 @@
   <!-- 검색창 -->
   <input id="searchBox" placeholder="촬영지 검색 (Enter)">
 
-  <!-- 왼쪽 패널 메뉴 -->
+  <!-- 왼쪽 패널 -->
   <div id="slideMenu">
-    <button id="closeMenu">닫기 ✖</button>
     <div id="buttons">
       <button id="locBtn">📍 현재위치</button>
       <button id="listBtn">📑 명소 목록</button>
-      <button id="clearListBtn">🗑 목록 지우기</button>
     </div>
     <ul id="spotList"></ul>
+    <button id="closeMenu">닫기 ✖</button>
   </div>
 
   <!-- 지도 -->
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // 지도 초기화
     var map = L.map('map').setView([37.5446,127.0376],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -125,27 +118,28 @@
       {name:"태안 꽃지해변",lat:36.4930,lon:126.3310}
     ];
 
-    // 특정 명소로 이동
     function moveToSpot(spot){
       map.setView([spot.lat, spot.lon], 14);
       L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
     }
 
-    // 명소 목록 버튼
+    // 명소 목록 버튼 → 토글
+    var listVisible = false;
     document.getElementById('listBtn').addEventListener('click', function(){
       var spotList=document.getElementById('spotList');
-      spotList.innerHTML="";
-      spots.forEach(function(spot){
-        var li=document.createElement('li');
-        li.textContent=spot.name;
-        li.onclick=function(){moveToSpot(spot);};
-        spotList.appendChild(li);
-      });
-    });
-
-    // 목록 지우기 버튼
-    document.getElementById('clearListBtn').addEventListener('click', function(){
-      document.getElementById('spotList').innerHTML="";
+      if(listVisible){
+        spotList.innerHTML="";
+        listVisible=false;
+      } else {
+        spotList.innerHTML="";
+        spots.forEach(function(spot){
+          var li=document.createElement('li');
+          li.textContent=spot.name;
+          li.onclick=function(){moveToSpot(spot);};
+          spotList.appendChild(li);
+        });
+        listVisible=true;
+      }
     });
 
     // 검색 기능
