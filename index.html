@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title>SkyPin Drone Map - 1단계</title>
+  <title>SkyPin Drone Map - 2단계 완성본</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -15,19 +15,38 @@
       background:#f2f2f2;cursor:pointer;
     }
     #slideMenu {
-      position:absolute;bottom:-200px;left:0;width:100%;background:white;
+      position:absolute;bottom:-250px;left:0;width:100%;background:white;
       transition:bottom 0.3s ease;z-index:1100;padding:10px;
     }
     #slideMenu.open {bottom:0;}
+    #buttons {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+    #buttons button {
+      padding:10px;font-size:14px;border:none;border-radius:6px;
+      background:#f2f2f2;cursor:pointer;
+    }
+    #searchBox {
+      position:absolute;top:20px;left:50%;transform:translateX(-50%);
+      z-index:1200;width:80%;padding:10px;font-size:14px;
+      border-radius:6px;border:1px solid #ccc;
+    }
+    #spotList {margin-top:10px;}
+    #spotList li {padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
   </style>
 </head>
 <body>
   <!-- 메뉴 버튼 -->
   <button id="toggleMenu">☰ 메뉴</button>
 
+  <!-- 검색창 -->
+  <input id="searchBox" placeholder="촬영지 검색 (Enter)">
+
   <!-- 슬라이드 메뉴 -->
   <div id="slideMenu">
-    <p>여기에 버튼들을 추가할 수 있습니다.</p>
+    <div id="buttons">
+      <button id="locBtn">📍 현재위치</button>
+      <button id="listBtn">📑 명소 목록</button>
+    </div>
+    <ul id="spotList"></ul>
   </div>
 
   <!-- 지도 -->
@@ -44,6 +63,7 @@
     document.getElementById('toggleMenu').addEventListener('click', function(){
       document.getElementById('slideMenu').classList.toggle('open');
     });
+
     // 2단계: 명소 데이터 + 검색 + 현재 위치 버튼 추가
 
     // 명소 데이터 (20개)
@@ -109,9 +129,6 @@
         alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
       }
     });
-
   </script>
 </body>
 </html>
-    
-    
