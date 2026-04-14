@@ -32,18 +32,6 @@
     }
     #slideMenu.open {left:0;} /* 열릴 때 왼쪽에서 나타남 */
 
-    /* 닫기 버튼 */
-    #closeMenu {
-      display:block;
-      margin-bottom:10px;
-      padding:8px;
-      font-size:14px;
-      border:none;
-      border-radius:6px;
-      background:#ddd;
-      cursor:pointer;
-    }
-
     /* 버튼 영역 */
     #buttons {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
     #buttons button {
@@ -72,7 +60,6 @@
 
   <!-- 왼쪽 패널 메뉴 -->
   <div id="slideMenu">
-    <button id="closeMenu">닫기 ✖</button>
     <div id="buttons">
       <button id="locBtn">📍 현재위치</button>
       <button id="listBtn">📑 명소 목록</button>
@@ -90,14 +77,9 @@
     var map = L.map('map').setView([37.5446,127.0376],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // 메뉴 열기 버튼 → 항상 열기만 담당
+    // 메뉴 버튼 → 열기/닫기 토글
     document.getElementById('toggleMenu').addEventListener('click', function(){
-      document.getElementById('slideMenu').classList.add('open');
-    });
-
-    // 닫기 버튼 → 닫기 담당
-    document.getElementById('closeMenu').addEventListener('click', function(){
-      document.getElementById('slideMenu').classList.remove('open');
+      document.getElementById('slideMenu').classList.toggle('open');
     });
 
     // 명소 데이터 (20개)
