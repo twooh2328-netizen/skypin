@@ -151,22 +151,48 @@
   }
 
   function refreshSpotList(showMyList=false) {
-    var spotList = document.getElementById('spotList');
-    var panelTitle = document.getElementById('panelTitle');
-    spotList.innerHTML = "";
+  var spotList = document.getElementById('spotList');
+  var panelTitle = document.getElementById('panelTitle');
+  spotList.innerHTML = "";
 
-    if(showMyList){
-      panelTitle.textContent = "내 촬영지 목록";
-      if(mySpots.length === 0){
+  if(showMyList){
+    panelTitle.textContent = "내 촬영지 목록";
+    if(mySpots.length === 0){
+      var li = document.createElement('li');
+      li.textContent = "등록된 촬영지가 없습니다.";
+      spotList.appendChild(li);
+    } else {
+      mySpots.forEach(function(spot, index){
         var li = document.createElement('li');
-        li.textContent = "등록된 촬영지가 없습니다.";
+        li.textContent = spot.name;
+        var delBtn = document.createElement('span');
+        delBtn.textContent = "❌";
+        delBtn.className = "deleteBtn";
+        delBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          mySpots.splice(index,1);
+          refreshSpotList(true);
+        });
+        li.appendChild(delBtn);
+        li.addEventListener('click', function(){
+          moveToSpot(spot);
+        });
         spotList.appendChild(li);
-      } else {
-        mySpots.forEach(function(spot, index){
-          var li = document.createElement('li');
-          li.textContent = spot.name;
-          var delBtn = document.createElement('span');
-          delBtn.textContent =
+      });
+    }
+  } else {
+    panelTitle.textContent = "드론 촬영 명소";
+    spots.forEach(function(spot){
+      var li = document.createElement('li');
+      li.textContent = spot.name;
+      li.addEventListener('click', function(){
+        moveToSpot(spot);
+      });
+      spotList.appendChild(li);
+    });
+  }
+}
+
 
   // 검색 기능
   document.getElementById('searchBox').addEventListener('keyup', function(e){
