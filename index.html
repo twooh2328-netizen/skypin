@@ -63,7 +63,7 @@
 <body>
 
 <div id="panel">
-  <h3>촬영지 목록</h3>
+  <h3 id="panelTitle">목록</h3>
   <ul id="spotList"></ul>
 </div>
 
@@ -74,7 +74,8 @@
     <button id="addSpotBtn">➕ 촬영지 등록</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
-    <button id="listBtn">📑 촬영지 목록</button>
+    <button id="listBtn">📑 드론 촬영 명소 목록</button>
+    <button id="myListBtn">📑 내 촬영지 목록</button>
   </div>
 </div>
 
@@ -84,14 +85,13 @@
 <script src="https://unpkg.com/suncalc/suncalc.js"></script>
 
 <script>
-  // 기본 지도 중심 (서울숲)
   var defaultCenter = [37.5446, 127.0376];
   var map = L.map('map').setView(defaultCenter, 12);
 
   var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   var satLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png');
 
-  // 촬영지 목록 (20곳 기본)
+  // 드론 촬영 명소 (기본 목록)
   var spots = [
     {name: "제부도", lat: 37.1710, lon: 126.5720},
     {name: "양양 낙산사", lat: 38.1240, lon: 128.6270},
@@ -115,26 +115,48 @@
     {name: "태안 꽃지해변", lat: 36.4930, lon: 126.3310}
   ];
 
-  // 목록 표시 함수
-  function refreshSpotList() {
+  // 내가 등록한 촬영지
+  var mySpots = [];
+
+  function refreshSpotList(showMyList=false) {
     var spotList = document.getElementById('spotList');
+    var panelTitle = document.getElementById('panelTitle');
     spotList.innerHTML = "";
-    spots.forEach(function(spot){
-      var li = document.createElement('li');
-      li.textContent = spot.name;
-      li.addEventListener('click', function(){
-        moveToSpot(spot);
+
+    if(showMyList){
+      panelTitle.textContent = "내 촬영지 목록";
+      if(mySpots.length === 0){
+        var li = document.createElement('li');
+        li.textContent = "등록된 촬영지가 없습니다.";
+        spotList.appendChild(li);
+      } else {
+        mySpots.forEach(function(spot){
+          var li = document.createElement('li');
+          li.textContent = spot.name;
+          li.addEventListener('click', function(){
+            moveToSpot(spot);
+          });
+          spotList.appendChild(li);
+        });
+      }
+    } else {
+      panelTitle.textContent = "드론 촬영 명소";
+      spots.forEach(function(spot){
+        var li = document.createElement('li');
+        li.textContent = spot.name;
+        li.addEventListener('click', function(){
+          moveToSpot(spot);
+        });
+        spotList.appendChild(li);
       });
-      spotList.appendChild(li);
-    });
+    }
   }
   refreshSpotList();
 
-  // 검색 기능
   document.getElementById('searchBox').addEventListener('keyup', function(e){
     if(e.key === "Enter"){
       var keyword = e.target.value.trim();
-      var found = spots.find(s => s.name.includes(keyword));
+      var found = spots.find(s => s.name.includes(keyword)) || mySpots.find(s => s.name.includes(keyword));
       if(found){
         moveToSpot(found);
       } else {
@@ -148,7 +170,6 @@
     L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
   }
 
-  // 현재위치 버튼
   document.getElementById('locBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -160,7 +181,6 @@
     }
   });
 
-  // 촬영지 등록 버튼 (내 위치와 연동)
   document.getElementById('addSpotBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -169,55 +189,5 @@
         var name = prompt("촬영지 이름을 입력하세요:");
         if(name) {
           var newSpot = {name: name, lat: lat, lon: lon};
-          spots.push(newSpot);
-          refreshSpotList();
-          L.marker([lat, lon]).addTo(map).bindPopup(name).openPopup();
-          alert("새 촬영지가 등록되었습니다!");
-        }
-      });
-    } else {
-      alert("현재 위치를 가져올 수 없습니다.");
-    }
-  });
-
-   // 일출 방향
-  document.getElementById('sunBtn').addEventListener('click', function() {
-    var center = map.getCenter();
-    var times = SunCalc.getTimes(new Date(), center.lat, center.lng);
-    var sunrisePos = SunCalc.getPosition(times.sunrise, center.lat, center.lng);
-    var angle = sunrisePos.azimuth;
-
-    var length = 0.05; // 선 길이
-    var dx = length * Math.cos(angle);
-    var dy = length * Math.sin(angle);
-
-    var endLat = center.lat + dy;
-    var endLon = center.lng + dx;
-
-    L.polyline([[center.lat, center.lng], [endLat, endLon]], {color: 'orange'}).addTo(map)
-      .bindPopup("일출 방향").openPopup();
-  });
-
-  // 지도 전환 버튼
-  document.getElementById('satBtn').addEventListener('click', function() {
-    if (map.hasLayer(osmLayer)) {
-      map.removeLayer(osmLayer);
-      satLayer.addTo(map);
-    } else {
-      map.removeLayer(satLayer);
-      osmLayer.addTo(map);
-    }
-  });
-
-  // 촬영지 목록 토글 버튼
-  document.getElementById('listBtn').addEventListener('click', function() {
-    var panel = document.getElementById('panel');
-    if (panel.style.display === "none" || panel.style.display === "") {
-      panel.style.display = "block";
-    } else {
-      panel.style.display = "none";
-    }
-  });
-</script>
-</body>
-</html>
+          mySpots.push(newSpot);
+          refreshSpotList(true); // 등록 후 내
