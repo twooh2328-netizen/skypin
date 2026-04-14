@@ -14,16 +14,35 @@
       padding:12px 18px;font-size:18px;border:none;border-radius:8px;
       background:#f2f2f2;cursor:pointer;
     }
-    #slideMenu {
-      position:absolute;bottom:-250px;left:0;width:100%;background:white;
-      transition:bottom 0.3s ease;z-index:1100;padding:10px;
-    }
-    #slideMenu.open {bottom:0;}
-    #buttons {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-    #buttons button {
-      padding:10px;font-size:14px;border:none;border-radius:6px;
-      background:#f2f2f2;cursor:pointer;
-    }
+ #slideMenu {
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:white;
+  transform:translateY(100%); /* 처음엔 화면 아래로 내려감 */
+  transition:transform 0.3s ease;
+  z-index:1100;
+  padding:10px;
+}
+#slideMenu.open {
+  transform:translateY(0); /* 열릴 때 올라옴 */
+}
+
+#buttons {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+#buttons button {
+  padding:10px;
+  font-size:14px;
+  border:none;
+  border-radius:6px;
+  background:#f2f2f2;
+  cursor:pointer;
+}
+  
     #searchBox {
       position:absolute;top:20px;left:50%;transform:translateX(-50%);
       z-index:1200;width:80%;padding:10px;font-size:14px;
