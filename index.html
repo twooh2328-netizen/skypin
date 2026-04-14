@@ -145,4 +145,52 @@
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
         map.setView([lat, lon], 15);
-        L.marker([lat, lon]).add
+        L.marker([lat, lon]).addTo(map).bindPopup("현재 위치").openPopup();
+      });
+    }
+  });
+
+  document.getElementById('addSpotBtn').addEventListener('click', function() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lon = pos.coords.longitude;
+        var name = prompt("촬영지 이름을 입력하세요:");
+        if(name) {
+          var newSpot = {name: name, lat: lat, lon: lon};
+          mySpots.push(newSpot);
+          refreshSpotList(true); // 등록 후 내 목록 보기
+          moveToSpot(newSpot);
+        }
+      });
+    }
+  });
+
+  document.getElementById('listBtn').addEventListener('click', function(){
+    document.getElementById('panel').style.display = "block";
+    refreshSpotList(false);
+  });
+
+  document.getElementById('myListBtn').addEventListener('click', function(){
+    document.getElementById('panel').style.display = "block";
+    refreshSpotList(true);
+  });
+
+  document.getElementById('satBtn').addEventListener('click', function(){
+    if(map.hasLayer(osmLayer)){
+      map.removeLayer(osmLayer);
+      satLayer.addTo(map);
+    } else {
+      map.removeLayer(satLayer);
+      osmLayer.addTo(map);
+    }
+  });
+
+  document.getElementById('sunBtn').addEventListener('click', function(){
+    var times = SunCalc.getTimes(new Date(), map.getCenter().lat, map.getCenter().lng);
+    alert("오늘 일출 시간: " + times.sunrise.getHours() + ":" + times.sunrise.getMinutes());
+  });
+</script>
+</body>
+</html>
+ 
