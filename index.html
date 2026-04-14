@@ -47,7 +47,7 @@
       position:absolute;
       left:0;
       top:0;
-      width:260px;
+      width:300px;
       height:100%;
       background:white;
       z-index:1100;
@@ -57,7 +57,8 @@
     }
     #panel h3{margin:12px;}
     #spotList{list-style:none;padding:0;margin:0;}
-    #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;}
+    #spotList li{padding:14px;border-bottom:1px solid #ddd;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+    .deleteBtn{color:red;cursor:pointer;margin-left:10px;}
   </style>
 </head>
 <body>
@@ -74,8 +75,8 @@
     <button id="addSpotBtn">➕ 촬영지 등록</button>
     <button id="sunBtn">🌅 일출방향</button>
     <button id="satBtn">🛰 지도전환</button>
-    <button id="listBtn">📑 드론 촬영 명소 목록</button>
-    <button id="myListBtn">📑 내 촬영지 목록</button>
+    <button id="listBtn">📑 드론 촬영 명소</button>
+    <button id="myListBtn">📑 내 촬영지 등록</button>
   </div>
 </div>
 
@@ -124,15 +125,24 @@
     spotList.innerHTML = "";
 
     if(showMyList){
-      panelTitle.textContent = "내 촬영지 목록";
+      panelTitle.textContent = "내 촬영지 등록";
       if(mySpots.length === 0){
         var li = document.createElement('li');
         li.textContent = "등록된 촬영지가 없습니다.";
         spotList.appendChild(li);
       } else {
-        mySpots.forEach(function(spot){
+        mySpots.forEach(function(spot, index){
           var li = document.createElement('li');
           li.textContent = spot.name;
+          var delBtn = document.createElement('span');
+          delBtn.textContent = "❌";
+          delBtn.className = "deleteBtn";
+          delBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            mySpots.splice(index,1);
+            refreshSpotList(true);
+          });
+          li.appendChild(delBtn);
           li.addEventListener('click', function(){
             moveToSpot(spot);
           });
@@ -172,22 +182,4 @@
 
   document.getElementById('locBtn').addEventListener('click', function() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        var lat = pos.coords.latitude;
-        var lon = pos.coords.longitude;
-        map.setView([lat, lon], 15);
-        L.marker([lat, lon]).addTo(map).bindPopup("현재 위치").openPopup();
-      });
-    }
-  });
-
-  document.getElementById('addSpotBtn').addEventListener('click', function() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        var lat = pos.coords.latitude;
-        var lon = pos.coords.longitude;
-        var name = prompt("촬영지 이름을 입력하세요:");
-        if(name) {
-          var newSpot = {name: name, lat: lat, lon: lon};
-          mySpots.push(newSpot);
-          refreshSpotList(true); // 등록 후 내
+      navigator.geolocation.getCurrentPosition(function(pos)
