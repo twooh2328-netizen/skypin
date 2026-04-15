@@ -130,6 +130,13 @@ map.on('click', function(e){
     mySpots.push(spot);
     L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name+"<br>"+memo);
     localStorage.setItem("mySpots", JSON.stringify(mySpots)); // LocalStorage 저장
+if(sunriseLine){
+  map.removeLayer(sunriseLine);
+}
+var sunriseLat = spot.lat;
+var sunriseLon = spot.lon + 0.05; // 동쪽으로 약간 이동 (단순 예시)
+sunriseLine = L.polyline([[spot.lat, spot.lon],[sunriseLat, sunriseLon]], {color:'orange'}).addTo(map);
+sunriseLine.bindPopup("일출 방향");    
   }
 });
 
