@@ -97,6 +97,60 @@
     var map = L.map('map').setView([37.5446,127.0376],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+    // 내 촬영지 배열과 일출선 변수
+var mySpots = [];
+var sunriseLine;
+
+// 앱 실행 시 LocalStorage에서 불러오기
+window.onload = function(){
+  var savedSpots = localStorage.getItem("mySpots");
+  if(savedSpots){
+    mySpots = JSON.parse(savedSpots);
+    mySpots.forEach(spot=>{
+      L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name);
+    });
+  }
+};
+
+// 지도 클릭 시 촬영지 등록
+map.on('click', function(e){
+  var latlng = e.latlng;
+  var name = prompt("촬영지 이름을 입력하세요:");
+  var memo = prompt("촬영지 메모를 입력하세요:");
+  var tag = prompt("촬영지 태그를 입력하세요 (예: 해변, 산, 도시):");
+  if(name){
+    var spot = {
+      name:name,
+      lat:latlng.lat,
+      lon:latlng.lng,
+      memo:memo,
+      tag:tag,
+      date:new Date().toLocaleString()
+    };
+    mySpots.push(spot);
+    L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name+"<br>"+memo);
+    localStorage.setItem("mySpots", JSON.stringify(mySpots)); // LocalStorage 저장
+  }
+});
+
+// 내 촬영지 목록 버튼
+document.getElementById('mySpotsBtn').onclick = () => {
+  var spotList=document.getElementById('spotList');
+  spotList.innerHTML="";
+  mySpots.forEach((spot, index)=>{
+    var li=document.createElement('li');
+    li.textContent=spot.name + " ("+spot.date+") - 태그:"+spot.tag+" (삭제: 더블클릭)";
+    li.onclick=()=>map.setView([spot.lat, spot.lon], 14);
+    li.ondblclick=()=>{
+      mySpots.splice(index,1);
+      localStorage.setItem("mySpots", JSON.stringify(mySpots)); // 삭제 후 저장
+      alert("촬영지가 삭제되었습니다.");
+      document.getElementById('mySpotsBtn').click(); // 목록 갱신
+    };
+    spotList.appendChild(li);
+  });
+};
+
     document.getElementById('toggleMenu').onclick = () =>
       document.getElementById('slideMenu').classList.add('open');
     document.getElementById('closeMenu').onclick = () =>
