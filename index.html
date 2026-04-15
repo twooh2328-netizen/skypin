@@ -23,19 +23,18 @@
       cursor:pointer;
     }
 
-    /* 검색창: 화면 오른쪽 상단 고정, 크기 줄임 */
-    #searchBox {
-      position:fixed;
-      top:20px;
-      right:20px;
-      z-index:1200;
-      width:200px;       /* 크기를 줄임 */
-      padding:6px;       /* 내부 여백 줄임 */
-      font-size:13px;    /* 글자 크기 줄임 */
-      border-radius:6px;
-      border:1px solid #ccc;
-    }
-
+#searchBox {
+  position:fixed;   /* 화면 기준으로 고정 */
+  top:20px;
+  right:20px;
+  z-index:1200;
+  width:180px;      /* 크기를 더 줄임 */
+  padding:5px;      /* 내부 여백 줄임 */
+  font-size:12px;   /* 글자 크기 줄임 */
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+ 
     /* 왼쪽 패널 */
     #slideMenu {
       position:absolute;
