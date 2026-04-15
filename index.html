@@ -9,7 +9,6 @@
     html, body {height:100%;margin:0;}
     #map {width:100%;height:100%;}
 
-    /* 메뉴 버튼: 화면 오른쪽 하단 고정 */
     #toggleMenu {
       position:fixed; bottom:20px; right:20px;
       z-index:1200; padding:10px 15px;
@@ -17,14 +16,12 @@
       background:#f2f2f2; cursor:pointer;
     }
 
-    /* 검색창: 화면 오른쪽 상단 고정, 크기 줄임 */
     #searchBox {
       position:fixed; top:20px; right:20px;
       z-index:1200; width:180px; padding:5px;
       font-size:12px; border-radius:6px; border:1px solid #ccc;
     }
 
-    /* 왼쪽 패널 */
     #slideMenu {
       position:absolute; top:0; left:-250px;
       width:250px; height:100%; background:white;
@@ -33,7 +30,6 @@
     }
     #slideMenu.open {left:0;}
 
-    /* 닫기 버튼: 패널 맨 아래 */
     #closeMenu {
       margin-top:auto; padding:8px; font-size:14px;
       border:none; border-radius:6px; background:#ddd; cursor:pointer;
@@ -45,15 +41,13 @@
       background:#f2f2f2; cursor:pointer;
     }
 
-    /* 4단계: 명소 목록 스크롤 가능 */
     #spotList {
       margin-top:10px;
-      max-height:300px;   /* 목록이 길어지면 스크롤 */
+      max-height:300px;
       overflow-y:auto;
     }
     #spotList li {padding:8px; border-bottom:1px solid #ddd; cursor:pointer;}
 
-    /* 6단계: 버튼 hover 효과 */
     #buttons button:hover,
     #toggleMenu:hover,
     #closeMenu:hover {
@@ -68,6 +62,7 @@
     <div id="buttons">
       <button id="locBtn">📍 현재위치</button>
       <button id="listBtn">📑 명소 목록</button>
+      <button id="mySpotsBtn">⭐ 내 촬영지 목록</button>
     </div>
     <ul id="spotList"></ul>
     <button id="closeMenu">닫기 ✖</button>
@@ -107,11 +102,15 @@
       {name:"태안 꽃지해변",lat:36.4930,lon:126.3310}
     ];
 
+    var mySpots = []; // 내 촬영지 저장 배열
+    var sunriseLine;  // 일출 방향 선
+
     function moveToSpot(spot){
       map.setView([spot.lat, spot.lon], 14);
       L.marker([spot.lat, spot.lon]).addTo(map).bindPopup(spot.name).openPopup();
     }
 
+    // 명소 목록
     var listVisible = false;
     document.getElementById('listBtn').onclick = () => {
       var spotList=document.getElementById('spotList');
@@ -121,7 +120,6 @@
         spots.forEach(spot=>{
           var li=document.createElement('li');
           li.textContent=spot.name;
-          /* 5단계: 명소 클릭 시 패널 자동 닫기 */
           li.onclick=()=>{
             moveToSpot(spot);
             document.getElementById('slideMenu').classList.remove('open');
@@ -132,6 +130,35 @@
       }
     };
 
+    // 내 촬영지 목록
+    document.getElementById('mySpotsBtn').onclick = () => {
+      var spotList=document.getElementById('spotList');
+      spotList.innerHTML="";
+      mySpots.forEach((spot, index)=>{
+        var li=document.createElement('li');
+        li.textContent=spot.name + " (삭제: 더블클릭)";
+        li.onclick=()=>moveToSpot(spot);
+        li.ondblclick=()=>{
+          mySpots.splice(index,1);
+          alert("촬영지가 삭제되었습니다.");
+        };
+        spotList.appendChild(li);
+      });
+    };
+
+    // 지도 클릭 시 내 촬영지 등록
+    map.on('click', function(e){
+      var latlng = e.latlng;
+      var name = prompt("촬영지 이름을 입력하세요:");
+      if(name){
+        var spot = {name:name, lat:latlng.lat, lon:latlng.lng};
+        mySpots.push(spot);
+        L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name);
+        alert("촬영지가 등록되었습니다.");
+      }
+    });
+
+   // 검색 기능
     document.getElementById('searchBox').addEventListener('keyup', e=>{
       if(e.key==="Enter"){
         var keyword=e.target.value.trim();
@@ -140,12 +167,25 @@
       }
     });
 
+   // 현재 위치 버튼 + 일출 방향 표시
     document.getElementById('locBtn').onclick = () => {
       if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(pos=>{
           var lat=pos.coords.latitude, lon=pos.coords.longitude;
           map.setView([lat, lon], 15);
           L.marker([lat, lon]).addTo(map).bindPopup("현재 위치").openPopup();
+
+          // 기존 선 제거
+          if(sunriseLine){ map.removeLayer(sunriseLine); }
+
+          // 일출 방향: 동쪽으로 직선 표시
+          var eastLat = lat;
+          var eastLon = lon + 0.05; // 대략 동쪽으로 0.05도 이동
+          sunriseLine = L.polyline([[lat, lon],[eastLat, eastLon]], {
+            color:'red',
+            weight:3,
+            opacity:0.8
+          }).addTo(map);
         }, ()=>alert("현재 위치를 가져올 수 없습니다."));
       } else {
         alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
@@ -154,3 +194,4 @@
   </script>
 </body>
 </html>
+                                                
