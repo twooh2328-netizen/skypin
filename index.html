@@ -54,17 +54,26 @@
       background:#e0e0e0;
     }
 
-     /* 모바일 전용 스타일 */
- @media (max-width:1200px) {
- #toggleMenu {
-  position: fixed;              /* 화면에 고정 */
-  padding:24px 36px !important;  /* 버튼 내부 여백 크게 */
-  font-size:32px !important;     /* 글자 크기 크게 */
-  bottom:30px;                  /* 화면 아래쪽에서 조금 띄움 */
-  right:30px;                   /* 화면 오른쪽에서 조금 띄움 */
-  z-index:9999;                 /* 다른 요소 위에 표시 */
- }
+/* 모바일 화면에서 버튼 내부 글자와 아이콘 크기 조정 */
+@media (max-width:1200px) {
+  #toggleMenu {
+    padding: 24px 36px !important;
+    background-color: #333;   /* 버튼 배경 */
+    color: #fff;              /* 글자 색상 */
+    border-radius: 8px;       /* 모서리 둥글게 */
+  }
+
+  #toggleMenu .icon {
+    font-size: 36px;          /* 아이콘 크게 */
+    margin-right: 8px;        /* 아이콘과 글자 간격 */
+  }
+
+  #toggleMenu .text {
+    font-size: 28px;          /* 글자 크게 */
+    font-weight: bold;        /* 글자 굵게 */
+  }
 }
+
 </style>
 </head>
 <body>
