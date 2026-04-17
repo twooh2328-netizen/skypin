@@ -115,9 +115,16 @@
   </div>
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
+
   <script>
     var map = L.map('map').setView([37.5446,127.0376],12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+ L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+).addTo(map);
 
     // 내 촬영지 배열과 일출선 변수
 var mySpots = [];
@@ -130,8 +137,7 @@ window.onload = function(){
     mySpots = JSON.parse(savedSpots);
     mySpots.forEach(spot=>{
       L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name);
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
-       });
+         });
   }
 };
 
@@ -253,19 +259,7 @@ document.getElementById('mySpotsBtn').onclick = () => {
       });
     };
 
-    // 지도 클릭 시 내 촬영지 등록
-    map.on('click', function(e){
-      var latlng = e.latlng;
-      var name = prompt("촬영지 이름을 입력하세요:");
-      if(name){
-        var spot = {name:name, lat:latlng.lat, lon:latlng.lng};
-        mySpots.push(spot);
-        L.marker([spot.lat, spot.lon]).addTo(map).bindPopup("내 촬영지: "+spot.name);
-        alert("촬영지가 등록되었습니다.");
-      }
-    });
-
-   // 검색 기능
+    // 검색 기능
     document.getElementById('searchBox').addEventListener('keyup', e=>{
       if(e.key==="Enter"){
         var keyword=e.target.value.trim();
