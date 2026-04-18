@@ -109,7 +109,7 @@
       <button id="locBtn">📍 현재위치</button>
       <button id="listBtn">📑 명소 목록</button>
       <button id="mySpotsBtn">⭐ 내 촬영지 목록</button>
-      <button id="sunriseBtn">🌅 일출 방향선</button> 
+      <button id="sunriseBtn">🌅 일출 방향선</button>
     </div>
     <ul id="spotList"></ul>
     <button id="closeMenu">닫기 ✖</button>
@@ -123,13 +123,95 @@
 const photoInput = document.getElementById("photoInput");
 
 var map = L.map('map').setView([37.5446,127.0376],12);
-
+let mySpots = JSON.parse(localStorage.getItem("mySpots")) || [];
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
 maxZoom:19
 }
 ).addTo(map);
+function renderSpots(){
+
+mySpots.forEach((spot,index)=>{
+
+const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+
+marker.bindPopup("<img src='"+spot.img+"' width='200'>");
+
+marker.on("dblclick", function(){
+
+if(confirm("이 촬영지를 삭제할까요?")){
+
+map.removeLayer(marker);
+
+mySpots.splice(index,1);
+
+localStorage.setItem("mySpots", JSON.stringify(mySpots));
+
+updateSpotList();
+
+}
+
+});
+
+});
+
+}    
+ renderSpots();
+function renderSpots(){
+
+mySpots.forEach((spot,index)=>{
+
+const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+
+marker.bindPopup("<img src='"+spot.img+"' width='200'>");
+
+marker.on("dblclick", function(){
+
+if(confirm("이 촬영지를 삭제할까요?")){
+
+map.removeLayer(marker);
+
+mySpots.splice(index,1);
+
+localStorage.setItem("mySpots", JSON.stringify(mySpots));
+
+updateSpotList();
+
+}
+
+});
+
+});
+
+}
+
+function updateSpotList(){
+
+const list = document.getElementById("spotList");
+
+if(!list) return;
+
+list.innerHTML="";
+
+mySpots.forEach((spot,index)=>{
+
+const li = document.createElement("li");
+
+li.textContent = spot.name || "촬영지";
+
+li.onclick = function(){
+map.setView([spot.lat,spot.lng],15);
+};
+
+list.appendChild(li);
+
+});
+
+}
+
+renderSpots();
+</script>   
 let selectedLat = null;
 let selectedLng = null;
 
