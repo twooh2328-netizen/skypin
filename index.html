@@ -157,6 +157,9 @@ photoInput.addEventListener("change", function(){
         const img = e.target.result;
 
         const marker = L.marker([selectedLat, selectedLng]).addTo(map);
+        marker.on("dblclick", function(){
+         map.removeLayer(marker);
+});
 
         marker.bindPopup("<img src='"+img+"' width='200'>");
 
