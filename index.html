@@ -142,7 +142,7 @@ function renderSpots(){
 
 mySpots.forEach((spot,index)=>{
 
-const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+const marker = L.marker([spot.lat, spot.lng]).addTo(markerLayer);
 
 marker.bindPopup("<img src='"+spot.img+"' width='200'>");
 
@@ -165,12 +165,13 @@ updateSpotList();
 });
 
 }    
- renderSpots();
 function renderSpots(){
+
+markerLayer.clearLayers();
 
 mySpots.forEach((spot,index)=>{
 
-const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+const marker = L.marker([spot.lat, spot.lng]).addTo(markerLayer);
 
 marker.bindPopup("<img src='"+spot.img+"' width='200'>");
 
@@ -178,7 +179,7 @@ marker.on("dblclick", function(){
 
 if(confirm("이 촬영지를 삭제할까요?")){
 
-map.removeLayer(marker);
+markerLayer.removeLayer(marker);
 
 mySpots.splice(index,1);
 
@@ -193,7 +194,6 @@ updateSpotList();
 });
 
 }
-
 function updateSpotList(){
 
 const list = document.getElementById("spotList");
@@ -221,7 +221,6 @@ list.appendChild(li);
 renderSpots();
 </script>   
 let selectedLat = null;
-let selectedLng = null;
 
 // 지도 클릭
 map.on("click", function(e){
