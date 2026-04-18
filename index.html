@@ -157,9 +157,15 @@ photoInput.addEventListener("change", function(){
         const img = e.target.result;
 
         const marker = L.marker([selectedLat, selectedLng]).addTo(map);
-        marker.on("dblclick", function(){
-         map.removeLayer(marker);
-});
+    marker.on("dblclick", function(){
+
+    if(confirm("이 촬영지를 삭제할까요?")){
+
+        map.removeLayer(marker);
+
+    }
+
+});  
 
         marker.bindPopup("<img src='"+img+"' width='200'>");
 
