@@ -121,11 +121,11 @@
 const menu = document.getElementById("slideMenu");
 
 document.getElementById("toggleMenu").onclick = function(){
-    menu.style.left = "0px";
+    menu.classList.add("open");
 };
 
 document.getElementById("closeMenu").onclick = function(){
-    menu.style.left = "-250px";
+    menu.classList.remove("open");
 };
 // 사진 업로드 입력 연결
 const photoInput = document.getElementById("photoInput");
