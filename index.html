@@ -118,7 +118,15 @@
   <input type="file" id="photoInput" accept="image/*" style="display:none"> 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+const menu = document.getElementById("slideMenu");
 
+document.getElementById("toggleMenu").onclick = function(){
+    menu.style.left = "0px";
+};
+
+document.getElementById("closeMenu").onclick = function(){
+    menu.style.left = "-260px";
+};
 // 사진 업로드 입력 연결
 const photoInput = document.getElementById("photoInput");
 
