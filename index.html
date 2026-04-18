@@ -118,13 +118,53 @@
   <input type="file" id="photoInput" accept="image/*" style="display:none"> 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    var map = L.map('map').setView([37.5446,127.0376],12);
- L.tileLayer(
+
+// 사진 업로드 입력 연결
+const photoInput = document.getElementById("photoInput");
+
+var map = L.map('map').setView([37.5446,127.0376],12);
+
+L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
 maxZoom:19
 }
 ).addTo(map);
+let selectedLat = null;
+let selectedLng = null;
+
+// 지도 클릭
+map.on("click", function(e){
+
+    selectedLat = e.latlng.lat;
+    selectedLng = e.latlng.lng;
+
+    photoInput.click();
+
+});
+
+// 사진 선택
+photoInput.addEventListener("change", function(){
+
+    const file = this.files[0];
+
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        const img = e.target.result;
+
+        const marker = L.marker([selectedLat, selectedLng]).addTo(map);
+
+        marker.bindPopup("<img src='"+img+"' width='200'>");
+
+    };
+
+    reader.readAsDataURL(file);
+
+});    
 
     // 내 촬영지 배열과 일출선 변수
 var mySpots = [];
