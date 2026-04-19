@@ -2,29 +2,53 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin Stable</title>
+<title>SkyPin Drone Map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 html,body{margin:0;height:100%;}
-#map{height:100vh;}
+#map{height:100vh;width:100%;}
 
+/* UI */
 #toggleMenu{
-position:fixed;bottom:20px;right:20px;z-index:9999;
-padding:12px;background:#222;color:#fff;border:none;border-radius:8px;
+position:fixed;bottom:20px;right:20px;
+z-index:9999;padding:12px;
+background:#111;color:#fff;border:none;border-radius:10px;
 }
 
 #slideMenu{
-position:fixed;left:-280px;top:0;width:260px;height:100%;
-background:#fff;transition:.3s;z-index:9998;padding:10px;
+position:fixed;left:-280px;top:0;
+width:260px;height:100%;
+background:#fff;transition:.3s;
+z-index:9998;padding:10px;
 display:flex;flex-direction:column;
+box-shadow:2px 0 10px rgba(0,0,0,0.2);
 }
 #slideMenu.open{left:0;}
 
-#buttons button{width:100%;margin:5px 0;padding:10px;}
-#spotList{flex:1;overflow:auto;}
+#buttons button{
+width:100%;
+margin:5px 0;
+padding:10px;
+border:none;
+background:#eee;
+border-radius:6px;
+cursor:pointer;
+}
+
+#spotList{
+flex:1;
+overflow:auto;
+margin-top:10px;
+}
+
+#spotList li{
+padding:8px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -34,10 +58,11 @@ display:flex;flex-direction:column;
 
 <div id="slideMenu">
 <div id="buttons">
-<button id="locBtn">현재위치</button>
-<button id="listBtn">명소</button>
-<button id="myBtn">내촬영지</button>
+<button id="btnLoc">현재위치</button>
+<button id="btnList">명소</button>
+<button id="btnMy">내 촬영지</button>
 </div>
+
 <ul id="spotList"></ul>
 <button id="closeMenu">닫기</button>
 </div>
@@ -48,112 +73,163 @@ display:flex;flex-direction:column;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-window.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded",()=>{
 
-/* ================= MAP ================= */
+/* =======================
+📍 MAP MODULE
+======================= */
 const map = L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 maxZoom:19
 }).addTo(map);
 
-const layer = L.layerGroup().addTo(map);
+const markerLayer = L.layerGroup().addTo(map);
 
-/* ================= STATE ================= */
-let mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
-let lat=null,lng=null;
-let sunLine=null;
+/* =======================
+💾 STORAGE MODULE
+======================= */
+const Storage = {
+get: () => JSON.parse(localStorage.getItem("mySpots")||"[]"),
+save: (data) => localStorage.setItem("mySpots",JSON.stringify(data))
+};
 
-/* ================= MENU ================= */
-const menu=document.getElementById("slideMenu");
-
-document.getElementById("toggleMenu").onclick=()=>menu.classList.add("open");
-document.getElementById("closeMenu").onclick=()=>menu.classList.remove("open");
-
-/* ================= SPOTS ================= */
-const spots=[
+/* =======================
+📦 STATE MODULE
+======================= */
+const State = {
+spots:[
 {name:"제부도",lat:37.171,lng:126.572},
 {name:"서울숲",lat:37.5446,lng:127.0376},
 {name:"부산",lat:35.15,lng:129.11},
 {name:"제주",lat:33.45,lng:126.94},
 {name:"강릉",lat:37.79,lng:128.89}
-];
-
-/* ================= CLICK ================= */
-map.on("click",e=>{
-lat=e.latlng.lat;
-lng=e.latlng.lng;
-document.getElementById("photo").click();
-});
-
-/* ================= PHOTO ================= */
-document.getElementById("photo").onchange=e=>{
-const file=e.target.files[0];
-if(!file||lat===null)return;
-
-const r=new FileReader();
-r.onload=()=>{
-mySpots.push({lat,lng,img:r.result});
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-};
-r.readAsDataURL(file);
+],
+my: Storage.get(),
+selected:null,
+sun:null
 };
 
-/* ================= RENDER ================= */
+/* =======================
+🖼 RENDER MODULE
+======================= */
 function render(){
 
-layer.clearLayers();
-const list=document.getElementById("spotList");
+markerLayer.clearLayers();
+
+const list = document.getElementById("spotList");
 list.innerHTML="";
 
 /* 기본 명소 */
-spots.forEach(s=>{
-L.marker([s.lat,s.lng]).addTo(layer).bindPopup(s.name);
+State.spots.forEach(s=>{
+L.marker([s.lat,s.lng]).addTo(markerLayer)
+.bindPopup(s.name);
 });
 
 /* 내 촬영지 */
-mySpots.forEach((s,i)=>{
-const m=L.marker([s.lat,s.lng]).addTo(layer);
+State.my.forEach((s,i)=>{
+
+const m = L.marker([s.lat,s.lng]).addTo(markerLayer);
 m.bindPopup(`<img src="${s.img}" width="120">`);
 
 m.on("dblclick",()=>{
-mySpots.splice(i,1);
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
+State.my.splice(i,1);
+Storage.save(State.my);
 render();
 });
 
 const li=document.createElement("li");
-li.innerText="촬영지";
+li.textContent="촬영지";
 li.onclick=()=>map.setView([s.lat,s.lng],15);
 list.appendChild(li);
+
 });
 
 }
 
-/* ================= CURRENT ================= */
-document.getElementById("locBtn").onclick=()=>{
+/* =======================
+📷 MAP CLICK MODULE
+======================= */
+map.on("click",e=>{
+State.selected = e.latlng;
+document.getElementById("photo").click();
+});
+
+/* =======================
+📸 PHOTO MODULE
+======================= */
+document.getElementById("photo").onchange=e=>{
+const file=e.target.files[0];
+if(!file||!State.selected)return;
+
+const r=new FileReader();
+
+r.onload=()=>{
+
+State.my.push({
+lat:State.selected.lat,
+lng:State.selected.lng,
+img:r.result
+});
+
+Storage.save(State.my);
+render();
+
+};
+
+r.readAsDataURL(file);
+};
+
+/* =======================
+📍 CURRENT LOCATION + SUN
+======================= */
+document.getElementById("btnLoc").onclick=()=>{
+
 navigator.geolocation.getCurrentPosition(p=>{
+
 const la=p.coords.latitude;
 const ln=p.coords.longitude;
 
 map.setView([la,ln],15);
+
 L.marker([la,ln]).addTo(map);
 
-if(sunLine) map.removeLayer(sunLine);
+if(State.sun) map.removeLayer(State.sun);
 
-sunLine=L.polyline([[la,ln],[la,ln+0.05]],{color:"orange"}).addTo(map);
+State.sun = L.polyline([[la,ln],[la,ln+0.05]],{
+color:"orange",weight:3
+}).addTo(map);
+
 });
+
 };
 
-/* ================= LIST ================= */
-document.getElementById("listBtn").onclick=()=>{
+/* =======================
+📑 LIST
+======================= */
+document.getElementById("btnList").onclick=()=>{
 document.getElementById("spotList").innerHTML=
-spots.map(s=>`<li onclick="map.setView([${s.lat},${s.lng}],15)">${s.name}</li>`).join("");
+State.spots.map(s=>
+`<li onclick="map.setView([${s.lat},${s.lng}],15)">${s.name}</li>`
+).join("");
 };
 
-document.getElementById("myBtn").onclick=render;
+/* =======================
+⭐ MY LIST
+======================= */
+document.getElementById("btnMy").onclick=render;
 
+/* =======================
+MENU
+======================= */
+const menu=document.getElementById("slideMenu");
+
+document.getElementById("toggleMenu").onclick=()=>menu.classList.add("open");
+document.getElementById("closeMenu").onclick=()=>menu.classList.remove("open");
+
+/* =======================
+START
+======================= */
 render();
 
 });
