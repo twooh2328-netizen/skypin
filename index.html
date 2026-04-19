@@ -2,35 +2,29 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin</title>
+<title>SkyPin Stable</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html,body{height:100%;margin:0;}
-#map{height:100vh;width:100%;}
+html,body{margin:0;height:100%;}
+#map{height:100vh;}
 
 #toggleMenu{
-position:fixed;bottom:20px;right:20px;
-z-index:9999;padding:12px;
-background:#222;color:#fff;border:none;border-radius:8px;
+position:fixed;bottom:20px;right:20px;z-index:9999;
+padding:12px;background:#222;color:#fff;border:none;border-radius:8px;
 }
 
 #slideMenu{
-position:fixed;left:-260px;top:0;width:260px;height:100%;
+position:fixed;left:-280px;top:0;width:260px;height:100%;
 background:#fff;transition:.3s;z-index:9998;padding:10px;
 display:flex;flex-direction:column;
 }
-
 #slideMenu.open{left:0;}
 
-#buttons button{
-width:100%;margin:5px 0;padding:10px;border:none;background:#eee;
-}
-
-#spotList{overflow:auto;flex:1;}
-
+#buttons button{width:100%;margin:5px 0;padding:10px;}
+#spotList{flex:1;overflow:auto;}
 </style>
 </head>
 
@@ -44,7 +38,6 @@ width:100%;margin:5px 0;padding:10px;border:none;background:#eee;
 <button id="listBtn">명소</button>
 <button id="myBtn">내촬영지</button>
 </div>
-
 <ul id="spotList"></ul>
 <button id="closeMenu">닫기</button>
 </div>
@@ -55,74 +48,72 @@ width:100%;margin:5px 0;padding:10px;border:none;background:#eee;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded",()=>{
+window.addEventListener("DOMContentLoaded",()=>{
 
-/* ===== MAP ===== */
+/* ================= MAP ================= */
 const map = L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 maxZoom:19
 }).addTo(map);
 
-/* ===== STATE ===== */
-let mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
-let lat=null,lng=null;
-let line=null;
-
 const layer = L.layerGroup().addTo(map);
 
-/* ===== MENU ===== */
-const menu = document.getElementById("slideMenu");
+/* ================= STATE ================= */
+let mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
+let lat=null,lng=null;
+let sunLine=null;
+
+/* ================= MENU ================= */
+const menu=document.getElementById("slideMenu");
 
 document.getElementById("toggleMenu").onclick=()=>menu.classList.add("open");
 document.getElementById("closeMenu").onclick=()=>menu.classList.remove("open");
 
-/* ===== 20 SPOTS ===== */
+/* ================= SPOTS ================= */
 const spots=[
 {name:"제부도",lat:37.171,lng:126.572},
 {name:"서울숲",lat:37.5446,lng:127.0376},
-{name:"제주",lat:33.45,lng:126.94},
 {name:"부산",lat:35.15,lng:129.11},
+{name:"제주",lat:33.45,lng:126.94},
 {name:"강릉",lat:37.79,lng:128.89}
 ];
 
-/* ===== MAP CLICK ===== */
+/* ================= CLICK ================= */
 map.on("click",e=>{
 lat=e.latlng.lat;
 lng=e.latlng.lng;
 document.getElementById("photo").click();
 });
 
-/* ===== PHOTO ===== */
+/* ================= PHOTO ================= */
 document.getElementById("photo").onchange=e=>{
 const file=e.target.files[0];
-if(!file||lat==null)return;
+if(!file||lat===null)return;
 
 const r=new FileReader();
 r.onload=()=>{
-
 mySpots.push({lat,lng,img:r.result});
 localStorage.setItem("mySpots",JSON.stringify(mySpots));
 render();
 };
-
 r.readAsDataURL(file);
 };
 
-/* ===== RENDER ===== */
+/* ================= RENDER ================= */
 function render(){
 
 layer.clearLayers();
-
 const list=document.getElementById("spotList");
 list.innerHTML="";
 
+/* 기본 명소 */
 spots.forEach(s=>{
 L.marker([s.lat,s.lng]).addTo(layer).bindPopup(s.name);
 });
 
+/* 내 촬영지 */
 mySpots.forEach((s,i)=>{
-
 const m=L.marker([s.lat,s.lng]).addTo(layer);
 m.bindPopup(`<img src="${s.img}" width="120">`);
 
@@ -136,32 +127,26 @@ const li=document.createElement("li");
 li.innerText="촬영지";
 li.onclick=()=>map.setView([s.lat,s.lng],15);
 list.appendChild(li);
-
 });
 
 }
 
-/* ===== CURRENT + SUN ===== */
+/* ================= CURRENT ================= */
 document.getElementById("locBtn").onclick=()=>{
-
 navigator.geolocation.getCurrentPosition(p=>{
-
 const la=p.coords.latitude;
 const ln=p.coords.longitude;
 
 map.setView([la,ln],15);
-
 L.marker([la,ln]).addTo(map);
 
-if(line)map.removeLayer(line);
+if(sunLine) map.removeLayer(sunLine);
 
-line=L.polyline([[la,ln],[la,ln+0.05]],{color:"orange"}).addTo(map);
-
+sunLine=L.polyline([[la,ln],[la,ln+0.05]],{color:"orange"}).addTo(map);
 });
-
 };
 
-/* ===== LIST ===== */
+/* ================= LIST ================= */
 document.getElementById("listBtn").onclick=()=>{
 document.getElementById("spotList").innerHTML=
 spots.map(s=>`<li onclick="map.setView([${s.lat},${s.lng}],15)">${s.name}</li>`).join("");
