@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin FIX ALL</title>
+<title>SkyPin Clean Start</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,14 +10,19 @@
 
 <style>
 html,body{margin:0;height:100%;}
-#map{height:100vh;width:100%;position:relative;}
+
+/* MAP */
+#map{
+height:100vh;
+width:100%;
+}
 
 /* MENU BUTTON */
-#toggleMenu{
+#menuBtn{
 position:fixed;
 bottom:20px;
 right:20px;
-z-index:99999;
+z-index:9999;
 padding:12px;
 border:none;
 border-radius:8px;
@@ -25,46 +30,38 @@ background:#eee;
 cursor:pointer;
 }
 
-/* SIDE MENU */
-#slideMenu{
+/* MENU PANEL */
+#menu{
 position:fixed;
 top:0;
 left:-280px;
 width:280px;
 height:100%;
-background:#fff;
-z-index:100000;
+background:white;
+z-index:10000;
 transition:0.3s;
 padding:10px;
 box-shadow:2px 0 10px rgba(0,0,0,0.2);
 }
 
-#slideMenu.open{left:0;}
+#menu.open{left:0;}
 
-#buttons{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-#buttons button{
+button{
+width:100%;
 padding:10px;
+margin-bottom:10px;
 border:none;
 background:#eee;
+cursor:pointer;
 border-radius:6px;
-cursor:pointer;
 }
 
-#spotList{
-margin-top:10px;
-overflow:auto;
+#list{
 height:70%;
-}
-
-#spotList div{
-padding:8px;
-border-bottom:1px solid #ddd;
-cursor:pointer;
+overflow:auto;
+border-top:1px solid #ddd;
+margin-top:10px;
+padding-top:10px;
 }
 </style>
 </head>
@@ -73,32 +70,28 @@ cursor:pointer;
 
 <div id="map"></div>
 
-<button id="toggleMenu">☰ 메뉴</button>
+<button id="menuBtn">☰ 메뉴</button>
 
-<div id="slideMenu">
+<div id="menu">
 
-<div id="buttons">
-<button id="locBtn">📍 현재위치</button>
-<button id="listBtn">📑 명소</button>
-<button id="sunBtn">🌅 일출</button>
-</div>
+<button id="btnLoc">📍 현재위치</button>
+<button id="btnList">📑 명소</button>
+<button id="btnMy">⭐ 내 촬영지</button>
+<button id="btnSun">🌅 일출</button>
 
-<div id="spotList"></div>
+<div id="list"></div>
 
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
 
 /* ================= MAP ================= */
 const map = L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
-
-const layer = L.layerGroup().addTo(map);
 
 /* ================= DATA ================= */
 const spots = [
@@ -127,16 +120,15 @@ const spots = [
 /* ================= STATE ================= */
 let focusMarker = null;
 let sunriseLine = null;
+let mySpots = [];
 
 /* ================= MENU ================= */
-const menu = document.getElementById("slideMenu");
-
-document.getElementById("toggleMenu").onclick = () => {
-menu.classList.toggle("open");
+document.getElementById("menuBtn").onclick = () => {
+document.getElementById("menu").classList.toggle("open");
 };
 
-/* ================= 이동 함수 ================= */
-function goTo(lat,lng,title){
+/* ================= CORE FUNCTION ================= */
+function moveTo(lat,lng,title){
 
 map.flyTo([lat,lng],15);
 
@@ -145,25 +137,25 @@ map.removeLayer(focusMarker);
 }
 
 focusMarker = L.marker([lat,lng])
-.addTo(layer)
+.addTo(map)
 .bindPopup(title)
 .openPopup();
 
 }
 
 /* ================= LIST ================= */
-document.getElementById("listBtn").onclick = () => {
+document.getElementById("btnList").onclick = () => {
 
-const list = document.getElementById("spotList");
+const list = document.getElementById("list");
 list.innerHTML = "";
 
 spots.forEach(s=>{
 const div = document.createElement("div");
 div.textContent = s.name;
+div.style.padding="8px";
+div.style.borderBottom="1px solid #ddd";
 
-div.onclick = () => {
-goTo(s.lat,s.lng,s.name);
-};
+div.onclick = () => moveTo(s.lat,s.lng,s.name);
 
 list.appendChild(div);
 });
@@ -171,14 +163,19 @@ list.appendChild(div);
 };
 
 /* ================= CURRENT LOCATION ================= */
-document.getElementById("locBtn").onclick = () => {
+document.getElementById("btnLoc").onclick = () => {
+
+if(!navigator.geolocation){
+alert("GPS 지원 안됨");
+return;
+}
 
 navigator.geolocation.getCurrentPosition(pos=>{
 
 const lat = pos.coords.latitude;
 const lng = pos.coords.longitude;
 
-goTo(lat,lng,"현재 위치");
+moveTo(lat,lng,"현재 위치");
 
 if(sunriseLine){
 map.removeLayer(sunriseLine);
@@ -187,18 +184,28 @@ map.removeLayer(sunriseLine);
 sunriseLine = L.polyline(
 [[lat,lng],[lat,lng+0.05]],
 {color:"orange",weight:3}
-).addTo(layer);
+).addTo(map);
 
 });
 
 };
 
-/* ================= SUN BUTTON ================= */
-document.getElementById("sunBtn").onclick = () => {
-alert("현재위치 버튼을 눌러야 일출선이 표시됩니다.");
+/* ================= MY SPOTS ================= */
+document.getElementById("btnMy").onclick = () => {
+
+alert("지도 클릭 후 사진 업로드 기능은 다음 단계입니다 (현재는 구조 안정화 단계)");
+
 };
 
-});
+/* ================= SUN ================= */
+document.getElementById("btnSun").onclick = () => {
+
+if(!sunriseLine){
+alert("먼저 현재위치를 눌러주세요");
+}
+
+};
+
 </script>
 
 </body>
