@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin FINAL CHECK</title>
+<title>SkyPin Stable Final</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -14,10 +14,10 @@ html,body{margin:0;height:100%;}
 #toggleMenu{
 position:fixed;bottom:20px;right:20px;
 z-index:9999;
-padding:12px;
+padding:10px 14px;
 border:none;
-background:#eee;
 border-radius:8px;
+background:#eee;
 cursor:pointer;
 }
 
@@ -29,11 +29,17 @@ background:#fff;
 z-index:9999;
 transition:0.3s;
 padding:10px;
+display:flex;
+flex-direction:column;
 }
 
 #slideMenu.open{left:0;}
 
-#buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#buttons{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
 
 #buttons button{
 padding:10px;
@@ -43,9 +49,17 @@ border-radius:6px;
 cursor:pointer;
 }
 
-#spotList{margin-top:10px;overflow:auto;height:70%;}
+#spotList{
+margin-top:10px;
+overflow:auto;
+flex:1;
+}
 
-#spotList li{padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
+#spotList li{
+padding:8px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -71,17 +85,15 @@ cursor:pointer;
 <script>
 
 /* =========================
-   MAP
+   MAP INIT
 ========================= */
 const map = L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
-const layer = L.layerGroup().addTo(map);
-
 /* =========================
-   20개 명소 (확실히 20개)
+   DATA
 ========================= */
 const spots = [
 {name:"제부도",lat:37.2856,lng:126.6226},
@@ -106,7 +118,11 @@ const spots = [
 {name:"태안",lat:36.4930,lng:126.3310}
 ];
 
-let sunriseLine=null;
+/* =========================
+   STATE (핵심)
+========================= */
+let focusMarker = null;
+let sunriseLine = null;
 
 /* =========================
    MENU
@@ -116,7 +132,25 @@ document.getElementById("slideMenu").classList.toggle("open");
 };
 
 /* =========================
-   LIST (20개 출력 확인용)
+   핵심 이동 함수 (중요)
+========================= */
+function goTo(lat,lng,title){
+
+map.flyTo([lat,lng],15);
+
+if(focusMarker){
+map.removeLayer(focusMarker);
+}
+
+focusMarker = L.marker([lat,lng])
+.addTo(map)
+.bindPopup(title)
+.openPopup();
+
+}
+
+/* =========================
+   LIST
 ========================= */
 document.getElementById("listBtn").onclick=()=>{
 
@@ -126,34 +160,42 @@ list.innerHTML="";
 spots.forEach(s=>{
 const li=document.createElement("li");
 li.textContent=s.name;
-li.onclick=()=>map.setView([s.lat,s.lng],15);
+li.onclick=()=>goTo(s.lat,s.lng,s.name);
 list.appendChild(li);
 });
 
-console.log("spots 개수:",spots.length); // 🔥 반드시 20 찍힘
 };
 
 /* =========================
-   현재 위치
+   현재 위치 + 일출
 ========================= */
 document.getElementById("locBtn").onclick=()=>{
+
 navigator.geolocation.getCurrentPosition(pos=>{
 
 const lat=pos.coords.latitude;
 const lng=pos.coords.longitude;
 
-map.setView([lat,lng],15);
-L.marker([lat,lng]).addTo(map).bindPopup("현재 위치");
+goTo(lat,lng,"현재 위치");
 
-/* 일출 방향 */
-if(sunriseLine) map.removeLayer(sunriseLine);
+if(sunriseLine){
+map.removeLayer(sunriseLine);
+}
 
 sunriseLine=L.polyline(
 [[lat,lng],[lat,lng+0.05]],
-{color:"orange"}
+{color:"orange",weight:3}
 ).addTo(map);
 
 });
+
+};
+
+/* =========================
+   일출 버튼 안내
+========================= */
+document.getElementById("sunBtn").onclick=()=>{
+alert("현재 위치 버튼을 눌러야 일출선이 표시됩니다.");
 };
 
 </script>
