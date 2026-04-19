@@ -2,39 +2,55 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin Stable Final</title>
+<title>SkyPin FIX FINAL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 html,body{margin:0;height:100%;}
-#map{height:100vh;}
 
+/* 지도 */
+#map{
+height:100vh;
+position:relative;
+z-index:1;
+}
+
+/* 메뉴 버튼 */
 #toggleMenu{
-position:fixed;bottom:20px;right:20px;
-z-index:9999;
-padding:10px 14px;
+position:fixed;
+bottom:20px;
+right:20px;
+z-index:10000;
+padding:12px;
 border:none;
 border-radius:8px;
 background:#eee;
 cursor:pointer;
 }
 
+/* 사이드 메뉴 */
 #slideMenu{
 position:fixed;
-top:0;left:-280px;
-width:280px;height:100%;
+top:0;
+left:-280px;
+width:280px;
+height:100%;
 background:#fff;
-z-index:9999;
+z-index:10001;
 transition:0.3s;
 padding:10px;
 display:flex;
 flex-direction:column;
+box-shadow:2px 0 10px rgba(0,0,0,0.2);
 }
 
-#slideMenu.open{left:0;}
+#slideMenu.open{
+left:0;
+}
 
+/* 버튼 */
 #buttons{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -49,6 +65,7 @@ border-radius:6px;
 cursor:pointer;
 }
 
+/* 리스트 */
 #spotList{
 margin-top:10px;
 overflow:auto;
@@ -76,6 +93,7 @@ cursor:pointer;
 </div>
 
 <ul id="spotList"></ul>
+
 </div>
 
 <div id="map"></div>
@@ -85,15 +103,17 @@ cursor:pointer;
 <script>
 
 /* =========================
-   MAP INIT
+   MAP
 ========================= */
 const map = L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
+const layer = L.layerGroup().addTo(map);
+
 /* =========================
-   DATA
+   20개 명소
 ========================= */
 const spots = [
 {name:"제부도",lat:37.2856,lng:126.6226},
@@ -118,21 +138,20 @@ const spots = [
 {name:"태안",lat:36.4930,lng:126.3310}
 ];
 
-/* =========================
-   STATE (핵심)
-========================= */
 let focusMarker = null;
 let sunriseLine = null;
 
 /* =========================
-   MENU
+   MENU (확실하게 동작)
 ========================= */
-document.getElementById("toggleMenu").onclick=()=>{
-document.getElementById("slideMenu").classList.toggle("open");
+const menu = document.getElementById("slideMenu");
+
+document.getElementById("toggleMenu").onclick = () => {
+menu.classList.toggle("open");
 };
 
 /* =========================
-   핵심 이동 함수 (중요)
+   이동 함수 (핵심)
 ========================= */
 function goTo(lat,lng,title){
 
@@ -143,24 +162,24 @@ map.removeLayer(focusMarker);
 }
 
 focusMarker = L.marker([lat,lng])
-.addTo(map)
+.addTo(layer)
 .bindPopup(title)
 .openPopup();
 
 }
 
 /* =========================
-   LIST
+   명소 리스트
 ========================= */
-document.getElementById("listBtn").onclick=()=>{
+document.getElementById("listBtn").onclick = () => {
 
-const list=document.getElementById("spotList");
-list.innerHTML="";
+const list = document.getElementById("spotList");
+list.innerHTML = "";
 
 spots.forEach(s=>{
-const li=document.createElement("li");
-li.textContent=s.name;
-li.onclick=()=>goTo(s.lat,s.lng,s.name);
+const li = document.createElement("li");
+li.textContent = s.name;
+li.onclick = () => goTo(s.lat,s.lng,s.name);
 list.appendChild(li);
 });
 
@@ -169,12 +188,12 @@ list.appendChild(li);
 /* =========================
    현재 위치 + 일출
 ========================= */
-document.getElementById("locBtn").onclick=()=>{
+document.getElementById("locBtn").onclick = () => {
 
 navigator.geolocation.getCurrentPosition(pos=>{
 
-const lat=pos.coords.latitude;
-const lng=pos.coords.longitude;
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
 
 goTo(lat,lng,"현재 위치");
 
@@ -182,22 +201,23 @@ if(sunriseLine){
 map.removeLayer(sunriseLine);
 }
 
-sunriseLine=L.polyline(
+sunriseLine = L.polyline(
 [[lat,lng],[lat,lng+0.05]],
 {color:"orange",weight:3}
-).addTo(map);
+).addTo(layer);
 
 });
 
 };
 
 /* =========================
-   일출 버튼 안내
+   일출 안내
 ========================= */
-document.getElementById("sunBtn").onclick=()=>{
+document.getElementById("sunBtn").onclick = () => {
 alert("현재 위치 버튼을 눌러야 일출선이 표시됩니다.");
 };
 
 </script>
+
 </body>
 </html>
