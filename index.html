@@ -103,23 +103,18 @@ border-radius:6px;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
 /* ======================
-   MAP
+   MAP 초기화
 ====================== */
 const map = L.map("map").setView([37.5,127],11);
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-maxZoom:19
-}).addTo(map);
-
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
 const layer = L.layerGroup().addTo(map);
 
 /* ======================
-   FIXED SPOTS (정확 좌표)
+   명소 데이터
 ====================== */
 const spots = [
-{name:"제부도",lat:37.2856,lng:126.6226},  // 🔥 수정
+{name:"제부도",lat:37.2856,lng:126.6226},
 {name:"낙산사",lat:38.1240,lng:128.6270},
 {name:"서울숲",lat:37.5446,lng:127.0376},
 {name:"광안대교",lat:35.1531,lng:129.1185},
@@ -132,127 +127,117 @@ const spots = [
 ];
 
 let mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
-
 let selected=null;
 let sunriseLine=null;
 
 /* ======================
-   MENU
+   메뉴 열기/닫기
 ====================== */
 document.getElementById("toggleMenu").onclick=()=>{
-document.getElementById("slideMenu").classList.add("open");
+  document.getElementById("slideMenu").classList.add("open");
 };
-
 document.getElementById("closeMenu").onclick=()=>{
-document.getElementById("slideMenu").classList.remove("open");
+  document.getElementById("slideMenu").classList.remove("open");
 };
 
 /* ======================
-   RENDER
+   기본 렌더링
 ====================== */
 function render(){
+  layer.clearLayers();
+  const list=document.getElementById("spotList");
+  list.innerHTML="";
 
-layer.clearLayers();
-const list=document.getElementById("spotList");
-list.innerHTML="";
+  // 기본 명소 마커
+  spots.forEach(s=>{
+    L.marker([s.lat,s.lng]).addTo(layer).bindPopup(s.name);
+  });
 
-/* 기본 명소 */
-spots.forEach(s=>{
-L.marker([s.lat,s.lng]).addTo(layer).bindPopup(s.name);
-});
+  // 내 촬영지 마커
+  mySpots.forEach((s,i)=>{
+    const m=L.marker([s.lat,s.lng]).addTo(layer);
+    m.bindPopup(`<img src="${s.img}" width="200">`);
+    m.on("dblclick",()=>{
+      mySpots.splice(i,1);
+      localStorage.setItem("mySpots",JSON.stringify(mySpots));
+      render();
+    });
 
-/* 내 촬영지 */
-mySpots.forEach((s,i)=>{
-
-const m=L.marker([s.lat,s.lng]).addTo(layer);
-
-m.bindPopup(`<img src="${s.img}" width="200">`);
-
-m.on("dblclick",()=>{
-mySpots.splice(i,1);
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-});
-
-const li=document.createElement("li");
-li.textContent=s.name;
-li.onclick=()=>map.setView([s.lat,s.lng],15);
-list.appendChild(li);
-
-});
-
+    const li=document.createElement("li");
+    li.textContent=s.name;
+    li.onclick=()=>map.setView([s.lat,s.lng],15);
+    list.appendChild(li);
+  });
 }
-
 render();
 
 /* ======================
-   지도 클릭
+   지도 클릭 → 사진 업로드
 ====================== */
 map.on("click",e=>{
-selected=e.latlng;
-document.getElementById("photoInput").click();
+  selected=e.latlng;
+  document.getElementById("photoInput").click();
 });
-
 document.getElementById("photoInput").onchange=function(e){
-
-const file=e.target.files[0];
-if(!file||!selected)return;
-
-const r=new FileReader();
-
-r.onload=function(ev){
-
-mySpots.push({
-lat:selected.lat,
-lng:selected.lng,
-img:ev.target.result,
-name:"촬영지"
-});
-
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-
-};
-
-r.readAsDataURL(file);
+  const file=e.target.files[0];
+  if(!file||!selected)return;
+  const r=new FileReader();
+  r.onload=function(ev){
+    mySpots.push({lat:selected.lat,lng:selected.lng,img:ev.target.result,name:"촬영지"});
+    localStorage.setItem("mySpots",JSON.stringify(mySpots));
+    render();
+  };
+  r.readAsDataURL(file);
 };
 
 /* ======================
-   명소 버튼
+   버튼 이벤트
 ====================== */
+// 명소 버튼
 document.getElementById("listBtn").onclick=()=>{
-const list=document.getElementById("spotList");
-list.innerHTML="";
-spots.forEach(s=>{
-const li=document.createElement("li");
-li.textContent=s.name;
-li.onclick=()=>map.setView([s.lat,s.lng],15);
-list.appendChild(li);
-});
+  const list=document.getElementById("spotList");
+  list.innerHTML="";
+  spots.forEach(s=>{
+    const li=document.createElement("li");
+    li.textContent=s.name;
+    li.onclick=()=>map.setView([s.lat,s.lng],15);
+    list.appendChild(li);
+  });
 };
 
-/* ======================
-   현재 위치 + 일출 (수정됨)
-====================== */
+// 내 촬영지 버튼
+document.getElementById("myBtn").onclick=()=>{
+  const list=document.getElementById("spotList");
+  list.innerHTML="";
+  mySpots.forEach(s=>{
+    const li=document.createElement("li");
+    li.textContent=s.name;
+    li.onclick=()=>map.setView([s.lat,s.lng],15);
+    list.appendChild(li);
+  });
+};
+
+// 현재 위치 버튼
 document.getElementById("locBtn").onclick=()=>{
-navigator.geolocation.getCurrentPosition(pos=>{
-
-const lat=pos.coords.latitude;
-const lng=pos.coords.longitude;
-
-map.setView([lat,lng],15);
-
-L.marker([lat,lng]).addTo(map).bindPopup("현재 위치");
-
-if(sunriseLine) map.removeLayer(sunriseLine);
-
-sunriseLine=L.polyline([[lat,lng],[lat,lng+0.05]],{
-color:"orange"
-}).addTo(map);
-
-});
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    map.setView([lat,lng],15);
+    L.marker([lat,lng]).addTo(map).bindPopup("현재 위치").openPopup();
+  });
 };
 
+// 일출 버튼
+document.getElementById("sunBtn").onclick=()=>{
+  if(selected){
+    const lat=selected.lat;
+    const lng=selected.lng;
+    if(sunriseLine) map.removeLayer(sunriseLine);
+    sunriseLine=L.polyline([[lat,lng],[lat,lng+0.05]],{color:"orange"}).addTo(map);
+  } else {
+    alert("먼저 지도에서 위치를 선택하세요!");
+  }
+};
 </script>
 </body>
 </html>
