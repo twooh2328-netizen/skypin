@@ -1,30 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<title>SkyPin Drone Map</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="utf-8">
+<title>SkyPin Drone Map FIX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html, body { margin:0; height:100%; }
-#map { width:100%; height:100vh; }
+html,body{margin:0;height:100%;}
+#map{height:100vh;}
 
-/* 버튼 */
-#toggleMenu {
-position:fixed; bottom:20px; right:20px;
+#toggleMenu{
+position:fixed;bottom:20px;right:20px;
 z-index:9999;
-padding:12px 16px;
+padding:10px 14px;
 border:none;
 border-radius:8px;
-background:#f2f2f2;
+background:#eee;
 cursor:pointer;
 }
 
-/* 검색 */
-#searchBox {
-position:fixed; top:20px; right:20px;
+#searchBox{
+position:fixed;top:20px;right:20px;
 z-index:9999;
 width:240px;
 padding:10px;
@@ -32,11 +30,10 @@ border:2px solid #333;
 border-radius:8px;
 }
 
-/* 메뉴 */
-#slideMenu {
+#slideMenu{
 position:fixed;
-top:0; left:-280px;
-width:280px; height:100%;
+top:0;left:-280px;
+width:280px;height:100%;
 background:#fff;
 z-index:9998;
 transition:0.3s;
@@ -45,40 +42,39 @@ display:flex;
 flex-direction:column;
 }
 
-#slideMenu.open { left:0; }
+#slideMenu.open{left:0;}
 
-#buttons {
+#buttons{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
 
-#buttons button {
+#buttons button{
 padding:10px;
 border:none;
-border-radius:6px;
 background:#eee;
+border-radius:6px;
 cursor:pointer;
 }
 
-#spotList {
-margin-top:10px;
-overflow-y:auto;
+#spotList{
 flex:1;
+overflow:auto;
+margin-top:10px;
 }
 
-#spotList li {
+#spotList li{
 padding:8px;
 border-bottom:1px solid #ddd;
 cursor:pointer;
 }
 
-#closeMenu {
+#closeMenu{
 padding:10px;
 border:none;
 background:#ddd;
 border-radius:6px;
-cursor:pointer;
 }
 </style>
 </head>
@@ -89,15 +85,16 @@ cursor:pointer;
 <input id="searchBox" placeholder="검색">
 
 <div id="slideMenu">
-  <div id="buttons">
-    <button id="locBtn">📍 현재위치</button>
-    <button id="listBtn">📑 명소</button>
-    <button id="myBtn">⭐ 내촬영지</button>
-    <button id="sunBtn">🌅 일출</button>
-  </div>
 
-  <ul id="spotList"></ul>
-  <button id="closeMenu">닫기</button>
+<div id="buttons">
+<button id="locBtn">📍 현재위치</button>
+<button id="listBtn">📑 명소</button>
+<button id="myBtn">⭐ 내 촬영지</button>
+<button id="sunBtn">🌅 일출</button>
+</div>
+
+<ul id="spotList"></ul>
+<button id="closeMenu">닫기</button>
 </div>
 
 <div id="map"></div>
@@ -106,11 +103,23 @@ cursor:pointer;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/* =========================
-   기본 데이터
-========================= */
+
+/* ======================
+   MAP
+====================== */
+const map = L.map("map").setView([37.5,127],11);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+maxZoom:19
+}).addTo(map);
+
+const layer = L.layerGroup().addTo(map);
+
+/* ======================
+   FIXED SPOTS (정확 좌표)
+====================== */
 const spots = [
-{name:"제부도",lat:37.1710,lng:126.5720},
+{name:"제부도",lat:37.2856,lng:126.6226},  // 🔥 수정
 {name:"낙산사",lat:38.1240,lng:128.6270},
 {name:"서울숲",lat:37.5446,lng:127.0376},
 {name:"광안대교",lat:35.1531,lng:129.1185},
@@ -119,37 +128,17 @@ const spots = [
 {name:"불국사",lat:35.7902,lng:129.3325},
 {name:"하회마을",lat:36.5400,lng:128.5180},
 {name:"송도",lat:37.3925,lng:126.6345},
-{name:"남해",lat:34.8370,lng:127.8920},
-{name:"죽녹원",lat:35.3210,lng:126.9870},
-{name:"순천만",lat:34.9330,lng:127.5000},
-{name:"보성",lat:34.7510,lng:127.0850},
-{name:"경포대",lat:37.7950,lng:128.8960},
-{name:"소양강",lat:37.8940,lng:127.7340},
-{name:"호미곶",lat:36.0670,lng:129.5690},
-{name:"대왕암",lat:35.4980,lng:129.4360},
-{name:"여수",lat:34.7390,lng:127.7510},
-{name:"군산",lat:35.9000,lng:126.7000},
-{name:"태안",lat:36.4930,lng:126.3310}
+{name:"남해",lat:34.8370,lng:127.8920}
 ];
 
-let mySpots = JSON.parse(localStorage.getItem("mySpots") || "[]");
+let mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
 
-/* =========================
-   지도
-========================= */
-const map = L.map("map").setView([37.5,127], 11);
+let selected=null;
+let sunriseLine=null;
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-maxZoom:19
-}).addTo(map);
-
-let layer = L.layerGroup().addTo(map);
-let selected = null;
-let sunriseLine = null;
-
-/* =========================
-   메뉴
-========================= */
+/* ======================
+   MENU
+====================== */
 document.getElementById("toggleMenu").onclick=()=>{
 document.getElementById("slideMenu").classList.add("open");
 };
@@ -158,40 +147,9 @@ document.getElementById("closeMenu").onclick=()=>{
 document.getElementById("slideMenu").classList.remove("open");
 };
 
-/* =========================
-   지도 클릭 → 사진
-========================= */
-document.getElementById("photoInput").addEventListener("change",e=>{
-const file=e.target.files[0];
-if(!file || !selected) return;
-
-const reader=new FileReader();
-
-reader.onload=function(ev){
-
-mySpots.push({
-lat:selected.lat,
-lng:selected.lng,
-img:ev.target.result,
-name:"촬영지"
-});
-
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-};
-
-reader.readAsDataURL(file);
-});
-
-/* 지도 클릭 */
-map.on("click",e=>{
-selected=e.latlng;
-document.getElementById("photoInput").click();
-});
-
-/* =========================
-   렌더
-========================= */
+/* ======================
+   RENDER
+====================== */
 function render(){
 
 layer.clearLayers();
@@ -200,8 +158,7 @@ list.innerHTML="";
 
 /* 기본 명소 */
 spots.forEach(s=>{
-L.marker([s.lat,s.lng]).addTo(layer)
-.bindPopup(s.name);
+L.marker([s.lat,s.lng]).addTo(layer).bindPopup(s.name);
 });
 
 /* 내 촬영지 */
@@ -223,15 +180,49 @@ li.onclick=()=>map.setView([s.lat,s.lng],15);
 list.appendChild(li);
 
 });
+
 }
 
-/* =========================
-   명소 목록
-========================= */
+render();
+
+/* ======================
+   지도 클릭
+====================== */
+map.on("click",e=>{
+selected=e.latlng;
+document.getElementById("photoInput").click();
+});
+
+document.getElementById("photoInput").onchange=function(e){
+
+const file=e.target.files[0];
+if(!file||!selected)return;
+
+const r=new FileReader();
+
+r.onload=function(ev){
+
+mySpots.push({
+lat:selected.lat,
+lng:selected.lng,
+img:ev.target.result,
+name:"촬영지"
+});
+
+localStorage.setItem("mySpots",JSON.stringify(mySpots));
+render();
+
+};
+
+r.readAsDataURL(file);
+};
+
+/* ======================
+   명소 버튼
+====================== */
 document.getElementById("listBtn").onclick=()=>{
 const list=document.getElementById("spotList");
 list.innerHTML="";
-
 spots.forEach(s=>{
 const li=document.createElement("li");
 li.textContent=s.name;
@@ -240,22 +231,18 @@ list.appendChild(li);
 });
 };
 
-/* =========================
-   내 촬영지
-========================= */
-document.getElementById("myBtn").onclick=render;
-
-/* =========================
-   현재 위치 + 일출
-========================= */
+/* ======================
+   현재 위치 + 일출 (수정됨)
+====================== */
 document.getElementById("locBtn").onclick=()=>{
 navigator.geolocation.getCurrentPosition(pos=>{
+
 const lat=pos.coords.latitude;
 const lng=pos.coords.longitude;
 
 map.setView([lat,lng],15);
 
-L.marker([lat,lng]).addTo(map).bindPopup("현재 위치").openPopup();
+L.marker([lat,lng]).addTo(map).bindPopup("현재 위치");
 
 if(sunriseLine) map.removeLayer(sunriseLine);
 
@@ -266,9 +253,6 @@ color:"orange"
 });
 };
 
-/* 초기 실행 */
-render();
 </script>
-
 </body>
 </html>
