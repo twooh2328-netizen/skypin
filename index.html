@@ -2,72 +2,30 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin Stable Fix</title>
-
+<title>SkyPin SAFE CORE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 html,body{margin:0;height:100%;}
 #map{height:100vh;width:100%;}
-
-#toggleMenu{
-position:fixed;bottom:20px;right:20px;z-index:9999;
-padding:10px;border:none;border-radius:6px;
-background:#eee;cursor:pointer;
-}
-
-#searchBox{
-position:fixed;top:20px;right:20px;z-index:9999;
-width:260px;padding:10px;border-radius:8px;
-border:2px solid #333;
-}
-
-#slideMenu{
-position:absolute;top:0;left:-260px;
-width:260px;height:100%;
-background:#fff;z-index:1100;
-transition:.3s;padding:10px;
-display:flex;flex-direction:column;
-}
-
+#toggleMenu{position:fixed;bottom:20px;right:20px;z-index:9999;}
+#slideMenu{position:absolute;left:-260px;top:0;width:260px;height:100%;background:#fff;transition:.3s;z-index:1000;}
 #slideMenu.open{left:0;}
-
-#buttons{
-display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
-}
-
-#buttons button{
-padding:10px;border:none;border-radius:6px;
-background:#eee;cursor:pointer;
-}
-
-#spotList{
-margin-top:10px;overflow:auto;flex:1;
-}
-
-#spotList li{
-padding:8px;border-bottom:1px solid #ddd;
-cursor:pointer;
-}
 </style>
 </head>
 
 <body>
 
-<button id="toggleMenu">☰ 메뉴</button>
-<input id="searchBox" placeholder="검색">
+<button id="toggleMenu">MENU</button>
 
 <div id="slideMenu">
-<div id="buttons">
 <button id="locBtn">현재위치</button>
 <button id="listBtn">명소</button>
 <button id="mySpotsBtn">내 촬영지</button>
-<button id="sunriseBtn">일출</button>
-</div>
-
-<ul id="spotList"></ul>
 <button id="closeMenu">닫기</button>
+<ul id="spotList"></ul>
 </div>
 
 <div id="map"></div>
@@ -76,44 +34,28 @@ cursor:pointer;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+
 /* =========================
-SAFE INIT (핵심)
+1. STATE 먼저
 ========================= */
 let map;
-let markerLayer;
+let layer;
 let mySpots = [];
 let selectedLat = null;
 let selectedLng = null;
-let sunriseLine = null;
 
 /* =========================
-20개 명소
+2. 명소 데이터
 ========================= */
 const spots = [
-{name:"제부도",lat:37.171,lng:126.572},
-{name:"낙산사",lat:38.124,lng:128.627},
-{name:"서울숲",lat:37.5446,lng:127.0376},
-{name:"광안대교",lat:35.153,lng:129.118},
-{name:"성산일출봉",lat:33.458,lng:126.942},
-{name:"영금정",lat:38.207,lng:128.591},
-{name:"불국사",lat:35.79,lng:129.332},
-{name:"하회마을",lat:36.54,lng:128.518},
-{name:"송도",lat:37.392,lng:126.634},
-{name:"독일마을",lat:34.837,lng:127.892},
-{name:"죽녹원",lat:35.321,lng:126.987},
-{name:"순천만",lat:34.933,lng:127.5},
-{name:"경포대",lat:37.795,lng:128.896},
-{name:"호미곶",lat:36.067,lng:129.569},
-{name:"여수",lat:34.739,lng:127.751},
-{name:"군산",lat:35.9,lng:126.7},
-{name:"태안",lat:36.493,lng:126.331},
-{name:"춘천",lat:37.894,lng:127.734},
-{name:"울산",lat:35.498,lng:129.436},
-{name:"보성",lat:34.751,lng:127.085}
+{name:"제부도",lat:37.17,lng:126.57},
+{name:"서울숲",lat:37.54,lng:127.03},
+{name:"광안대교",lat:35.15,lng:129.11},
+{name:"성산일출봉",lat:33.45,lng:126.94}
 ];
 
 /* =========================
-INIT MAP (무조건 먼저 실행)
+3. INIT (무조건 1번만 실행)
 ========================= */
 window.onload = function(){
 
@@ -123,18 +65,19 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 maxZoom:19
 }).addTo(map);
 
-markerLayer = L.layerGroup().addTo(map);
+layer = L.layerGroup().addTo(map);
 
-mySpots = JSON.parse(localStorage.getItem("mySpots")||"[]");
+mySpots = JSON.parse(localStorage.getItem("mySpots") || "[]");
 
-bindEvents();
+bindUI();
 render();
+
 };
 
 /* =========================
-EVENT BIND (중요)
+4. UI 연결
 ========================= */
-function bindEvents(){
+function bindUI(){
 
 document.getElementById("toggleMenu").onclick=()=>{
 document.getElementById("slideMenu").classList.add("open");
@@ -144,100 +87,58 @@ document.getElementById("closeMenu").onclick=()=>{
 document.getElementById("slideMenu").classList.remove("open");
 };
 
-/* 지도 클릭 */
-map.on("click",e=>{
-selectedLat = e.latlng.lat;
-selectedLng = e.latlng.lng;
-document.getElementById("photoInput").click();
-});
-
-/* 사진 */
-document.getElementById("photoInput").addEventListener("change",e=>{
-const file = e.target.files[0];
-if(!file || selectedLat===null) return;
-
-const reader = new FileReader();
-reader.onload = ()=>{
-mySpots.push({
-lat:selectedLat,
-lng:selectedLng,
-img:reader.result,
-name:"촬영지"
-});
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-};
-reader.readAsDataURL(file);
-});
-
-/* 현재위치 */
+/* 현재 위치 */
 document.getElementById("locBtn").onclick=()=>{
 navigator.geolocation.getCurrentPosition(p=>{
-const lat=p.coords.latitude;
-const lng=p.coords.longitude;
-
-map.setView([lat,lng],15);
-L.marker([lat,lng]).addTo(map).bindPopup("현재 위치");
-
-if(sunriseLine) map.removeLayer(sunriseLine);
-
-sunriseLine = L.polyline([[lat,lng],[lat,lng+0.05]],{
-color:"orange",weight:3
-}).addTo(map);
-
+map.setView([p.coords.latitude,p.coords.longitude],15);
+L.marker([p.coords.latitude,p.coords.longitude]).addTo(map);
 });
 };
 
 /* 명소 */
 document.getElementById("listBtn").onclick=()=>{
-let list=document.getElementById("spotList");
+const list=document.getElementById("spotList");
 list.innerHTML="";
 spots.forEach(s=>{
-let li=document.createElement("li");
-li.textContent=s.name;
-li.onclick=()=>map.setView([s.lat,s.lng],14);
-list.appendChild(li);
-});
-};
-
-/* 내 촬영지 */
-document.getElementById("mySpotsBtn").onclick=render;
-
-}
-
-/* =========================
-RENDER (안정화 핵심)
-========================= */
-function render(){
-
-markerLayer.clearLayers();
-
-let list=document.getElementById("spotList");
-list.innerHTML="";
-
-spots.forEach(s=>{
-L.marker([s.lat,s.lng]).addTo(markerLayer).bindPopup(s.name);
-});
-
-mySpots.forEach((s,i)=>{
-let m=L.marker([s.lat,s.lng]).addTo(markerLayer);
-
-m.bindPopup("<img src='"+s.img+"' width='180'>");
-
-m.on("dblclick",()=>{
-mySpots.splice(i,1);
-localStorage.setItem("mySpots",JSON.stringify(mySpots));
-render();
-});
-
 let li=document.createElement("li");
 li.textContent=s.name;
 li.onclick=()=>map.setView([s.lat,s.lng],15);
 list.appendChild(li);
 });
+};
 
 }
-</script>
 
+/* =========================
+5. render (절대 안전)
+========================= */
+function render(){
+
+if(!map || !layer) return;
+
+layer.clearLayers();
+
+const list=document.getElementById("spotList");
+if(list) list.innerHTML="";
+
+/* 기본 */
+spots.forEach(s=>{
+L.marker([s.lat,s.lng]).addTo(map);
+});
+
+/* 내 데이터 */
+mySpots.forEach((s,i)=>{
+L.marker([s.lat,s.lng]).addTo(map);
+
+if(list){
+let li=document.createElement("li");
+li.textContent="내 촬영지";
+list.appendChild(li);
+}
+});
+
+}
+
+</script>
 </body>
 </html>
