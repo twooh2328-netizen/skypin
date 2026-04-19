@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SkyPin FINAL CHECK</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html,body{margin:0;height:100%;}
+#map{height:100vh;}
+
+#toggleMenu{
+position:fixed;bottom:20px;right:20px;
+z-index:9999;
+padding:12px;
+border:none;
+background:#eee;
+border-radius:8px;
+cursor:pointer;
+}
+
+#slideMenu{
+position:fixed;
+top:0;left:-280px;
+width:280px;height:100%;
+background:#fff;
+z-index:9999;
+transition:0.3s;
+padding:10px;
+}
+
+#slideMenu.open{left:0;}
+
+#buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+#buttons button{
+padding:10px;
+border:none;
+background:#eee;
+border-radius:6px;
+cursor:pointer;
+}
+
+#spotList{margin-top:10px;overflow:auto;height:70%;}
+
+#spotList li{padding:8px;border-bottom:1px solid #ddd;cursor:pointer;}
+</style>
+</head>
+
+<body>
+
+<button id="toggleMenu">☰ 메뉴</button>
+
+<div id="slideMenu">
+
+<div id="buttons">
+<button id="locBtn">📍 현재위치</button>
+<button id="listBtn">📑 명소</button>
+<button id="sunBtn">🌅 일출</button>
+</div>
+
+<ul id="spotList"></ul>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+/* =========================
+   MAP
+========================= */
+const map = L.map("map").setView([37.5,127],11);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
+
+const layer = L.layerGroup().addTo(map);
+
+/* =========================
+   20개 명소 (확실히 20개)
+========================= */
+const spots = [
+{name:"제부도",lat:37.2856,lng:126.6226},
+{name:"낙산사",lat:38.1240,lng:128.6270},
+{name:"서울숲",lat:37.5446,lng:127.0376},
+{name:"광안대교",lat:35.1531,lng:129.1185},
+{name:"성산일출봉",lat:33.4589,lng:126.9425},
+{name:"영금정",lat:38.2070,lng:128.5910},
+{name:"불국사",lat:35.7902,lng:129.3325},
+{name:"하회마을",lat:36.5400,lng:128.5180},
+{name:"송도",lat:37.3925,lng:126.6345},
+{name:"남해",lat:34.8370,lng:127.8920},
+{name:"죽녹원",lat:35.3210,lng:126.9870},
+{name:"순천만",lat:34.9330,lng:127.5000},
+{name:"보성",lat:34.7510,lng:127.0850},
+{name:"경포대",lat:37.7950,lng:128.8960},
+{name:"소양강",lat:37.8940,lng:127.7340},
+{name:"호미곶",lat:36.0670,lng:129.5690},
+{name:"대왕암",lat:35.4980,lng:129.4360},
+{name:"여수",lat:34.7390,lng:127.7510},
+{name:"군산",lat:35.9000,lng:126.7000},
+{name:"태안",lat:36.4930,lng:126.3310}
+];
+
+let sunriseLine=null;
+
+/* =========================
+   MENU
+========================= */
+document.getElementById("toggleMenu").onclick=()=>{
+document.getElementById("slideMenu").classList.toggle("open");
+};
+
+/* =========================
+   LIST (20개 출력 확인용)
+========================= */
+document.getElementById("listBtn").onclick=()=>{
+
+const list=document.getElementById("spotList");
+list.innerHTML="";
+
+spots.forEach(s=>{
+const li=document.createElement("li");
+li.textContent=s.name;
+li.onclick=()=>map.setView([s.lat,s.lng],15);
+list.appendChild(li);
+});
+
+console.log("spots 개수:",spots.length); // 🔥 반드시 20 찍힘
+};
+
+/* =========================
+   현재 위치
+========================= */
+document.getElementById("locBtn").onclick=()=>{
+navigator.geolocation.getCurrentPosition(pos=>{
+
+const lat=pos.coords.latitude;
+const lng=pos.coords.longitude;
+
+map.setView([lat,lng],15);
+L.marker([lat,lng]).addTo(map).bindPopup("현재 위치");
+
+/* 일출 방향 */
+if(sunriseLine) map.removeLayer(sunriseLine);
+
+sunriseLine=L.polyline(
+[[lat,lng],[lat,lng+0.05]],
+{color:"orange"}
+).addTo(map);
+
+});
+};
+
+</script>
+</body>
+</html>
