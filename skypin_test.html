@@ -1,160 +1,73 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<title>SkyPin SAFE RUN</title>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<style>
-html,body{
-margin:0;
-height:100%;
-}
-
-#map{
-height:100vh;
-width:100%;
-}
-
-/* 메뉴 */
-#toggleMenu{
-position:fixed;
-bottom:20px;
-right:20px;
-z-index:9999;
-padding:12px;
-border:none;
-border-radius:8px;
-background:#eee;
-cursor:pointer;
-}
-
-#menu{
-position:fixed;
-top:0;
-left:-280px;
-width:280px;
-height:100%;
-background:#fff;
-z-index:10000;
-transition:0.3s;
-padding:10px;
-box-shadow:2px 0 10px rgba(0,0,0,0.2);
-}
-
-#menu.open{
-left:0;
-}
-
-#menu button{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border:none;
-background:#eee;
-cursor:pointer;
-}
-
-#list{
-max-height:70%;
-overflow:auto;
-}
-</style>
-</head>
-
-<body>
-
-<div id="map"></div>
-
-<button id="toggleMenu">☰ 메뉴</button>
-
-<div id="menu">
-<button id="btnList">명소 목록</button>
-<button id="btnLoc">현재 위치</button>
-<button id="btnSun">일출 방향</button>
-
-<div id="list"></div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-
-console.log("SkyPin loaded");
+document.addEventListener("DOMContentLoaded", function () {
 
 /* ================= MAP ================= */
 const map = L.map("map").setView([37.5,127],11);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-maxZoom:19
-}).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
+
+const layer = L.layerGroup().addTo(map);
 
 /* ================= DATA ================= */
 const spots = [
-["제부도",37.2856,126.6226],
-["낙산사",38.1240,128.6270],
-["서울숲",37.5446,127.0376],
-["광안대교",35.1531,129.1185],
-["성산일출봉",33.4589,126.9425]
+{name:"제부도",lat:37.2856,lng:126.6226},
+{name:"낙산사",lat:38.1240,lng:128.6270},
+{name:"서울숲",lat:37.5446,lng:127.0376},
+{name:"광안대교",lat:35.1531,lng:129.1185},
+{name:"성산일출봉",lat:33.4589,lng:126.9425}
 ];
 
-/* ================= STATE ================= */
-let marker = null;
-let line = null;
+let focusMarker = null;
+let sunriseLine = null;
+
+/* ================= SAFE GET ================= */
+const $ = (id) => document.getElementById(id);
 
 /* ================= MENU ================= */
-document.getElementById("toggleMenu").onclick=()=>{
-document.getElementById("menu").classList.toggle("open");
+$("toggleMenu").onclick = () => {
+$("slideMenu").classList.toggle("open");
 };
 
 /* ================= LIST ================= */
-document.getElementById("btnList").onclick=()=>{
+$("listBtn").onclick = () => {
 
-const list = document.getElementById("list");
-list.innerHTML="";
+const list = $("spotList");
+list.innerHTML = "";
 
-spots.forEach(s=>{
+spots.forEach(s => {
+const li = document.createElement("li");
+li.textContent = s.name;
 
-const div = document.createElement("div");
-div.textContent = s[0];
-div.style.padding="8px";
-div.style.borderBottom="1px solid #ddd";
+li.onclick = () => {
+map.flyTo([s.lat, s.lng], 15);
 
-div.onclick=()=>{
+if (focusMarker) map.removeLayer(focusMarker);
 
-map.flyTo([s[1],s[2]],15);
-
-if(marker) map.removeLayer(marker);
-
-marker = L.marker([s[1],s[2]])
+focusMarker = L.marker([s.lat, s.lng])
 .addTo(map)
-.bindPopup(s[0])
+.bindPopup(s.name)
 .openPopup();
-
 };
 
-list.appendChild(div);
-
+list.appendChild(li);
 });
 
 };
 
 /* ================= LOCATION ================= */
-document.getElementById("btnLoc").onclick=()=>{
+$("locBtn").onclick = () => {
 
-navigator.geolocation.getCurrentPosition(p=>{
+navigator.geolocation.getCurrentPosition(pos => {
 
-const lat = p.coords.latitude;
-const lng = p.coords.longitude;
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
 
-map.flyTo([lat,lng],15);
+map.flyTo([lat, lng], 15);
 
-if(marker) map.removeLayer(marker);
+if (focusMarker) map.removeLayer(focusMarker);
 
-marker = L.marker([lat,lng])
+focusMarker = L.marker([lat, lng])
 .addTo(map)
 .bindPopup("현재 위치")
 .openPopup();
@@ -164,24 +77,23 @@ marker = L.marker([lat,lng])
 };
 
 /* ================= SUN ================= */
-document.getElementById("btnSun").onclick=()=>{
+$("sunBtn").onclick = () => {
 
-navigator.geolocation.getCurrentPosition(p=>{
+navigator.geolocation.getCurrentPosition(pos => {
 
-const lat = p.coords.latitude;
-const lng = p.coords.longitude;
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
 
-if(line) map.removeLayer(line);
+if (sunriseLine) map.removeLayer(sunriseLine);
 
-line = L.polyline([[lat,lng],[lat,lng+0.05]],{
-color:"orange"
-}).addTo(map);
+sunriseLine = L.polyline(
+[[lat, lng],[lat, lng + 0.05]],
+{color:"orange",weight:3}
+).addTo(map);
 
 });
 
 };
 
+});
 </script>
-
-</body>
-</html>
