@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin Clean Start</title>
+<title>SkyPin FINAL MATCH</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -22,7 +22,7 @@ width:100%;
 position:fixed;
 bottom:20px;
 right:20px;
-z-index:9999;
+z-index:99999;
 padding:12px;
 border:none;
 border-radius:8px;
@@ -37,8 +37,8 @@ top:0;
 left:-280px;
 width:280px;
 height:100%;
-background:white;
-z-index:10000;
+background:#fff;
+z-index:99999;
 transition:0.3s;
 padding:10px;
 box-shadow:2px 0 10px rgba(0,0,0,0.2);
@@ -52,16 +52,22 @@ padding:10px;
 margin-bottom:10px;
 border:none;
 background:#eee;
-cursor:pointer;
 border-radius:6px;
+cursor:pointer;
 }
 
 #list{
+margin-top:10px;
 height:70%;
 overflow:auto;
 border-top:1px solid #ddd;
-margin-top:10px;
 padding-top:10px;
+}
+
+.item{
+padding:8px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
 }
 </style>
 </head>
@@ -99,65 +105,52 @@ const spots = [
 {name:"낙산사",lat:38.1240,lng:128.6270},
 {name:"서울숲",lat:37.5446,lng:127.0376},
 {name:"광안대교",lat:35.1531,lng:129.1185},
-{name:"성산일출봉",lat:33.4589,lng:126.9425},
-{name:"영금정",lat:38.2070,lng:128.5910},
-{name:"불국사",lat:35.7902,lng:129.3325},
-{name:"하회마을",lat:36.5400,lng:128.5180},
-{name:"송도",lat:37.3925,lng:126.6345},
-{name:"남해",lat:34.8370,lng:127.8920},
-{name:"죽녹원",lat:35.3210,lng:126.9870},
-{name:"순천만",lat:34.9330,lng:127.5000},
-{name:"보성",lat:34.7510,lng:127.0850},
-{name:"경포대",lat:37.7950,lng:128.8960},
-{name:"소양강",lat:37.8940,lng:127.7340},
-{name:"호미곶",lat:36.0670,lng:129.5690},
-{name:"대왕암",lat:35.4980,lng:129.4360},
-{name:"여수",lat:34.7390,lng:127.7510},
-{name:"군산",lat:35.9000,lng:126.7000},
-{name:"태안",lat:36.4930,lng:126.3310}
+{name:"성산일출봉",lat:33.4589,lng:126.9425}
 ];
 
 /* ================= STATE ================= */
-let focusMarker = null;
+let marker = null;
 let sunriseLine = null;
-let mySpots = [];
 
 /* ================= MENU ================= */
+const menu = document.getElementById("menu");
+
 document.getElementById("menuBtn").onclick = () => {
-document.getElementById("menu").classList.toggle("open");
+menu.classList.toggle("open");
 };
 
-/* ================= CORE FUNCTION ================= */
-function moveTo(lat,lng,title){
+/* ================= MOVE FUNCTION ================= */
+function go(lat,lng,title){
 
 map.flyTo([lat,lng],15);
 
-if(focusMarker){
-map.removeLayer(focusMarker);
+if(marker){
+map.removeLayer(marker);
 }
 
-focusMarker = L.marker([lat,lng])
+marker = L.marker([lat,lng])
 .addTo(map)
 .bindPopup(title)
 .openPopup();
 
 }
 
-/* ================= LIST ================= */
+/* ================= LIST BUTTON ================= */
 document.getElementById("btnList").onclick = () => {
 
 const list = document.getElementById("list");
 list.innerHTML = "";
 
 spots.forEach(s=>{
-const div = document.createElement("div");
-div.textContent = s.name;
-div.style.padding="8px";
-div.style.borderBottom="1px solid #ddd";
 
-div.onclick = () => moveTo(s.lat,s.lng,s.name);
+const div = document.createElement("div");
+div.className="item";
+div.textContent = s.name;
+
+div.onclick = () => go(s.lat,s.lng,s.name);
 
 list.appendChild(div);
+
 });
 
 };
@@ -165,17 +158,12 @@ list.appendChild(div);
 /* ================= CURRENT LOCATION ================= */
 document.getElementById("btnLoc").onclick = () => {
 
-if(!navigator.geolocation){
-alert("GPS 지원 안됨");
-return;
-}
-
 navigator.geolocation.getCurrentPosition(pos=>{
 
 const lat = pos.coords.latitude;
 const lng = pos.coords.longitude;
 
-moveTo(lat,lng,"현재 위치");
+go(lat,lng,"현재 위치");
 
 if(sunriseLine){
 map.removeLayer(sunriseLine);
@@ -190,20 +178,14 @@ sunriseLine = L.polyline(
 
 };
 
-/* ================= MY SPOTS ================= */
+/* ================= MY SPOTS (placeholder) ================= */
 document.getElementById("btnMy").onclick = () => {
-
-alert("지도 클릭 후 사진 업로드 기능은 다음 단계입니다 (현재는 구조 안정화 단계)");
-
+alert("내 촬영지 기능은 다음 확장 단계입니다 (현재 구조 정상 확인 완료)");
 };
 
 /* ================= SUN ================= */
 document.getElementById("btnSun").onclick = () => {
-
-if(!sunriseLine){
-alert("먼저 현재위치를 눌러주세요");
-}
-
+alert("현재위치를 눌러야 일출선이 표시됩니다");
 };
 
 </script>
