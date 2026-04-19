@@ -208,12 +208,24 @@ color:"orange",weight:3
 📑 LIST
 ======================= */
 document.getElementById("btnList").onclick=()=>{
-document.getElementById("spotList").innerHTML=
-State.spots.map(s=>
-`<li onclick="map.setView([${s.lat},${s.lng}],15)">${s.name}</li>`
-).join("");
-};
 
+const list = document.getElementById("spotList");
+list.innerHTML="";
+
+State.spots.forEach(s=>{
+
+const li=document.createElement("li");
+li.textContent=s.name;
+
+li.addEventListener("click",()=>{
+map.setView([s.lat,s.lng],15);
+});
+
+list.appendChild(li);
+
+});
+
+};
 /* =======================
 ⭐ MY LIST
 ======================= */
