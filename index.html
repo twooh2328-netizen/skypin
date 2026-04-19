@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin SAFE CORE</title>
+<title>SkyPin FIX CORE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -36,7 +36,7 @@ html,body{margin:0;height:100%;}
 <script>
 
 /* =========================
-1. STATE 먼저
+✔ 1. 전역 변수 먼저 (절대 중요)
 ========================= */
 let map;
 let layer;
@@ -45,7 +45,7 @@ let selectedLat = null;
 let selectedLng = null;
 
 /* =========================
-2. 명소 데이터
+✔ 2. 데이터
 ========================= */
 const spots = [
 {name:"제부도",lat:37.17,lng:126.57},
@@ -55,9 +55,19 @@ const spots = [
 ];
 
 /* =========================
-3. INIT (무조건 1번만 실행)
+✔ 3. DOM 완전히 로드 후 실행
 ========================= */
-window.onload = function(){
+document.addEventListener("DOMContentLoaded",function(){
+
+initMap();
+bindUI();
+
+});
+
+/* =========================
+✔ 4. 지도 초기화 (무조건 먼저)
+========================= */
+function initMap(){
 
 map = L.map("map").setView([37.5,127],11);
 
@@ -69,13 +79,11 @@ layer = L.layerGroup().addTo(map);
 
 mySpots = JSON.parse(localStorage.getItem("mySpots") || "[]");
 
-bindUI();
 render();
-
-};
+}
 
 /* =========================
-4. UI 연결
+✔ 5. UI 연결 (여기서만 이벤트)
 ========================= */
 function bindUI(){
 
@@ -110,7 +118,7 @@ list.appendChild(li);
 }
 
 /* =========================
-5. render (절대 안전)
+✔ 6. render (안전버전)
 ========================= */
 function render(){
 
@@ -127,18 +135,13 @@ L.marker([s.lat,s.lng]).addTo(map);
 });
 
 /* 내 데이터 */
-mySpots.forEach((s,i)=>{
+mySpots.forEach(s=>{
 L.marker([s.lat,s.lng]).addTo(map);
-
-if(list){
-let li=document.createElement("li");
-li.textContent="내 촬영지";
-list.appendChild(li);
-}
 });
 
 }
 
 </script>
+
 </body>
 </html>
