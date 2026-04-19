@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SkyPin Drone Map Debug</title>
+<title>SkyPin Drone Map Safe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -42,8 +42,8 @@ document.getElementById("locBtn").onclick=()=>{
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat=pos.coords.latitude;
     const lng=pos.coords.longitude;
-    console.log("현재 위치:", lat, lng); // ✅ 값 확인
-    if(lat && lng){
+    console.log("현재 위치:", lat, lng);
+    if(typeof lat==="number" && typeof lng==="number"){
       map.setView([lat,lng],15);
       L.marker([lat,lng]).addTo(map).bindPopup("현재 위치").openPopup();
     } else {
@@ -57,8 +57,8 @@ document.getElementById("locBtn").onclick=()=>{
 // 명소 버튼
 document.getElementById("listBtn").onclick=()=>{
   spots.forEach(s=>{
-    console.log("명소 좌표:", s.name, s.lat, s.lng); // ✅ 값 확인
-    if(s.lat && s.lng){
+    console.log("명소 좌표:", s.name, s.lat, s.lng);
+    if(typeof s.lat==="number" && typeof s.lng==="number"){
       L.marker([s.lat,s.lng]).addTo(map).bindPopup(s.name);
     } else {
       console.warn("잘못된 명소 좌표:", s);
@@ -69,8 +69,8 @@ document.getElementById("listBtn").onclick=()=>{
 // 내 촬영지 버튼
 document.getElementById("myBtn").onclick=()=>{
   mySpots.forEach(s=>{
-    console.log("내 촬영지 좌표:", s.name, s.lat, s.lng); // ✅ 값 확인
-    if(s.lat && s.lng){
+    console.log("내 촬영지 좌표:", s.name, s.lat, s.lng);
+    if(typeof s.lat==="number" && typeof s.lng==="number"){
       L.marker([s.lat,s.lng]).addTo(map).bindPopup(s.name);
     } else {
       console.warn("잘못된 촬영지 좌표:", s);
@@ -81,8 +81,8 @@ document.getElementById("myBtn").onclick=()=>{
 // 일출 버튼
 document.getElementById("sunBtn").onclick=()=>{
   if(selected){
-    console.log("일출 기준 좌표:", selected.lat, selected.lng); // ✅ 값 확인
-    if(selected.lat && selected.lng){
+    console.log("일출 기준 좌표:", selected.lat, selected.lng);
+    if(typeof selected.lat==="number" && typeof selected.lng==="number"){
       if(sunriseLine) map.removeLayer(sunriseLine);
       sunriseLine=L.polyline([[selected.lat,selected.lng],[selected.lat,selected.lng+0.05]],{color:"orange"}).addTo(map);
     } else {
@@ -96,7 +96,7 @@ document.getElementById("sunBtn").onclick=()=>{
 // 지도 클릭 → 선택 좌표 저장
 map.on("click",e=>{
   selected=e.latlng;
-  console.log("지도 클릭 좌표:", selected.lat, selected.lng); // ✅ 값 확인
+  console.log("지도 클릭 좌표:", selected.lat, selected.lng);
 });
 </script>
 </body>
