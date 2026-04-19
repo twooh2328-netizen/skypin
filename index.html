@@ -100,12 +100,10 @@ cursor:pointer;
 <div id="slideMenu">
 
 <div id="buttons">
-
 <button id="locBtn">📍 현재위치</button>
 <button id="listBtn">📑 명소</button>
 <button id="mySpotsBtn">⭐ 내 촬영지</button>
 <button id="sunriseBtn">🌅 일출선</button>
-
 </div>
 
 <ul id="spotList"></ul>
@@ -123,53 +121,48 @@ cursor:pointer;
 
 document.addEventListener("DOMContentLoaded",function(){
 
-// MENU
+// =====================
+// 1. MENU
+// =====================
 const menu=document.getElementById("slideMenu");
 
 document.getElementById("toggleMenu").onclick=()=>menu.classList.add("open");
 document.getElementById("closeMenu").onclick=()=>menu.classList.remove("open");
 
-// MAP
+// =====================
+// 2. MAP
+// =====================
 var map=L.map("map").setView([37.5,127],11);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 maxZoom:19
 }).addTo(map);
 
-// MARKER LAYER
+// marker layer
 var markerLayer=L.layerGroup().addTo(map);
 
-// DATA
+// =====================
+// 3. FIX: 반드시 선언 (핵심)
+// =====================
+let selectedLat=null;
+let selectedLng=null;
+
+// =====================
+// 4. DATA
+// =====================
 var spots=[
 {name:"제부도",lat:37.1710,lng:126.5720},
-{name:"양양 낙산사",lat:38.1240,lng:128.6270},
 {name:"서울숲",lat:37.5446,lng:127.0376},
 {name:"부산 광안대교",lat:35.1531,lng:129.1185},
 {name:"제주 성산일출봉",lat:33.4589,lng:126.9425},
-{name:"속초 영금정",lat:38.2070,lng:128.5910},
-{name:"경주 불국사",lat:35.7902,lng:129.3325},
-{name:"안동 하회마을",lat:36.5400,lng:128.5180},
-{name:"인천 송도",lat:37.3925,lng:126.6345},
-{name:"남해 독일마을",lat:34.8370,lng:127.8920},
-{name:"담양 죽녹원",lat:35.3210,lng:126.9870},
-{name:"순천만",lat:34.9330,lng:127.5000},
-{name:"보성 녹차밭",lat:34.7510,lng:127.0850},
-{name:"강릉 경포대",lat:37.7950,lng:128.8960},
-{name:"춘천 소양강",lat:37.8940,lng:127.7340},
-{name:"포항 호미곶",lat:36.0670,lng:129.5690},
-{name:"울산 대왕암",lat:35.4980,lng:129.4360},
-{name:"여수 돌산대교",lat:34.7390,lng:127.7510},
-{name:"군산 새만금",lat:35.9000,lng:126.7000},
-{name:"태안 꽃지",lat:36.4930,lng:126.3310}
+{name:"강릉 경포대",lat:37.7950,lng:128.8960}
 ];
 
-// STORAGE
 let mySpots=JSON.parse(localStorage.getItem("mySpots"))||[];
 
-// SUNRISE LINE (핵심 복구)
-var sunriseLine=null;
-
-// MAP CLICK → 촬영지 + 사진
+// =====================
+// 5. MAP CLICK (촬영 위치 선택)
+// =====================
 map.on("click",function(e){
 
 selectedLat=e.latlng.lat;
@@ -179,11 +172,13 @@ photoInput.click();
 
 });
 
-// PHOTO UPLOAD
+// =====================
+// 6. PHOTO UPLOAD
+// =====================
 photoInput.addEventListener("change",function(){
 
 const file=this.files[0];
-if(!file)return;
+if(!file || selectedLat===null) return;
 
 const reader=new FileReader();
 
@@ -191,11 +186,6 @@ reader.onload=function(ev){
 
 const img=ev.target.result;
 
-// marker
-L.marker([selectedLat,selectedLng]).addTo(map)
-.bindPopup("<img src='"+img+"' width='200'>");
-
-// save
 mySpots.push({
 lat:selectedLat,
 lng:selectedLng,
@@ -213,7 +203,9 @@ reader.readAsDataURL(file);
 
 });
 
-// RENDER
+// =====================
+// 7. RENDER (핵심 안정화)
+// =====================
 function render(){
 
 markerLayer.clearLayers();
@@ -221,15 +213,13 @@ markerLayer.clearLayers();
 const list=document.getElementById("spotList");
 list.innerHTML="";
 
-// default spots
-spots.forEach((s,i)=>{
-
+// 기본 명소
+spots.forEach(s=>{
 L.marker([s.lat,s.lng]).addTo(markerLayer)
 .bindPopup(s.name);
-
 });
 
-// my spots
+// 사용자 촬영지
 mySpots.forEach((s,i)=>{
 
 const m=L.marker([s.lat,s.lng]).addTo(markerLayer);
@@ -249,7 +239,7 @@ render();
 });
 
 const li=document.createElement("li");
-li.textContent=s.name||"촬영지";
+li.textContent=s.name;
 li.onclick=()=>map.setView([s.lat,s.lng],15);
 
 list.appendChild(li);
@@ -258,10 +248,14 @@ list.appendChild(li);
 
 }
 
-// 📍 현재 위치 + 🌅 일출 방향 (복구 완료)
+// =====================
+// 8. 현재 위치 + 일출 방향
+// =====================
+let sunriseLine=null;
+
 document.getElementById("locBtn").onclick=function(){
 
-if(navigator.geolocation){
+if(!navigator.geolocation) return;
 
 navigator.geolocation.getCurrentPosition(pos=>{
 
@@ -273,24 +267,17 @@ map.setView([lat,lng],15);
 L.marker([lat,lng]).addTo(map)
 .bindPopup("현재 위치").openPopup();
 
-// 기존 선 제거
 if(sunriseLine){
 map.removeLayer(sunriseLine);
 }
 
-// 🌅 일출 방향 (동쪽)
-const eastLng=lng+0.05;
-
+// 동쪽 방향
 sunriseLine=L.polyline(
-[[lat,lng],[lat,eastLng]],
+[[lat,lng],[lat,lng+0.05]],
 {color:"orange",weight:3}
 ).addTo(map);
 
-sunriseLine.bindPopup("일출 방향");
-
 });
-
-}
 
 };
 
