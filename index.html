@@ -116,8 +116,32 @@
     </div>
 
     <!-- 지역별 탭 -->
-    <div class="tab-content" id="region">
-      <h3>지역별 명소</h3>
+ <div class="tab-content" id="region">
+  <div class="accordion-item">
+    <button class="accordion-header">서울</button>
+    <div class="accordion-body">
+      <div class="attraction-item">경복궁</div>
+      <div class="attraction-item">남산타워</div>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-header">부산</button>
+    <div class="accordion-body">
+      <div class="attraction-item">해운대</div>
+      <div class="attraction-item">광안리 해수욕장</div>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-header">제주</button>
+    <div class="accordion-body">
+      <div class="attraction-item">성산일출봉</div>
+      <div class="attraction-item">한라산</div>
+    </div>
+  </div>
+</div>
+   
       <div class="accordion-item">
         <button class="accordion-header">서울</button>
         <div class="accordion-body">
@@ -211,6 +235,23 @@
         alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
       }
     });
-  </script>
+
+// 아코디언 동작
+const accordionHeaders = document.querySelectorAll('.accordion-header');
+accordionHeaders.forEach(header => {
+  header.addEventListener('click', () => {
+    const body = header.nextElementSibling;
+    // 다른 아코디언 닫기
+    document.querySelectorAll('.accordion-body').forEach(b => {
+      if (b !== body) b.classList.remove('show');
+    });
+    // 현재 아코디언 토글
+    body.classList.toggle('show');
+  });
+});
+
+</script>
 </body>
 </html>
+ 
+  
