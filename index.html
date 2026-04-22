@@ -17,6 +17,8 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
       z-index: 1000;
     }
+
+    /* 서브메뉴 */
     .submenu {
       position: fixed; bottom: 90px; right: 20px;
       display: none; flex-direction: column; gap: 10px;
@@ -65,44 +67,48 @@
 </head>
 <body>
   <div id="map"></div>
-  <div class="fab" id="menuBtn">☰</div>
-  <div class="submenu" id="submenu">
-    <button class="location" title="현재 위치">📍</button>
-    <button class="attractions" title="명소 목록">⭐</button>
-    <button class="shots" title="내 촬영 목록">📷</button>
-    <button class="sun" title="일출 방향">🌅</button>
+
+  <!-- FAB 버튼 -->
+  <div class="fab">+</div>
+
+  <!-- 서브메뉴 -->
+  <div class="submenu">
+    <button class="location">L</button>
+    <button class="attractions">A</button>
+    <button class="shots">S</button>
+    <button class="sun">Sun</button>
   </div>
 
   <!-- 사이드 패널 -->
-  <div class="side-panel" id="sidePanel">
+  <div class="side-panel">
     <div class="tabs">
-      <button data-tab="recommended" class="active">추천</button>
-      <button data-tab="category">카테고리</button>
-      <button data-tab="region">지역별</button>
+      <button class="active">추천</button>
+      <button>카테고리</button>
+      <button>지역별</button>
     </div>
 
     <!-- 추천 탭 -->
     <div class="tab-content active" id="recommended">
-      <h3>추천 명소</h3>
-      <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁 (역사)</div>
-      <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">성산일출봉 (자연)</div>
-      <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">해운대 (전망)</div>
+      <div class="accordion-item">
+        <button class="accordion-header">추천 명소</button>
+        <div class="accordion-body">
+          <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
+          <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
+        </div>
+      </div>
     </div>
 
     <!-- 카테고리 탭 -->
     <div class="tab-content" id="category">
-      <h3>카테고리별 명소</h3>
       <div class="accordion-item">
         <button class="accordion-header">역사</button>
         <div class="accordion-body">
           <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
-          <div class="attraction-item" data-lat="37.5658" data-lng="126.9752">덕수궁</div>
         </div>
       </div>
       <div class="accordion-item">
         <button class="accordion-header">자연</button>
         <div class="accordion-body">
-          <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">성산일출봉</div>
           <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
         </div>
       </div>
@@ -116,38 +122,91 @@
     </div>
 
     <!-- 지역별 탭 -->
- <div class="tab-content" id="region">
-  <div class="accordion-item">
-    <button class="accordion-header">서울</button>
-    <div class="accordion-body">
-      <div class="attraction-item">경복궁</div>
-      <div class="attraction-item">남산타워</div>
+    <div class="tab-content" id="region">
+      <div class="accordion-item">
+        <button class="accordion-header">서울</button>
+        <div class="accordion-body">
+          <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
+          <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <button class="accordion-header">부산</button>
+        <div class="accordion-body">
+          <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">해운대</div>
+          <div class="attraction-item" data-lat="35.1550" data-lng="129.0595">광안리 해수욕장</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <button class="accordion-header">제주</button>
+        <div class="accordion-body">
+          <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">성산일출봉</div>
+          <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="accordion-item">
-    <button class="accordion-header">부산</button>
-    <div class="accordion-body">
-      <div class="attraction-item">해운대</div>
-      <div class="attraction-item">광안리 해수욕장</div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <button class="accordion-header">제주</button>
-    <div class="accordion-body">
-      <div class="attraction-item">성산일출봉</div>
-      <div class="attraction-item">한라산</div>
-    </div>
-  </div>
-</div>
 
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     // 지도 초기화
-    const map = L.map('map').setView([37.5665, 126.9780], 13);
+    const map = L.map('map').setView([37.5665, 126.9780], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    // FAB 버튼 클릭 시 서브메뉴 토글
+    const fab = document.querySelector('.fab');
+    const submenu = document.querySelector('.submenu');
+    fab.addEventListener('click', () => {
+      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // 서브메뉴 버튼 클릭 시 사이드 패널 열기
+    const sidePanel = document.querySelector('.side-panel');
+    document.querySelectorAll('.submenu button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sidePanel.classList.toggle('show');
+      });
+    });
+
+    // 탭 전환
+    const tabs = document.querySelectorAll('.tabs button');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach((tab, idx) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        contents[idx].classList.add('active');
+      });
+    });
+
+     // 아코디언 열고 닫기
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const body = header.nextElementSibling;
+      body.classList.toggle('show');
+    });
+  });
+
+  // attraction-item 클릭 이벤트 (지도 이동)
+  document.querySelectorAll('.attraction-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const lat = item.getAttribute('data-lat');
+      const lng = item.getAttribute('data-lng');
+      if (lat && lng) {
+        map.setView([lat, lng], 14);
+        L.marker([lat, lng]).addTo(map)
+          .bindPopup(item.textContent)
+          .openPopup();
+      }
+    });
+  });
+</script>
+</script>
+ 
     // 메뉴 버튼 토글
     const menuBtn = document.getElementById('menuBtn');
     const submenu = document.getElementById('submenu');
