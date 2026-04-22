@@ -2,23 +2,39 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>현재 위치 테스트</title>
+<title>메뉴 확장 테스트</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css"/>
 <style>
 html, body {margin:0; height:100%;}
 #map {height:100vh;}
-#btn {position:fixed; top:20px; left:20px; z-index:9999;}
+.menu {
+  position:fixed; top:20px; left:20px; z-index:9999;
+  background:white; padding:10px; border-radius:5px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.menu button {display:block; margin:5px 0; width:120px;}
 </style>
 </head>
 <body>
 <div id="map"></div>
-<button id="btn">현재 위치</button>
+<div class="menu">
+  <button id="btn-location">현재 위치</button>
+  <button id="btn-spots">명소 보기</button>
+</div>
 <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
 <script>
 const map = L.map("map").setView([37.5,127],11);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
 
-document.getElementById("btn").onclick = () => {
+// 명소 데이터 예시
+const spots = [
+  {name:"서울타워", lat:37.5512, lng:126.9882},
+  {name:"경복궁", lat:37.5796, lng:126.9770},
+  {name:"롯데월드", lat:37.5110, lng:127.0980}
+];
+
+// 현재 위치 버튼
+document.getElementById("btn-location").onclick = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       const lat = pos.coords.latitude;
@@ -31,6 +47,14 @@ document.getElementById("btn").onclick = () => {
   } else {
     alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
   }
+};
+
+// 명소 버튼
+document.getElementById("btn-spots").onclick = () => {
+  spots.forEach(s => {
+    L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name);
+  });
+  map.setView([spots[0].lat, spots[0].lng], 12);
 };
 </script>
 </body>
