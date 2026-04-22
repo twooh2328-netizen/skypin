@@ -1,26 +1,96 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<title>테스트 시작</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>
-html, body {margin:0; height:100%;}
-#map {height:100vh;}
-#btn {position:fixed; top:20px; left:20px; z-index:9999;}
-</style>
+  <meta charset="UTF-8">
+  <title>드론 지도 앱 - 1단계 보완</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    /* 메인 메뉴 버튼(FAB) */
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    z-index:1000;
+    }
+    /* 하위 메뉴 버튼 */
+    .submenu {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    z-index:1000;
+    }
+    .submenu button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      font-size: 18px;
+    }
+    .submenu .location { background: #007bff; }   /* 현재 위치 */
+    .submenu .attractions { background: #dc3545; } /* 명소 목록 */
+    .submenu .shots { background: #ffc107; }       /* 내 촬영 목록 */
+    .submenu .sun { background: #fd7e14; }         /* 일출 방향 */
+  </style>
 </head>
 <body>
-<div id="map"></div>
-<button id="btn">테스트 버튼</button>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-const map = L.map("map").setView([37.5,127],11);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+  <div id="map"></div>
+  <div class="fab" id="menuBtn">☰</div>
+  <div class="submenu" id="submenu">
+<button class="location" title="현재 위치">📍</button>
+<button class="attractions" title="명소 목록">⭐</button>
+<button class="shots" title="내 촬영 목록">📷</button>
+<button class="sun" title="일출 방향">🌅</button>
+  
+  </div>
 
-document.getElementById("btn").onclick = () => {
-  alert("버튼 눌림!");
-};
-</script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // 지도 초기화
+    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 좌표
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 메뉴 버튼 토글
+    const menuBtn = document.getElementById('menuBtn');
+    const submenu = document.getElementById('submenu');
+    menuBtn.addEventListener('click', () => {
+      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // 하위 메뉴 버튼 이벤트 (기능은 이후 단계에서 구현)
+    document.querySelector('.location').addEventListener('click', () => {
+      alert('현재 위치 기능 실행 예정');
+    });
+    document.querySelector('.attractions').addEventListener('click', () => {
+      alert('명소 목록 패널 표시 예정');
+    });
+    document.querySelector('.shots').addEventListener('click', () => {
+      alert('내 촬영 목록 패널 표시 예정');
+    });
+    document.querySelector('.sun').addEventListener('click', () => {
+      alert('일출 방향 표시 예정');
+    });
+  </script>
 </body>
 </html>
