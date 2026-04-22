@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>테스트 시작</title>
+<title>현재 위치 테스트</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css"/>
 <style>
 html, body {margin:0; height:100%;}
@@ -12,14 +12,25 @@ html, body {margin:0; height:100%;}
 </head>
 <body>
 <div id="map"></div>
-<button id="btn">테스트 버튼</button>
+<button id="btn">현재 위치</button>
 <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
 <script>
 const map = L.map("map").setView([37.5,127],11);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
 
 document.getElementById("btn").onclick = () => {
-  alert("버튼 눌림!");
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
+      map.setView([lat, lng], 15);
+    }, err => {
+      alert("위치 정보를 가져올 수 없습니다: " + err.message);
+    });
+  } else {
+    alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
+  }
 };
 </script>
 </body>
