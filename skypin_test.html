@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>드론 지도 앱 - 사이드 패널</title>
+  <title>드론 지도 앱 - 사이드 패널 탭</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map {
       height: 100vh;
       width: 100%;
     }
-    /* 메인 버튼(FAB) */
+    /* FAB 버튼 */
     .fab {
       position: fixed;
       bottom: 20px;
@@ -55,9 +55,9 @@
     .side-panel {
       position: fixed;
       top: 0;
-      right: -300px; /* 처음엔 숨김 */
+      right: -300px;
       width: 300px;
-      height: calc(100% - 100px); /* 하단 여백 확보 */
+      height: calc(100% - 100px); /* 하단 여백 */
       background: #f8f9fa;
       box-shadow: -2px 0 6px rgba(0,0,0,0.3);
       transition: right 0.3s ease;
@@ -65,14 +65,36 @@
       z-index: 999;
     }
     .side-panel.show {
-      right: 0; /* 열림 */
+      right: 0;
     }
-    .side-panel h3 {
-      margin-top: 10px;
-      padding-left: 10px;
+    /* 탭 버튼 */
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #ddd;
+      border-bottom: 1px solid #aaa;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background: #ccc;
+      font-size: 14px;
+    }
+    .tabs button.active {
+      background: #bbb;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+      padding: 10px;
+    }
+    .tab-content.active {
+      display: block;
     }
     .attraction-item {
-      padding: 10px;
+      padding: 8px;
       border-bottom: 1px solid #ddd;
       cursor: pointer;
     }
@@ -93,15 +115,29 @@
 
   <!-- 오른쪽 사이드 패널 -->
   <div class="side-panel" id="sidePanel">
-    <h3>추천 명소</h3>
-    <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
-    <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
-    <div class="attraction-item" data-lat="37.570705" data-lng="126.976889">광화문</div>
-
-    <h3>전체 명소</h3>
-    <div class="attraction-item" data-lat="37.5139" data-lng="127.1025">롯데월드</div>
-    <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">제주 성산일출봉</div>
-    <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">부산 해운대</div>
+    <div class="tabs">
+      <button data-tab="recommended" class="active">추천</button>
+      <button data-tab="history">역사</button>
+      <button data-tab="nature">자연</button>
+      <button data-tab="view">전망</button>
+    </div>
+    <div class="tab-content active" id="recommended">
+      <h3>추천 명소</h3>
+      <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
+      <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
+    </div>
+    <div class="tab-content" id="history">
+      <h3>역사 명소</h3>
+      <div class="attraction-item" data-lat="37.5658" data-lng="126.9752">덕수궁</div>
+    </div>
+    <div class="tab-content" id="nature">
+      <h3>자연 명소</h3>
+      <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">성산일출봉</div>
+    </div>
+    <div class="tab-content" id="view">
+      <h3>전망 명소</h3>
+      <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">부산 해운대</div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -124,6 +160,21 @@
     const sidePanel = document.getElementById('sidePanel');
     attractionBtn.addEventListener('click', () => {
       sidePanel.classList.toggle('show');
+    });
+
+    // 탭 전환
+    const tabButtons = document.querySelectorAll('.tabs button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tabContents.forEach(c => {
+          c.classList.remove('active');
+          if (c.id === tab) c.classList.add('active');
+        });
+      });
     });
 
     // 명소 클릭 이벤트
