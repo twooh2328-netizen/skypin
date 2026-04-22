@@ -2,14 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>드론 지도 앱 - 1단계 보완</title>
+  <title>드론 지도 앱 - 2단계</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map {
       height: 100vh;
       width: 100%;
     }
-    /* 메인 메뉴 버튼(FAB) */
     .fab {
       position: fixed;
       bottom: 20px;
@@ -25,9 +24,8 @@
       cursor: pointer;
       font-size: 24px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    z-index:1000;
+      z-index: 1000;
     }
-    /* 하위 메뉴 버튼 */
     .submenu {
       position: fixed;
       bottom: 90px;
@@ -35,7 +33,7 @@
       display: none;
       flex-direction: column;
       gap: 10px;
-    z-index:1000;
+      z-index: 1000;
     }
     .submenu button {
       width: 50px;
@@ -46,27 +44,63 @@
       color: #fff;
       font-size: 18px;
     }
-    .submenu .location { background: #007bff; }   /* 현재 위치 */
-    .submenu .attractions { background: #dc3545; } /* 명소 목록 */
-    .submenu .shots { background: #ffc107; }       /* 내 촬영 목록 */
-    .submenu .sun { background: #fd7e14; }         /* 일출 방향 */
+    .location { background: #007bff; }
+    .attractions { background: #dc3545; }
+    .shots { background: #ffc107; }
+    .sun { background: #fd7e14; }
+
+    /* 하단 패널 */
+    .panel {
+      position: fixed;
+      bottom: -300px; /* 처음엔 숨김 */
+      left: 0;
+      width: 100%;
+      height: 300px;
+      background: #f8f9fa;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.3);
+      transition: bottom 0.3s ease;
+      padding: 15px;
+      overflow-y: auto;
+      z-index: 999;
+    }
+    .panel.show {
+      bottom: 0; /* 올라옴 */
+    }
+    .panel h3 {
+      margin-top: 0;
+    }
+    .attraction-item {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .attraction-item:hover {
+      background: #eee;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div class="fab" id="menuBtn">☰</div>
   <div class="submenu" id="submenu">
-<button class="location" title="현재 위치">📍</button>
-<button class="attractions" title="명소 목록">⭐</button>
-<button class="shots" title="내 촬영 목록">📷</button>
-<button class="sun" title="일출 방향">🌅</button>
-  
+    <button class="location" title="현재 위치">📍</button>
+    <button class="attractions" title="명소 목록">⭐</button>
+    <button class="shots" title="내 촬영 목록">📷</button>
+    <button class="sun" title="일출 방향">🌅</button>
+  </div>
+
+  <!-- 명소 목록 패널 -->
+  <div class="panel" id="attractionPanel">
+    <h3>명소 목록</h3>
+    <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
+    <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
+    <div class="attraction-item" data-lat="37.570705" data-lng="126.976889">광화문</div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     // 지도 초기화
-    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 좌표
+    const map = L.map('map').setView([37.5665, 126.9780], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
@@ -78,18 +112,24 @@
       submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
     });
 
-    // 하위 메뉴 버튼 이벤트 (기능은 이후 단계에서 구현)
-    document.querySelector('.location').addEventListener('click', () => {
-      alert('현재 위치 기능 실행 예정');
+    // 명소 목록 패널
+    const attractionBtn = document.querySelector('.attractions');
+    const attractionPanel = document.getElementById('attractionPanel');
+    attractionBtn.addEventListener('click', () => {
+      attractionPanel.classList.toggle('show');
     });
-    document.querySelector('.attractions').addEventListener('click', () => {
-      alert('명소 목록 패널 표시 예정');
-    });
-    document.querySelector('.shots').addEventListener('click', () => {
-      alert('내 촬영 목록 패널 표시 예정');
-    });
-    document.querySelector('.sun').addEventListener('click', () => {
-      alert('일출 방향 표시 예정');
+
+    // 명소 클릭 이벤트
+    document.querySelectorAll('.attraction-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const lat = item.getAttribute('data-lat');
+        const lng = item.getAttribute('data-lng');
+        map.setView([lat, lng], 16);
+        L.popup()
+          .setLatLng([lat, lng])
+          .setContent(`<b>${item.textContent}</b>`)
+          .openOn(map);
+      });
     });
   </script>
 </body>
