@@ -69,22 +69,37 @@
   <div id="map"></div>
 
   <!-- FAB 버튼 -->
-<div class="fab" id="menuBtn">+</div>
-  <!-- 서브메뉴 -->
-  <div class="submenu">
-    <button class="location">L</button>
-    <button class="attractions">A</button>
-    <button class="shots">S</button>
-    <button class="sun">Sun</button>
+<div class="fab" id="menuBtn">메뉴</div>
+<!-- 서브메뉴 -->
+<div class="submenu" id="submenu" style="display:none;">
+  <button class="location">내 위치</button>
+  <button class="attractions">명소</button>
+  <button class="shots">촬영지</button>
+  <button class="sun">일출</button>
+</div>
+<!-- 사이드 패널 -->
+<div id="sidePanel" class="side-panel">
+  <div class="tabs">
+    <button>추천</button>
+    <button>카테고리</button>
+    <button>지역별</button>
+    <button>내 촬영지</button>
   </div>
 
-  <!-- 사이드 패널 -->
-  <div class="side-panel">
-    <div class="tabs">
-      <button class="active">추천</button>
-      <button>카테고리</button>
-      <button>지역별</button>
+  <!-- 내 촬영지 콘텐츠 -->
+  <div class="tab-content" id="myshots">
+    <div class="accordion-item">
+      <button class="accordion-header">내 촬영지</button>
+      <div class="accordion-body">
+        <div id="myshots-list"></div>
+        <input type="text" id="shotName" placeholder="장소 이름">
+        <input type="text" id="shotMemo" placeholder="간단 메모">
+        <input type="file" id="shotImage" accept="image/*">
+        <button id="addShotBtn">지도에서 선택</button>
+      </div>
     </div>
+  </div>
+</div>
 
     <!-- 추천 탭 -->
     <div class="tab-content active" id="recommended">
@@ -218,6 +233,84 @@
     attractionBtn.addEventListener('click', () => {
       sidePanel.classList.toggle('show');
     });
+// 기존 sidePanel 토글 코드 밑에 추가
+const myShots = [];
+const listContainer = document.getElementById('myshots-list');
+const addShotBtn = document.getElementById('addShotBtn');
+let pendingAdd = false;
+
+function renderShots() {
+  listContainer.innerHTML = '';
+  myShots.forEach((shot, idx) => {
+    const item = document.createElement('div');
+    item.className = 'attraction-item';
+    item.textContent = `${shot.name} - ${shot.memo}`;
+
+    // 클릭 시 지도 이동 + 메모 팝업
+    item.addEventListener('click', () => {
+      map.setView([shot.lat, shot.lng], 14);
+      const popupContent = `<b>${shot.name}</b><br>${shot.memo}`;
+      L.marker([shot.lat, shot.lng]).addTo(map)
+        .bindPopup(popupContent)
+        .openPopup();
+    });
+
+    // 사진 보기 버튼
+    if (shot.image) {
+      const viewBtn = document.createElement('button');
+      viewBtn.textContent = '사진 보기';
+      viewBtn.style.marginLeft = '10px';
+      viewBtn.addEventListener('click', () => {
+        const imgWindow = window.open('', '_blank');
+        imgWindow.document.write(`<h3>${shot.name}</h3><img src="${shot.image}" style="max-width:100%">`);
+      });
+      item.appendChild(viewBtn);
+    }
+
+    // 삭제 버튼
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '삭제';
+    delBtn.style.marginLeft = '10px';
+    delBtn.addEventListener('click', () => {
+      myShots.splice(idx, 1);
+      renderShots();
+    });
+
+    item.appendChild(delBtn);
+    listContainer.appendChild(item);
+  });
+}
+
+// "지도에서 선택" 버튼 클릭 → 다음 지도 클릭 대기
+addShotBtn.addEventListener('click', () => {
+  pendingAdd = true;
+  alert('지도에서 원하는 위치를 클릭하세요.');
+});
+
+// 지도 클릭 이벤트
+map.on('click', (e) => {
+  if (pendingAdd) {
+    const name = document.getElementById('shotName').value || '새 촬영지';
+    const memo = document.getElementById('shotMemo').value || '';
+    const fileInput = document.getElementById('shotImage');
+    let imageURL = null;
+
+    if (fileInput.files.length > 0) {
+      imageURL = URL.createObjectURL(fileInput.files[0]);
+    }
+
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    myShots.push({ name, memo, lat, lng, image: imageURL });
+    renderShots();
+
+    pendingAdd = false;
+    document.getElementById('shotName').value = '';
+    document.getElementById('shotMemo').value = '';
+    fileInput.value = '';
+  }
+});
 
     // 탭 전환
     const tabButtons = document.querySelectorAll('.tabs button');
