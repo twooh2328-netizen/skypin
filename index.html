@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>드론 지도 앱 - 패널 최종 버전</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8"> 
+  <title>드론 지도 앱 - 패널 최종 버전</title> 
+  <style>
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  </style>  
+</head>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map { height: 100vh; width: 100%; }
-
- fab {
+.fab {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -178,21 +182,74 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // FAB 버튼 클릭 시 서브메뉴 토글
-    const fab = document.querySelector('.fab');
-    const submenu = document.querySelector('.submenu');
-    fab.addEventListener('click', () => {
-      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+ // FAB 버튼 클릭 → 서브메뉴 토글
+const fab = document.getElementById('menuBtn');
+const submenu = document.getElementById('submenu');
+fab.addEventListener('click', () => {
+  submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+});
+
+   // 서브메뉴 버튼 클릭 → 해당 콘텐츠 표시
+const sidePanel = document.getElementById('sidePanel');
+document.querySelectorAll('.submenu button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-target');
+
+    // 모든 콘텐츠에서 active 제거
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
     });
 
-    // 서브메뉴 버튼 클릭 시 사이드 패널 열기
-    const sidePanel = document.querySelector('.side-panel');
-    document.querySelectorAll('.submenu button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        sidePanel.classList.toggle('show');
-      });
-    });
+    // 해당 콘텐츠에 active 추가
+    const targetContent = document.getElementById(targetId);
+    if (targetContent) {
+      targetContent.classList.add('active');
+    }
 
+    // 사이드 패널 열기
+    sidePanel.classList.add('show');
+
+    // 일출 콘텐츠 처리
+    if (targetId === 'sun') {
+      showSunriseArrow();
+    }
+  });
+});
+
+
+// 일출 방향 표시 (고정된 예시 값)
+function showSunriseArrow() {
+  const userLat = 37.5665;  // 서울 예시 좌표
+  const userLng = 126.9780;
+  const sunriseAzimuth = 75; // 북쪽 기준 75° (동북쪽)
+  const arrowLength = 1000;  // 1km
+
+  function destinationPoint(lat, lng, distance, bearing) {
+    const R = 6371000;
+    const brng = bearing * Math.PI / 180;
+    const lat1 = lat * Math.PI / 180;
+    const lng1 = lng * Math.PI / 180;
+
+    const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) +
+                Math.cos(lat1) * Math.sin(distance / R) * Math.cos(brng));
+    const lng2 = lng1 + Math.atan2(Math.sin(brng) * Math.sin(distance / R) * Math.cos(lat1),
+                Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
+
+    return [lat2 * 180 / Math.PI, lng2 * 180 / Math.PI];
+  }
+
+  const [endLat, endLng] = destinationPoint(userLat, userLng, arrowLength, sunriseAzimuth);
+
+  L.polyline([[userLat, userLng], [endLat, endLng]], {
+    color: 'orange',
+    weight: 4,
+    dashArray: '5,5'
+  }).addTo(map);
+
+  L.marker([userLat, userLng]).addTo(map)
+    .bindPopup("현재 위치<br>일출 방향 →")
+    .openPopup();
+}
     // 탭 전환
     const tabs = document.querySelectorAll('.tabs button');
     const contents = document.querySelectorAll('.tab-content');
