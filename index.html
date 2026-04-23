@@ -7,20 +7,27 @@
   <style>
     #map { height: 100vh; width: 100%; }
 
-    /* FAB 버튼 */
-    .fab {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #333; color: #fff; border-radius: 50%;
-      width: 60px; height: 60px; display: flex;
-      align-items: center; justify-content: center;
-      cursor: pointer; font-size: 24px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
+ fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  border-radius: 8px;   /* 직사각형 버튼 */
+  width: 80px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
 
     /* 서브메뉴 */
     .submenu {
-      position: fixed; bottom: 90px; right: 20px;
+      position: fixed; bottom: 70px; right: 20px;
       display: none; flex-direction: column; gap: 10px;
       z-index: 1000;
     }
@@ -68,38 +75,39 @@
 <body>
   <div id="map"></div>
 
-  <!-- FAB 버튼 -->
+<!-- FAB 버튼 -->
 <div class="fab" id="menuBtn">메뉴</div>
+
 <!-- 서브메뉴 -->
 <div class="submenu" id="submenu" style="display:none;">
-  <button class="location">내 위치</button>
-  <button class="attractions">명소</button>
-  <button class="shots">촬영지</button>
-  <button class="sun">일출</button>
+  <button data-target="recommend">추천</button>
+  <button data-target="category">카테고리</button>
+  <button data-target="region">지역별</button>
+  <button data-target="myshots">내 촬영지</button>
+  <button data-target="sun">일출</button>
 </div>
+
 <!-- 사이드 패널 -->
 <div id="sidePanel" class="side-panel">
-  <div class="tabs">
-    <button>추천</button>
-    <button>카테고리</button>
-    <button>지역별</button>
-    <button>내 촬영지</button>
+  <div class="tab-content" id="recommend">추천 콘텐츠</div>
+  <div class="tab-content" id="category" style="display:none;">카테고리 콘텐츠</div>
+  <div class="tab-content" id="region" style="display:none;">지역별 콘텐츠</div>
+  <div class="tab-content" id="myshots" style="display:none;">
+    <h3>내 촬영지</h3>
+    <div id="myshots-list"></div>
+    <input type="text" id="shotName" placeholder="장소 이름">
+    <input type="text" id="shotMemo" placeholder="간단 메모">
+    <input type="file" id="shotImage" accept="image/*">
+    <button id="addShotBtn">지도에서 선택</button>
   </div>
-
-  <!-- 내 촬영지 콘텐츠 -->
-  <div class="tab-content" id="myshots">
-    <div class="accordion-item">
-      <button class="accordion-header">내 촬영지</button>
-      <div class="accordion-body">
-        <div id="myshots-list"></div>
-        <input type="text" id="shotName" placeholder="장소 이름">
-        <input type="text" id="shotMemo" placeholder="간단 메모">
-        <input type="file" id="shotImage" accept="image/*">
-        <button id="addShotBtn">지도에서 선택</button>
-      </div>
-    </div>
+  <div class="tab-content" id="sun" style="display:none;">
+    <h3>일출 방향</h3>
+    <div id="sunrise-info"></div>
   </div>
 </div>
+
+<!-- 지도 -->
+<div id="map" style="height:500px;"></div>
 
     <!-- 추천 탭 -->
     <div class="tab-content active" id="recommended">
