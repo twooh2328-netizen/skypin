@@ -5,7 +5,10 @@
   <title>스카이핀 - 드론 지도 앱</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
+    /* 지도 영역 */
     #map { height: 100vh; width: 100%; }
+
+    /* 메뉴 버튼(FAB) */
     .fab {
       position: fixed; bottom: 20px; right: 20px;
       background: #333; color: #fff;
@@ -14,27 +17,40 @@
       cursor: pointer; font-size: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 1000;
     }
+
+    /* 서브메뉴 버튼 */
     .submenu {
       position: fixed; bottom: 70px; right: 20px;
       display: none; flex-direction: column; gap: 10px; z-index: 1000;
     }
     .submenu button {
       width: 50px; height: 50px; border-radius: 50%;
-      border: none; cursor: pointer; color: #fff; font-size: 18px;
+      border: none; cursor: pointer; color: #fff; font-size: 14px;
     }
-    .location { background: #007bff; }
-    .attractions { background: #dc3545; }
-    .shots { background: #ffc107; }
-    .sun { background: #fd7e14; }
+    .submenu button:hover { opacity: 0.8; }
+
+    /* 버튼 색상 */
+    .location { background: #007bff; }   /* 파란색 */
+    .recommend { background: #28a745; }  /* 초록색 */
+    .category { background: #6f42c1; }   /* 보라색 */
+    .region { background: #17a2b8; }     /* 청록색 */
+    .shots { background: #ffc107; color:#000; } /* 노란색 */
+    .sun { background: #fd7e14; }        /* 주황색 */
+
+    /* 사이드 패널 */
     .side-panel {
       position: fixed; top: 0; right: -320px;
-      width: 320px; height: calc(100% - 100px);
+      width: 320px; height: 100%;
       background: #f8f9fa; box-shadow: -2px 0 6px rgba(0,0,0,0.3);
       transition: right 0.3s ease; overflow-y: auto; z-index: 999;
     }
     .side-panel.show { right: 0; }
+
+    /* 탭 콘텐츠 */
     .tab-content { display: none; padding: 10px; }
     .tab-content.active { display: block; }
+
+    /* 아코디언 */
     .accordion-item { border-bottom: 1px solid #ddd; }
     .accordion-header {
       width: 100%; text-align: left; padding: 10px;
@@ -42,428 +58,49 @@
     }
     .accordion-body { display: none; padding: 10px; background: #f9f9f9; }
     .accordion-body.show { display: block; }
+
+    /* 명소 아이템 */
     .attraction-item { padding: 8px; border-bottom: 1px solid #ddd; cursor: pointer; }
     .attraction-item:hover { background: #eee; }
   </style>
 </head>
 <body>
+  <!-- 지도 -->
   <div id="map"></div>
+
+  <!-- 메뉴 버튼 -->
   <div class="fab" id="menuBtn">메뉴</div>
+
+  <!-- 서브메뉴 -->
   <div class="submenu" id="submenu">
-    <button data-target="recommend">추천</button>
-    <button data-target="category">카테고리</button>
-    <button data-target="region">지역별</button>
-    <button data-target="myshots">내 촬영지</button>
-    <button data-target="sun">일출</button>
+    <button class="recommend" data-target="recommend">추천</button>
+    <button class="category" data-target="category">카테고리</button>
+    <button class="region" data-target="region">지역별</button>
+    <button class="shots" data-target="myshots">내 촬영지</button>
+    <button class="sun" data-target="sun">일출</button>
+    <button class="location" data-target="location">현재위치</button>
   </div>
+
+  <!-- 사이드 패널 -->
   <div id="sidePanel" class="side-panel">
     <div class="tab-content" id="recommend">
       <h3>추천 명소</h3>
-      <div class="accordion-item">
-        <button class="accordion-header">추천 명소</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
-          <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
-        </div>
-      </div>
     </div>
     <div class="tab-content" id="category">
       <h3>카테고리</h3>
-      <div class="accordion-item">
-        <button class="accordion-header">역사</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <button class="accordion-header">자연</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <button class="accordion-header">전망</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
-          <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">부산 해운대</div>
-        </div>
-      </div>
     </div>
     <div class="tab-content" id="region">
       <h3>지역별</h3>
-      <div class="accordion-item">
-        <button class="accordion-header">서울</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="37.579617" data-lng="126.977041">경복궁</div>
-          <div class="attraction-item" data-lat="37.551169" data-lng="126.988227">남산타워</div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <button class="accordion-header">부산</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="35.1796" data-lng="129.0756">해운대</div>
-          <div class="attraction-item" data-lat="35.1550" data-lng="129.0595">광안리 해수욕장</div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <button class="accordion-header">제주</button>
-        <div class="accordion-body">
-          <div class="attraction-item" data-lat="33.4996" data-lng="126.5312">성산일출봉</div>
-          <div class="attraction-item" data-lat="33.3617" data-lng="126.5292">한라산</div>
-        </div>
-      </div>
     </div>
     <div class="tab-content" id="myshots">
       <h3>내 촬영지</h3>
-      <div id="myshots-list"></div>
-      <input type="text" id="shotName" placeholder="장소 이름">
-      <input type="text" id="shotMemo" placeholder="간단 메모">
-      <input type="file" id="shotImage" accept="image/*">
-      <button id="addShotBtn">지도에서 선택</button>
     </div>
     <div class="tab-content" id="sun">
       <h3>일출 방향</h3>
-      <div id="sunrise-info"></div>
+    </div>
+    <div class="tab-content" id="location">
+      <h3>현재 위치</h3>
     </div>
   </div>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-  // 지도 초기화
-  const map = L.map('map').setView([37.5665, 126.9780], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
-
-  // 메뉴 버튼 토글
-  const menuBtn = document.getElementById('menuBtn');
-  const submenu = document.getElementById('submenu');
-  menuBtn.addEventListener('click', () => {
-    submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
-  });
-
-  // 사이드 패널 토글
-  const sidePanel = document.getElementById('sidePanel');
-  document.querySelectorAll('.submenu button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-target');
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      const targetContent = document.getElementById(targetId);
-      if (targetContent) targetContent.classList.add('active');
-      sidePanel.classList.add('show');
-
-      // 일출 콘텐츠 처리
-      if (targetId === 'sun') {
-        showSunriseArrow();
-      }
-    });
-  });
-
-  // 일출 방향 표시
-  let sunriseLayer;
-  function showSunriseArrow() {
-    if (sunriseLayer) map.removeLayer(sunriseLayer);
-
-    const userLat = 37.5665;  // 서울 예시 좌표
-    const userLng = 126.9780;
-    const sunriseAzimuth = 75; // 북쪽 기준 75° (동북쪽)
-    const arrowLength = 1000;  // 1km
-
-    function destinationPoint(lat, lng, distance, bearing) {
-      const R = 6371000;
-      const brng = bearing * Math.PI / 180;
-      const lat1 = lat * Math.PI / 180;
-      const lng1 = lng * Math.PI / 180;
-
-      const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) +
-                  Math.cos(lat1) * Math.sin(distance / R) * Math.cos(brng));
-      const lng2 = lng1 + Math.atan2(Math.sin(brng) * Math.sin(distance / R) * Math.cos(lat1),
-                  Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
-
-      return [lat2 * 180 / Math.PI, lng2 * 180 / Math.PI];
-    }
-
-    const [endLat, endLng] = destinationPoint(userLat, userLng, arrowLength, sunriseAzimuth);
-
-    sunriseLayer = L.polyline([[userLat, userLng], [endLat, endLng]], {
-      color: 'orange',
-      weight: 4,
-      dashArray: '5,5'
-    }).addTo(map);
-
-    L.marker([userLat, userLng]).addTo(map)
-      .bindPopup("현재 위치<br>일출 방향 →")
-      .openPopup();
-  }
-
-  // 아코디언 동작
-  document.querySelectorAll('.accordion-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const body = header.nextElementSibling;
-      document.querySelectorAll('.accordion-body').forEach(b => {
-        if (b !== body) b.classList.remove('show');
-      });
-      body.classList.toggle('show');
-    });
-  });
-
-  // attraction-item 클릭 이벤트 (지도 이동)
-  document.querySelectorAll('.attraction-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const lat = item.getAttribute('data-lat');
-      const lng = item.getAttribute('data-lng');
-      if (lat && lng) {
-        map.setView([lat, lng], 14);
-        L.marker([lat, lng]).addTo(map)
-          .bindPopup(item.textContent)
-          .openPopup();
-      }
-    });
-  });
-
-  // 내 촬영지 관리
-  const myShots = [];
-  const listContainer = document.getElementById('myshots-list');
-  const addShotBtn = document.getElementById('addShotBtn');
-  let pendingAdd = false;
-
-  function renderShots() {
-    listContainer.innerHTML = '';
-    myShots.forEach((shot, idx) => {
-      const item = document.createElement('div');
-      item.className = 'attraction-item';
-      item.textContent = `${shot.name} - ${shot.memo}`;
-
-      // 클릭 시 지도 이동
-      item.addEventListener('click', () => {
-        map.setView([shot.lat, shot.lng], 14);
-        L.marker([shot.lat, shot.lng]).addTo(map)
-          .bindPopup(`<b>${shot.name}</b><br>${shot.memo}`)
-          .openPopup();
-      });
-
-      // 사진 보기 버튼
-      if (shot.image) {
-        const viewBtn = document.createElement('button');
-        viewBtn.textContent = '사진 보기';
-        viewBtn.style.marginLeft = '10px';
-        viewBtn.addEventListener('click', () => {
-          const imgWindow = window.open('', '_blank');
-          imgWindow.document.write(`<h3>${shot.name}</h3><img src="${shot.image}" style="max-width:100%">`);
-        });
-        item.appendChild(viewBtn);
-      }
-
-      // 삭제 버튼
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '삭제';
-      delBtn.style.marginLeft = '10px';
-      delBtn.addEventListener('click', () => {
-        myShots.splice(idx, 1);
-        renderShots();
-      });
-      item.appendChild(delBtn);
-
-      listContainer.appendChild(item);
-    });
-  }
-
-  addShotBtn.addEventListener('click', () => {
-    pendingAdd = true;
-    alert('지도에서 원하는 위치를 클릭하세요.');
-  });
-
-  map.on('click', (e) => {
-    if (pendingAdd) {
-      const name = document.getElementById('shotName').value || '새 촬영지';
-      const memo = document.getElementById('shotMemo').value || '';
-      const fileInput = document.getElementById('shotImage');
-      let imageURL = null;
-      if (fileInput.files.length > 0) {
-        imageURL = URL.createObjectURL(fileInput.files[0]);
-      }
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-      myShots.push({ name, memo, lat, lng, image: imageURL });
-      renderShots();
-      pendingAdd = false;
-      document.getElementById('shotName').value = '';
-      document.getElementById('shotMemo').value = '';
-      fileInput.value = '';
-    }
-  });
-
-  // 현재 위치 버튼 이벤트
-  const locationBtn = document.querySelector('.location');
-  locationBtn.addEventListener('click', () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        map.setView([lat, lng], 16);
-        L.marker([lat, lng]).addTo(map)
-          .bindPopup("현재 위치")
-          .openPopup();
-      }, () => {
-        alert("현재 위치를 가져올 수 없습니다.");
-      });
-    }
-  });
-</script>
-    // 메뉴 버튼 토글
-    const submenu = document.getElementById('submenu');
-    menuBtn.addEventListener('click', () => {
-      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
-    });
-
-    // 사이드 패널 토글
-    const attractionBtn = document.querySelector('.attractions');
-
-    const sidePanel = document.getElementById('sidePanel');
-    attractionBtn.addEventListener('click', () => {
-      sidePanel.classList.toggle('show');
-    });
-// 기존 sidePanel 토글 코드 밑에 추가
-const myShots = [];
-const listContainer = document.getElementById('myshots-list');
-const addShotBtn = document.getElementById('addShotBtn');
-let pendingAdd = false;
-
-function renderShots() {
-  listContainer.innerHTML = '';
-  myShots.forEach((shot, idx) => {
-    const item = document.createElement('div');
-    item.className = 'attraction-item';
-    item.textContent = `${shot.name} - ${shot.memo}`;
-
-    // 클릭 시 지도 이동 + 메모 팝업
-    item.addEventListener('click', () => {
-      map.setView([shot.lat, shot.lng], 14);
-      const popupContent = `<b>${shot.name}</b><br>${shot.memo}`;
-      L.marker([shot.lat, shot.lng]).addTo(map)
-        .bindPopup(popupContent)
-        .openPopup();
-    });
-
-    // 사진 보기 버튼
-    if (shot.image) {
-      const viewBtn = document.createElement('button');
-      viewBtn.textContent = '사진 보기';
-      viewBtn.style.marginLeft = '10px';
-      viewBtn.addEventListener('click', () => {
-        const imgWindow = window.open('', '_blank');
-        imgWindow.document.write(`<h3>${shot.name}</h3><img src="${shot.image}" style="max-width:100%">`);
-      });
-      item.appendChild(viewBtn);
-    }
-
-    // 삭제 버튼
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '삭제';
-    delBtn.style.marginLeft = '10px';
-    delBtn.addEventListener('click', () => {
-      myShots.splice(idx, 1);
-      renderShots();
-    });
-
-    item.appendChild(delBtn);
-    listContainer.appendChild(item);
-  });
-}
-
-// "지도에서 선택" 버튼 클릭 → 다음 지도 클릭 대기
-addShotBtn.addEventListener('click', () => {
-  pendingAdd = true;
-  alert('지도에서 원하는 위치를 클릭하세요.');
-});
-
-// 지도 클릭 이벤트
-map.on('click', (e) => {
-  if (pendingAdd) {
-    const name = document.getElementById('shotName').value || '새 촬영지';
-    const memo = document.getElementById('shotMemo').value || '';
-    const fileInput = document.getElementById('shotImage');
-    let imageURL = null;
-
-    if (fileInput.files.length > 0) {
-      imageURL = URL.createObjectURL(fileInput.files[0]);
-    }
-
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-
-    myShots.push({ name, memo, lat, lng, image: imageURL });
-    renderShots();
-
-    pendingAdd = false;
-    document.getElementById('shotName').value = '';
-    document.getElementById('shotMemo').value = '';
-    fileInput.value = '';
-  }
-});
-
-    // 탭 전환
-    const tabButtons = document.querySelectorAll('.tabs button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.getAttribute('data-tab');
-        tabButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        tabContents.forEach(c => {
-          c.classList.remove('active');
-          if (c.id === tab) c.classList.add('active');
-        });
-      });
-    });
-
-    // 명소 클릭 이벤트
-    document.querySelectorAll('.attraction-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const lat = item.getAttribute('data-lat');
-        const lng = item.getAttribute('data-lng');
-        map.setView([lat, lng], 16);
-        L.popup()
-          .setLatLng([lat, lng])
-          .setContent(`<b>${item.textContent}</b>`)
-          .openOn(map);
-      });
-    });
-
-    // 현재 위치 버튼 이벤트
-    const locationBtn = document.querySelector('.location');
-    locationBtn.addEventListener('click', () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          map.setView([lat, lng], 16);
-          L.marker([lat, lng]).addTo(map)
-            .bindPopup("현재 위치")
-            .openPopup();
-        }, err => {
-          alert("현재 위치를 가져올 수 없습니다.");
-        });
-      } else {
-        alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
-      }
-    });
-
-// 아코디언 동작
-const accordionHeaders = document.querySelectorAll('.accordion-header');
-accordionHeaders.forEach(header => {
-  header.addEventListener('click', () => {
-    const body = header.nextElementSibling;
-    // 다른 아코디언 닫기
-    document.querySelectorAll('.accordion-body').forEach(b => {
-      if (b !== body) b.classList.remove('show');
-    });
-    // 현재 아코디언 토글
-    body.classList.toggle('show');
-  });
-});
-
-</script>
 </body>
 </html>
- 
-  
