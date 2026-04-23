@@ -1,39 +1,22 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"> 
-  <title>드론 지도 앱 - 패널 최종 버전</title> 
-  <style>
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-  </style>  
-</head>
-   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8">
+  <title>스카이핀 - 드론 지도 앱</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map { height: 100vh; width: 100%; }
-.fab {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #333;
-  color: #fff;
-  border-radius: 8px;   /* 직사각형 버튼 */
-  width: 80px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  z-index: 1000;
-}
-
-    /* 서브메뉴 */
+    .fab {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #333; color: #fff;
+      border-radius: 8px; width: 80px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 1000;
+    }
     .submenu {
       position: fixed; bottom: 70px; right: 20px;
-      display: none; flex-direction: column; gap: 10px;
-      z-index: 1000;
+      display: none; flex-direction: column; gap: 10px; z-index: 1000;
     }
     .submenu button {
       width: 50px; height: 50px; border-radius: 50%;
@@ -43,7 +26,12 @@
     .attractions { background: #dc3545; }
     .shots { background: #ffc107; }
     .sun { background: #fd7e14; }
-
+    .side-panel {
+      position: fixed; top: 0; right: -320px;
+      width: 320px; height: calc(100% - 100px);
+      background: #f8f9fa; box-shadow: -2px 0 6px rgba(0,0,0,0.3);
+      transition: right 0.3s ease; overflow-y: auto; z-index: 999;
+    }
     /* 사이드 패널 */
     .side-panel {
       position: fixed; top: 0; right: -320px;
@@ -77,12 +65,8 @@
   </style>
 </head>
 <body>
-  <div id="map"></div>
-
-<!-- FAB 버튼 -->
+ <div id="map"></div>
 <div class="fab" id="menuBtn">메뉴</div>
-
-<!-- 서브메뉴 -->
 <div class="submenu" id="submenu" style="display:none;">
   <button data-target="recommend">추천</button>
   <button data-target="category">카테고리</button>
@@ -90,7 +74,6 @@
   <button data-target="myshots">내 촬영지</button>
   <button data-target="sun">일출</button>
 </div>
-
 <!-- 사이드 패널 -->
 <div id="sidePanel" class="side-panel">
   <div class="tab-content" id="recommend">추천 콘텐츠</div>
@@ -109,10 +92,7 @@
     <div id="sunrise-info"></div>
   </div>
 </div>
-
-<!-- 지도 -->
 <div id="map" style="height:500px;"></div>
-
     <!-- 추천 탭 -->
     <div class="tab-content active" id="recommended">
       <div class="accordion-item">
