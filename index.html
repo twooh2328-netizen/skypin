@@ -99,11 +99,14 @@
     const sidePanel = document.getElementById('sidePanel');
     document.querySelectorAll('.submenu button').forEach(btn => {
       btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
+         const targetId = btn.getAttribute('data-target');
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         const targetContent = document.getElementById(targetId);
         if (targetContent) targetContent.classList.add('active');
         sidePanel.classList.add('show');
+        const firstAccordion = targetContent.querySelector('.accordion-body');
+       if (firstAccordion) firstAccordion.classList.add('show');
+       }
       });
     });
     document.getElementById('closePanelBtn').addEventListener('click', () => {
@@ -124,17 +127,15 @@
       "설악산": [38.1194, 128.4656],
       "경복궁": [37.5796, 126.9770]
     };
-
-    // 명소 클릭 시 마커 표시
-    document.querySelectorAll('.attraction-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const place = item.textContent;
-        if (places[place]) {
-          L.marker(places[place]).addTo(map).bindPopup(place).openPopup();
-          map.setView(places[place], 14);
-        }
-      });
-    });
+sidePanel.addEventListener('click', (e) => {
+  if (e.target.classList.contains('attraction-item')) {
+    const place = e.target.textContent;
+    if (places[place]) {
+      L.marker(places[place]).addTo(map).bindPopup(place).openPopup();
+      map.setView(places[place], 14);
+    }
+  }
+});
 
     // 내 촬영지 LocalStorage 관리
     function loadShots() {
@@ -152,17 +153,17 @@
         });
         list.appendChild(item);
       });
-      document.querySelectorAll('.deleteShot').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const idx = btn.getAttribute('data-index');
-          shots.splice(idx, 1);
-          localStorage.setItem('shots', JSON.stringify(shots));
-          loadShots();
-        });
-      });
-    }
-
+    document.querySelectorAll('.deleteShot').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const idx = btn.getAttribute('data-index');
+    // [수정 부분] shots 배열을 다시 불러오기
+    const shots = JSON.parse(localStorage.getItem('shots') || '[]');
+    shots.splice(idx, 1);
+    localStorage.setItem('shots', JSON.stringify(shots));
+    loadShots();
+  });
+});
     // 촬영지 추가 버튼 이벤트
     const addShotBtn = document.getElementById('addShotBtn');
     addShotBtn.addEventListener('click', () => {
@@ -174,7 +175,7 @@
         shots.push({name, memo, lat:center.lat, lng:center.lng});
         localStorage.setItem('shots', JSON.stringify(shots));
         loadShots();
-      }
+     });
     });
 
     // 페이지 로드 시 촬영지 불러오기
