@@ -18,9 +18,8 @@
 .side-panel {
   position: fixed;
   top: 0;
-  right: -25%;        /* 기본은 화면의 25%만큼 숨김 */
-  width: 25%;         /* 데스크톱에서는 25% 폭 */
-  max-width: 280px;   /* 최대 280px까지만 */
+  right: -280px;       /* 숨김 상태: 데스크톱에서는 픽셀 단위로 밀어내기 */
+  width: 280px;        /* 데스크톱에서는 고정 폭 */
   height: 100%;
   background: #f8f9fa;
   box-shadow: -2px 0 6px rgba(0,0,0,0.3);
@@ -30,20 +29,18 @@
   padding-top: 40px;
 }
 .side-panel.show {
-  right: 0;
+  right: 0;            /* show 클래스가 붙으면 화면 안으로 들어옴 */
 }
 
-/* 모바일 화면 (768px 이하)에서는 패널을 더 넓게 */
+/* 모바일 화면 (768px 이하)에서는 반응형으로 넓게 */
 @media (max-width: 768px) {
   .side-panel {
-    right: -70%;      /* 숨김 상태에서 화면의 70%만큼 밀어내기 */
-    width: 70%;       /* 모바일에서는 화면의 70% 폭 */
-    max-width: none;  /* 최대 폭 제한 해제 */
+    right: -70%;       /* 숨김 상태: 모바일에서는 퍼센트 단위로 밀어내기 */
+    width: 70%;        /* 모바일에서는 화면의 70% 폭 */
+    max-width: none;   /* 최대 폭 제한 해제 */
   }
 }
 
-
- 
     #closePanelBtn { position: absolute; top: 10px; right: 10px; background: #dc3545; color: #fff; border: none;
       border-radius: 4px; padding: 5px 10px; cursor: pointer; }
     #closePanelBtn:hover { background: #c82333; }
