@@ -113,26 +113,42 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    const menuBtn = document.getElementById('menuBtn');
-    const submenu = document.getElementById('submenu');
-    menuBtn.addEventListener('click', () => {
-      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
-    });
+    #map { height: 100vh; width: 100%; z-index:1;}
+    .fab { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff;
+      border-radius: 8px; width: 80px; height: 40px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 1000; }
+    .submenu { position: fixed; bottom: 70px; right: 20px; display: none; flex-direction: column; gap: 10px; z-index: 1000; }
+    .submenu button { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; color: #fff; font-size: 14px; font-weight: bold; }
+    .submenu button:hover { filter: brightness(85%); }
+    .recommend { background: #28a745; } .category { background: #6f42c1; }
+    .region { background: #17a2b8; } .shots { background: #ffc107; color:#000; }
+    .sun { background: #fd7e14; } .location { background: #007bff; }
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -280px;   /* 기본: 데스크톱 숨김 */
+  width: 280px;    /* 기본: 데스크톱 폭 */
+  height: 100%;
+  background: #f8f9fa;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.3);
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  z-index: 999;
+  padding-top: 40px;
+}
+.side-panel.show {
+  right: 0;        /* show 클래스가 붙으면 화면 안으로 들어옴 */
+}
 
-    const sidePanel = document.getElementById('sidePanel');
-    document.querySelectorAll('.submenu button').forEach(btn => {
-      btn.addEventListener('click', () => {
-         const targetId = btn.getAttribute('data-target');
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        const targetContent = document.getElementById(targetId);
-        if (targetContent) targetContent.classList.add('active');
-        sidePanel.classList.add('show');
-        const firstAccordion = targetContent.querySelector('.accordion-body');
-       if (firstAccordion) firstAccordion.classList.add('show');
-       }
-      });
-    });
-    document.getElementById('closePanelBtn').addEventListener('click', () => {
+/* 모바일 화면 */
+@media (max-width: 768px) {
+  .side-panel {
+    right: -70%;   /* 모바일 숨김 */
+    width: 70%;    /* 모바일 폭 */
+    max-width: none;
+  }
+}
+
       sidePanel.classList.remove('show');
     });
     // 아코디언 동작
