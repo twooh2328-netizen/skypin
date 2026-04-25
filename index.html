@@ -15,9 +15,24 @@
     .recommend { background: #28a745; } .category { background: #6f42c1; }
     .region { background: #17a2b8; } .shots { background: #ffc107; color:#000; }
     .sun { background: #fd7e14; } .location { background: #007bff; }
-    .side-panel { position: fixed; top: 0; right:-30%px; width: 30%; max-widh:280px; height: 100%; background: #f8f9fa;
-      box-shadow: -2px 0 6px rgba(0,0,0,0.3); transition: right 0.3s ease; overflow-y: auto; z-index: 999; padding-top: 40px; }
-    .side-panel.show { right: 0; }
+  .side-panel {
+  position: fixed;
+  top: 0;
+  right: -30%;        /* 화면 오른쪽에서 30%만 차지 */
+  width: 30%;         /* 화면의 30% 폭 */
+  max-width: 280px;   /* 최대 280px까지만 */
+  height: 100%;
+  background: #f8f9fa;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.3);
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  z-index: 999;
+  padding-top: 40px;
+}
+.side-panel.show {
+  right: 0;
+}
+ 
     #closePanelBtn { position: absolute; top: 10px; right: 10px; background: #dc3545; color: #fff; border: none;
       border-radius: 4px; padding: 5px 10px; cursor: pointer; }
     #closePanelBtn:hover { background: #c82333; }
