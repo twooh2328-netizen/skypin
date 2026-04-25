@@ -45,9 +45,34 @@
   </div>
   <div id="sidePanel" class="side-panel">
     <button id="closePanelBtn">닫기 ✖</button>
-    <div class="tab-content" id="recommend"><h3>추천 명소</h3></div>
-    <div class="tab-content" id="category"><h3>카테고리</h3></div>
-    <div class="tab-content" id="region"><h3>지역별</h3></div>
+    <div class="tab-content" id="recommend">
+      <h3>추천 명소</h3>
+      <div class="accordion-item">
+        <button class="accordion-header">서울 인기</button>
+        <div class="accordion-body">
+          <div class="attraction-item">남산타워</div>
+          <div class="attraction-item">한강공원</div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="category">
+      <h3>카테고리</h3>
+      <div class="accordion-item">
+        <button class="accordion-header">자연</button>
+        <div class="accordion-body">
+          <div class="attraction-item">설악산</div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" id="region">
+      <h3>지역별</h3>
+      <div class="accordion-item">
+        <button class="accordion-header">서울</button>
+        <div class="accordion-body">
+          <div class="attraction-item">경복궁</div>
+        </div>
+      </div>
+    </div>
     <div class="tab-content" id="myshots">
       <h3>내 촬영지</h3>
       <input type="text" id="shotName" placeholder="촬영지 이름"><br>
@@ -92,22 +117,25 @@
       });
     });
 
+    // 명소 좌표 매핑
+    const places = {
+      "남산타워": [37.5512, 126.9882],
+      "한강공원": [37.5286, 126.9326],
+      "설악산": [38.1194, 128.4656],
+      "경복궁": [37.5796, 126.9770]
+    };
+
     // 명소 클릭 시 마커 표시
     document.querySelectorAll('.attraction-item').forEach(item => {
       item.addEventListener('click', () => {
         const place = item.textContent;
-        const coords = {
-          "남산타워": [37.5512, 126.9882],
-          "한강공원": [37.5286, 126.9326],
-          "설악산": [38.1194, 128.4656],
-          "경복궁": [37.5796, 126.9770]
-        };
-        if (coords[place]) {
-          L.marker(coords[place]).addTo(map).bindPopup(place).openPopup();
-          map.setView(coords[place], 14);
+        if (places[place]) {
+          L.marker(places[place]).addTo(map).bindPopup(place).openPopup();
+          map.setView(places[place], 14);
         }
       });
     });
+
     // 내 촬영지 LocalStorage 관리
     function loadShots() {
       const list = document.getElementById('myshots-list');
