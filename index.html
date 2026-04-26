@@ -5,58 +5,7 @@
   <title>스카이핀 드론 지도앱</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <style>
-    #map { height: 100vh; width: 100%; z-index:1; }
-
-    .fab {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #333; color: #fff;
-      border-radius: 8px; width: 80px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
-
-    .submenu {
-      position: fixed; bottom: 70px; right: 20px;
-      display: none; flex-direction: column; gap: 10px;
-      z-index: 1000;
-    }
-    .submenu button {
-      width: 60px; height: 60px; border-radius: 50%;
-      border: none; cursor: pointer; color: #fff;
-      font-size: 14px; font-weight: bold;
-    }
-    .submenu button:hover { filter: brightness(85%); }
-
-    .recommend { background: #28a745; }
-    .category { background: #6f42c1; }
-    .region { background: #17a2b8; }
-    .shots { background: #ffc107; color:#000; }
-    .sun { background: #fd7e14; }
-    .location { background: #007bff; }
-
-    .side-panel {
-      position: fixed; top: 0; right: -280px;
-      width: 280px; height: 100%;
-      background: #f8f9fa;
-      box-shadow: -2px 0 6px rgba(0,0,0,0.3);
-      transition: right 0.3s ease;
-      overflow-y: auto; z-index: 999;
-      padding: 20px;
-    }
-    .side-panel.show { right: 0; }
-
-    @media (max-width: 768px) {
-      .side-panel { right: -100%; width: 100%; max-width: none; }
-      .side-panel.show { right: 0; }
-      .fab { width: 70px; height: 35px; font-size: 14px; }
-      .submenu button { width: 50px; height: 50px; font-size: 12px; }
-    }
-
-    .tab-content { display: none; }
-  </style>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div id="map"></div>
@@ -114,81 +63,134 @@
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // 지도 초기화
-    const map = L.map('map').setView([37.5665, 126.9780], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    window.addEventListener('resize', () => { map.invalidateSize(); });
-
-    const menuBtn = document.getElementById('menuBtn');
-    const submenu = document.getElementById('submenu');
-    const sidePanel = document.getElementById('sidePanel');
-    const closePanelBtn = document.getElementById('closePanelBtn');
-
-    menuBtn.addEventListener('click', () => {
-      submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
-    });
-    closePanelBtn.addEventListener('click', () => {
-      sidePanel.classList.remove('show');
-    });
-
-    // 촬영지 추가 기능
-    const addShotBtn = document.getElementById('addShotBtn');
-    const shotName = document.getElementById('shotName');
-    const shotMemo = document.getElementById('shotMemo');
-    const myshotsList = document.getElementById('myshots-list');
-
-    addShotBtn.addEventListener('click', () => {
-      const name = shotName.value.trim();
-      const memo = shotMemo.value.trim();
-      if(name) {
-        const item = document.createElement('div');
-        item.textContent = `${name} - ${memo}`;
-        myshotsList.appendChild(item);
-        shotName.value = '';
-        shotMemo.value = '';
-      }
-    });
-
-    // 현재 위치 버튼
-    const locateBtn = document.getElementById('locateBtn');
-    const locationInfo = document.getElementById('location-info');
-    locateBtn.addEventListener('click', () => {
-      if(navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          locationInfo.textContent = `위도: ${lat}, 경도: ${lng}`;
-          L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
-          map.setView([lat, lng], 13);
-        });
-      } else {
-        locationInfo.textContent = "브라우저에서 위치 정보를 지원하지 않습니다.";
-      }
-    });
-
-    // 일출 방향 표시
-    const sunDirection = document.getElementById('sun-direction');
-    sunDirection.textContent = "오늘 일출 방향은 동쪽입니다.";
-
-    // 탭 제어 기능
-    function hideAllTabs() {
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.style.display = 'none';
-      });
-    }
-    document.querySelectorAll('#submenu button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
-        hideAllTabs();
-        document.getElementById(targetId).style.display = 'block';
-        sidePanel.classList.add('show');
-      });
-    });
-    hideAllTabs(); // 초기에는 모두 숨김
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+#map { height: 100vh; width: 100%; z-index:1; }
+
+.fab {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #333; color: #fff;
+  border-radius: 8px; width: 80px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.submenu {
+  position: fixed; bottom: 70px; right: 20px;
+  display: none; flex-direction: column; gap: 10px;
+  z-index: 1000;
+}
+.submenu button {
+  width: 60px; height: 60px; border-radius: 50%;
+  border: none; cursor: pointer; color: #fff;
+  font-size: 14px; font-weight: bold;
+}
+.submenu button:hover { filter: brightness(85%); }
+
+.recommend { background: #28a745; }
+.category { background: #6f42c1; }
+.region { background: #17a2b8; }
+.shots { background: #ffc107; color:#000; }
+.sun { background: #fd7e14; }
+.location { background: #007bff; }
+
+.side-panel {
+  position: fixed; top: 0; right: -280px;
+  width: 280px; height: 100%;
+  background: #f8f9fa;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.3);
+  transition: right 0.3s ease;
+  overflow-y: auto; z-index: 999;
+  padding: 20px;
+}
+.side-panel.show { right: 0; }
+
+@media (max-width: 768px) {
+  .side-panel { right: -100%; width: 100%; max-width: none; }
+  .side-panel.show { right: 0; }
+  .fab { width: 70px; height: 35px; font-size: 14px; }
+  .submenu button { width: 50px; height: 50px; font-size: 12px; }
+}
+
+.tab-content { display: none; }
+// 지도 초기화
+const map = L.map('map').setView([37.5665, 126.9780], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+window.addEventListener('resize', () => { map.invalidateSize(); });
+
+const menuBtn = document.getElementById('menuBtn');
+const submenu = document.getElementById('submenu');
+const sidePanel = document.getElementById('sidePanel');
+const closePanelBtn = document.getElementById('closePanelBtn');
+
+// 메뉴 버튼
+menuBtn.addEventListener('click', () => {
+  submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+});
+
+// 닫기 버튼
+closePanelBtn.addEventListener('click', () => {
+  sidePanel.classList.remove('show');
+  hideAllTabs(); // 닫을 때 모든 탭 숨김
+});
+
+// 촬영지 추가 기능
+const addShotBtn = document.getElementById('addShotBtn');
+const shotName = document.getElementById('shotName');
+const shotMemo = document.getElementById('shotMemo');
+const myshotsList = document.getElementById('myshots-list');
+
+addShotBtn.addEventListener('click', () => {
+  const name = shotName.value.trim();
+  const memo = shotMemo.value.trim();
+  if(name) {
+    const item = document.createElement('div');
+    item.textContent = `${name} - ${memo}`;
+    myshotsList.appendChild(item);
+    shotName.value = '';
+    shotMemo.value = '';
+  }
+});
+
+// 현재 위치 버튼
+const locateBtn = document.getElementById('locateBtn');
+const locationInfo = document.getElementById('location-info');
+locateBtn.addEventListener('click', () => {
+  if(navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      locationInfo.textContent = `위도: ${lat}, 경도: ${lng}`;
+      L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
+      map.setView([lat, lng], 13);
+    });
+  } else {
+    locationInfo.textContent = "브라우저에서 위치 정보를 지원하지 않습니다.";
+  }
+});
+
+// 일출 방향 표시
+const sunDirection = document.getElementById('sun-direction');
+sunDirection.textContent = "오늘 일출 방향은 동쪽입니다.";
+
+// 탭 제어 기능
+function hideAllTabs() {
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.style.display = 'none';
+  });
+}
+document.querySelectorAll('#submenu button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-target');
+    hideAllTabs();
+    document.getElementById(targetId).style.display = 'block';
+    sidePanel.classList.add('show');
+  });
+});
+hideAllTabs(); // 초기에는 모두 숨김
