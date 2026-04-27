@@ -5,9 +5,8 @@
   <title>스카이핀 드론 지도앱</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/> 
  <style>
-
    #map {
     height: 100vh;
     width: 100%;
@@ -40,22 +39,20 @@
       <input type="text" id="shotMemo" placeholder="메모"><br>
       <button id="addShotBtn">등록</button>
       <div id="myshots-list"></div>
-    </div>
-
-    <div class="tab-content" id="sun">
+      </div>
+      <div class="tab-content" id="sun">
       <h3>일출 방향</h3>
       <div id="sun-direction"></div>
     </div>
-
     <div class="tab-content" id="location">
       <h3>현재 위치</h3>
       <button id="locateBtn">내 위치 보기</button>
       <div id="location-info"></div>
     </div>
   </div>
-
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
   <script>
   // 여기에 script.js 내용 전체 붙여넣기
     const map = L.map('map').setView([37.5665, 126.9780], 7);
@@ -81,12 +78,6 @@
         alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
       }
     }
-#map {
-  height: 100vh;
-  width: 100%;
-  z-index: 1;
-}
-
 .fab {
   position: fixed; bottom: 20px; right: 20px;
   background: #333; color: #fff;
