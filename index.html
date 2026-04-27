@@ -282,15 +282,6 @@ function showTab(tabId) {
       maxZoom: 19,
     }).addTo(map);
 
-    const locationCoords = {
-      "남산타워": [37.5512, 126.9882],
-      "경복궁": [37.5796, 126.9770],
-      "해운대": [35.1587, 129.1603],
-      "광안리": [35.1531, 129.1185],
-      "정동진": [37.6896, 129.0340],
-      "성산일출봉": [33.4589, 126.9425]
-    };
-
     function addMarker(name) {
       if(locationCoords[name]) {
         const [lat, lng] = locationCoords[name];
