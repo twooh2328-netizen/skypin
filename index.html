@@ -70,7 +70,6 @@
   <div id="map"></div>
   <div id="menuBtn" class="fab">메뉴</div>
   <div id="submenu" class="submenu">…</div>
-
   <div id="sidePanel" class="side-panel">…</div>
     <button class="recommend" data-target="recommend">추천</button>
     <button class="category" data-target="category">카테고리</button>
@@ -243,7 +242,17 @@ function showSunArrow(direction) {
   else if(direction==="남") arrow="↓";
   else if(direction==="북") arrow="↑";
   sunDiv.textContent = arrow;
-}
+// 지도에 화살표 마커 표시
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          L.marker([lat, lng], {
+            icon: L.divIcon({className: 'sun-arrow', html: arrow, iconSize:[20,20]})
+          }).addTo(map).bindPopup("일출 방향");
+        });
+      }
+    }
 
 document.querySelector(".sun").addEventListener("click", () => {
   showSunArrow("동");
