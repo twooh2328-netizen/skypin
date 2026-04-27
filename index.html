@@ -80,11 +80,9 @@
 
   <div id="sidePanel" class="side-panel">
     <button id="closePanelBtn">닫기 ✖</button>
-
     <div class="tab-content" id="recommend"></div>
     <div class="tab-content" id="category"></div>
     <div class="tab-content" id="region"></div>
-
     <div class="tab-content" id="myshots">
       <h3>내 촬영지</h3>
       <input type="text" id="shotName" placeholder="촬영지 이름"><br>
@@ -105,7 +103,7 @@
  <div id="map"></div>
   <!-- Leaflet JS -->
  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
+ <script>
    // 지도 초기화
 const map = L.map('map').setView([37.5665, 126.9780], 10);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
