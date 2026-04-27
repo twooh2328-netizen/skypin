@@ -54,7 +54,11 @@
   <script src="script.js"></script>
 </body>
 </html>
-#map { height: 100vh; width: 100%; z-index:1; }
+#map {
+  height: 100vh;
+  width: 100%;
+  z-index: 1;
+}
 
 .fab {
   position: fixed; bottom: 20px; right: 20px;
@@ -99,7 +103,7 @@
   padding: 20px;
 }
 .side-panel.show { right: 0; }
-
+.tab-content { display: none; }
 @media (max-width: 768px) {
   .side-panel { right: -100%; width: 100%; max-width: none; }
   .side-panel.show { right: 0; }
@@ -152,12 +156,32 @@ const regions = {
   인천: ["월미도","차이나타운","송도센트럴파크","인천대교","강화도"],
   강원: ["설악산","정동진","속초해수욕장","춘천호수","오대산"]
 };
+// 좌표 데이터
+const locationCoords = {
+  "남산타워": [37.5512, 126.9882],
+  "경복궁": [37.5796, 126.9770],
+  "해운대": [35.1587, 129.1603],
+  "광안리": [35.1531, 129.1185],
+  "정동진": [37.6896, 129.0340],
+  "성산일출봉": [33.4589, 126.9425]
+  // 필요한 위치들을 계속 추가
+};
 
-// 탭 업데이트 함수
+// 마커 추가 함수
+function addMarker(name) {
+  if(locationCoords[name]) {
+    const [lat, lng] = locationCoords[name];
+    L.marker([lat, lng]).addTo(map).bindPopup(name).openPopup();
+    map.setView([lat, lng], 12);
+  } else {
+    alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
+  }
+}
+// 탭 업데이트 함수 (수정)
 function updateTabContent(tabId, items) {
   const container = document.getElementById(tabId);
   container.innerHTML = `<h3>${tabId}</h3><ul>` + 
-    items.map(item => `<li>${item}</li>`).join("") + "</ul>";
+    items.map(item => `<li onclick="addMarker('${item}')">${item}</li>`).join("") + "</ul>";
 }
 
 // 버튼 이벤트
