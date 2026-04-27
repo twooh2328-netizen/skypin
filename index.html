@@ -33,14 +33,14 @@
   font-size: 14px; font-weight: bold;
 }
 .submenu button:hover { filter: brightness(85%); }
-
+  /* 버튼 색상 */
 .recommend { background: #28a745; }
 .category { background: #6f42c1; }
 .region { background: #17a2b8; }
 .shots { background: #ffc107; color:#000; }
 .sun { background: #fd7e14; }
 .location { background: #007bff; }
-
+   /* 사이드패널 */
 .side-panel {
   position: fixed;
   top: 0;
@@ -111,7 +111,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 window.addEventListener('resize', () => { map.invalidateSize(); });
-
+// 메뉴 버튼 제어
 const menuBtn = document.getElementById('menuBtn');
 const submenu = document.getElementById('submenu');
 const sidePanel = document.getElementById('sidePanel');
