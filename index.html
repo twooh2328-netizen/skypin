@@ -8,7 +8,19 @@
   <style>
     html,body { height:100%; margin:0; }
     #map { height: 100vh; width: 100%; z-index: 1; }
-   .sun-arrow .shaft { stroke:#e60000; stroke-width:6; stroke-linecap:round; }
+ 
+    /* 메뉴 버튼 스타일 */
+  #menuBtn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+    .sun-arrow .shaft { stroke:#e60000; stroke-width:6; stroke-linecap:round; }
     .sun-arrow .head { fill:#e60000; }
   </style> 
     .fab { position: fixed; bottom: 20px; right: 20px; background:#333; color:#fff; border-radius:8px; width:80px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
