@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Stable Preview</title>
+<title>SkyPin Final Stable</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -15,6 +15,7 @@ html, body {
   font-family:sans-serif;
 }
 
+/* MAP */
 #map {
   height:100vh;
   width:100%;
@@ -34,7 +35,7 @@ html, body {
   z-index:9999;
 }
 
-/* SUB MENU */
+/* MENU LIST */
 #submenu{
   position:fixed;
   bottom:140px;
@@ -53,13 +54,13 @@ html, body {
   color:#fff;
 }
 
-/* PANEL */
+/* PANEL (좁게 수정됨 - 핵심) */
 .panel{
   position:fixed;
   top:0;
   right:0;
-  width:85%;
-  max-width:360px;
+  width:70%;          /* 🔥 지도 안 가리게 축소 */
+  max-width:300px;
   height:100%;
   background:#fff;
   box-shadow:-2px 0 15px rgba(0,0,0,0.2);
@@ -73,6 +74,7 @@ html, body {
   transform:translateX(0);
 }
 
+/* CLOSE BUTTON */
 .closeBtn{
   position:sticky;
   top:0;
@@ -96,12 +98,14 @@ html, body {
   border-bottom:1px solid #eee;
 }
 
+/* INPUT */
 input{
   width:100%;
   padding:10px;
   margin:5px 0;
 }
 
+/* SAVE */
 .saveBtn{
   width:100%;
   padding:10px;
@@ -173,33 +177,35 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(App.map);
 
 /* =========================
-   DRONE DATABASE
+   DRONE DB (핵심 연결)
 ========================= */
 const DroneDB = [
-  {name:"남산타워", lat:37.5512, lng:126.9882, type:"recommend", category:"야경", region:"서울"},
-  {name:"한강 반포대교", lat:37.5086, lng:126.9968, type:"recommend", category:"야경", region:"서울"},
-  {name:"부산 광안리", lat:35.1532, lng:129.1187, type:"recommend", category:"바다", region:"부산"},
+  {name:"남산타워", lat:37.5512, lng:126.9882, mode:"recommend", tag:"서울"},
+  {name:"한강 반포", lat:37.5086, lng:126.9968, mode:"recommend", tag:"야경"},
+  {name:"광안리", lat:35.1532, lng:129.1187, mode:"recommend", tag:"부산"},
 
-  {name:"정동진", lat:37.6910, lng:129.0330, type:"region", category:"일출", region:"강원도"},
-  {name:"제부도", lat:37.1696, lng:126.6219, type:"region", category:"바다", region:"경기도"},
+  {name:"정동진", lat:37.6910, lng:129.0330, mode:"region", tag:"강원도"},
+  {name:"제부도", lat:37.1696, lng:126.6219, mode:"region", tag:"경기도"},
 
-  {name:"설악산", lat:38.1194, lng:128.4655, type:"category", category:"산", region:"강원도"},
-  {name:"불국사", lat:35.7901, lng:129.3325, type:"category", category:"역사", region:"경북"}
+  {name:"설악산", lat:38.1194, lng:128.4655, mode:"category", tag:"산"},
+  {name:"불국사", lat:35.7901, lng:129.3325, mode:"category", tag:"역사"}
 ];
 
-let mapMarkers = [];
+let mapMarkers=[];
 
 /* =========================
-   SHOW PLACES
+   SHOW PLACES (DB 연결 핵심)
 ========================= */
-function showPlaces(key, value){
+function showPlaces(mode, tag){
 
-  mapMarkers.forEach(m => App.map.removeLayer(m));
-  mapMarkers = [];
+  mapMarkers.forEach(m=>App.map.removeLayer(m));
+  mapMarkers=[];
 
-  const filtered = DroneDB.filter(p => p[key] === value);
+  const filtered = DroneDB.filter(p =>
+    p.mode===mode && p.tag===tag
+  );
 
-  if(filtered.length === 0){
+  if(filtered.length===0){
     alert("데이터 없음");
     return;
   }
@@ -207,20 +213,20 @@ function showPlaces(key, value){
   filtered.forEach(p=>{
     const m = L.marker([p.lat,p.lng])
       .addTo(App.map)
-      .bindPopup(`<b>${p.name}</b><br>${p.category} / ${p.region}`);
+      .bindPopup(`<b>${p.name}</b>`);
 
     mapMarkers.push(m);
   });
 
-  App.map.setView([filtered[0].lat,filtered[0].lng],12);
+  App.map.setView([filtered[0].lat,filtered[0].lng],11);
 }
 
 /* =========================
-   SHOTS
+   SHOTS (저장/삭제)
 ========================= */
 function renderShots(){
 
-  const list = document.getElementById("list");
+  const list=document.getElementById("list");
   list.innerHTML="";
 
   App.markers.forEach(m=>App.map.removeLayer(m));
@@ -228,24 +234,35 @@ function renderShots(){
 
   App.shots.forEach((s,i)=>{
 
-    const row = document.createElement("div");
+    const row=document.createElement("div");
     row.className="item";
 
-    row.innerHTML = `
-      <span>📍 ${s.name}</span>
-      <button onclick="delShot(${i})">삭제</button>
-    `;
+    const title=document.createElement("span");
+    title.textContent="📍 "+s.name;
+
+    const del=document.createElement("button");
+    del.textContent="삭제";
+
+    del.onclick=()=>{
+      App.shots.splice(i,1);
+      save();
+      renderShots();
+    };
+
+    row.appendChild(title);
+    row.appendChild(del);
 
     list.appendChild(row);
 
-    const m = L.marker([s.lat,s.lng]).addTo(App.map);
+    const m=L.marker([s.lat,s.lng]).addTo(App.map);
     App.markers.push(m);
   });
 
-  localStorage.setItem("shots",JSON.stringify(App.shots));
+  save();
 }
 
 function addShot(){
+
   const name=document.getElementById("name").value;
   const memo=document.getElementById("memo").value;
 
@@ -261,13 +278,12 @@ function addShot(){
   renderShots();
 }
 
-function delShot(i){
-  App.shots.splice(i,1);
-  renderShots();
+function save(){
+  localStorage.setItem("shots",JSON.stringify(App.shots));
 }
 
 /* =========================
-   MENU
+   MENU CONTROL (정상 연결)
 ========================= */
 const submenu=document.getElementById("submenu");
 const panel=document.getElementById("panel");
@@ -300,9 +316,10 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
 
       document.getElementById("tabContent").innerHTML=`
         <h4>${a}</h4>
-        <button onclick="showPlaces('${a}','서울')">서울(예시)</button>
-        <button onclick="showPlaces('${a}','부산')">부산(예시)</button>
-        <button onclick="showPlaces('${a}','야경')">야경(예시)</button>
+        <button onclick="showPlaces('${a}','서울')">서울</button>
+        <button onclick="showPlaces('${a}','부산')">부산</button>
+        <button onclick="showPlaces('${a}','야경')">야경</button>
+        <button onclick="showPlaces('${a}','산')">산</button>
       `;
     }
 
