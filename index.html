@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Stable Full</title>
+<title>SkyPin Clean Final</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -18,10 +18,9 @@ html,body{
 #map{
   height:100vh;
   width:100%;
-  z-index:1;
 }
 
-/* ================= MENU ================= */
+/* MENU */
 #menuBtn{
   position:fixed;
   bottom:80px;
@@ -54,7 +53,7 @@ html,body{
   color:#fff;
 }
 
-/* ================= PANEL ================= */
+/* PANEL */
 #panel{
   position:fixed;
   top:0;
@@ -74,8 +73,6 @@ html,body{
 }
 
 #close{
-  position:sticky;
-  top:0;
   width:100%;
   padding:10px;
   background:#111;
@@ -96,11 +93,6 @@ button{
   margin:5px 0;
   padding:8px;
 }
-
-.item{
-  padding:8px;
-  border-bottom:1px solid #ddd;
-}
 </style>
 </head>
 
@@ -111,14 +103,15 @@ button{
 <button id="menuBtn">☰</button>
 
 <div id="submenu">
-  <button onclick="openPanel(); render('rec')">추천명소</button>
-  <button onclick="openPanel(); render('region')">지역</button>
-  <button onclick="openPanel(); render('cat')">카테고리</button>
-  <button onclick="openPanel(); render('shot')">내 촬영지</button>
+  <button onclick="openMenu('rec')">추천명소</button>
+  <button onclick="openMenu('region')">지역</button>
+  <button onclick="openMenu('cat')">카테고리</button>
+  <button onclick="openPanel()">내 촬영지</button>
   <button onclick="gps()">내 위치</button>
 </div>
 
 <div id="panel">
+
   <button id="close">닫기</button>
 
   <div class="box">
@@ -129,7 +122,6 @@ button{
 
     <input id="name" placeholder="이름">
     <textarea id="memo" placeholder="메모"></textarea>
-    <input type="file" id="img">
 
     <button onclick="save()">저장</button>
 
@@ -138,6 +130,7 @@ button{
     <div id="list"></div>
 
   </div>
+
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -152,73 +145,76 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 }).addTo(map);
 
 /* ================= STATE ================= */
-let selected = {lat:37.5665,lng:126.9780};
+let selected = null;
 let shots = JSON.parse(localStorage.getItem("shots")||"[]");
 let markers = [];
 
-/* ================= CLICK ================= */
+/* ================= MAP CLICK ================= */
 map.on("click", e=>{
+
   selected = {
-    lat:Number(e.latlng.lat),
-    lng:Number(e.latlng.lng)
+    lat:e.latlng.lat,
+    lng:e.latlng.lng
   };
 
   document.getElementById("info").innerText =
-    `📍 선택됨: ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
+    `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
 
-  document.getElementById("panel").classList.add("show");
+  panel.classList.add("show");
 });
 
-/* ================= DB (20개 복구) ================= */
+/* ================= DB ================= */
 const DB = [
   {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
   {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
-  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
   {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
-  {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
-  {n:"월미도",lat:37.4701,lng:126.6008,m:"rec",t:"인천"},
-  {n:"정동진",lat:37.6910,lng:129.0330,m:"rec",t:"강원도"},
-  {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
-  {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
-  {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
-  {n:"여수",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
-  {n:"순천만",lat:34.9143,lng:127.5126,m:"rec",t:"전남"},
-  {n:"전주",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
-  {n:"경주",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
-  {n:"태안",lat:36.5851,lng:126.3242,m:"rec",t:"충남"},
-  {n:"한라산",lat:33.3617,lng:126.5292,m:"rec",t:"제주"},
-  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"rec",t:"제주"},
-  {n:"임진각",lat:37.8872,lng:126.7409,m:"rec",t:"경기"},
-  {n:"대왕암",lat:35.4922,lng:129.4310,m:"rec",t:"울산"},
-  {n:"보문호",lat:35.8453,lng:129.2175,m:"rec",t:"경북"},
-
-  {n:"부산",lat:35.1532,lng:129.1187,m:"region",t:"부산"},
-  {n:"인천",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
-  {n:"강원",lat:38.2070,lng:128.5918,m:"region",t:"강원도"},
-
+  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
+  {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
+  {n:"속초",lat:38.2070,lng:128.5918,m:"region",t:"강원"},
   {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
-  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
-  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"},
-  {n:"경주",lat:35.7901,lng:129.3325,m:"cat",t:"역사"},
-  {n:"전주",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"}
 ];
+
+/* ================= MENU CONTROL ================= */
+const menuBtn = document.getElementById("menuBtn");
+const submenu = document.getElementById("submenu");
+const panel = document.getElementById("panel");
+
+menuBtn.onclick = ()=>{
+  submenu.style.display =
+    submenu.style.display==="flex"?"none":"flex";
+};
+
+function openMenu(type){
+
+  panel.classList.add("show");
+  submenu.style.display="none";
+
+  render(type);
+}
+
+function openPanel(){
+  panel.classList.add("show");
+  submenu.style.display="none";
+}
 
 /* ================= RENDER ================= */
 function render(type){
 
   const el = document.getElementById("list");
 
-  const list = DB.filter(p=>p.m===type);
+  const list = DB.filter(d=>d.m===type);
 
-  el.innerHTML = list.map(p=>
-    `<button onclick="go(${p.lat},${p.lng},'${p.n}')">
-      📍 ${p.n} (${p.t})
+  el.innerHTML = list.map(d=>
+    `<button onclick="go(${d.lat},${d.lng},'${d.n}')">
+      📍 ${d.n} (${d.t})
     </button>`
   ).join("");
 }
 
 /* ================= MOVE ================= */
 function go(lat,lng,name){
+
   map.setView([lat,lng],13);
 
   L.marker([lat,lng])
@@ -230,37 +226,31 @@ function go(lat,lng,name){
 /* ================= SAVE ================= */
 function save(){
 
+  if(!selected){
+    alert("지도 클릭하세요");
+    return;
+  }
+
   const name = document.getElementById("name").value;
   const memo = document.getElementById("memo").value;
-  const file = document.getElementById("img").files[0];
 
-  const store = (img="")=>{
+  shots.push({
+    name,
+    memo,
+    lat:selected.lat,
+    lng:selected.lng
+  });
 
-    shots.push({
-      name,
-      memo,
-      lat:selected.lat,
-      lng:selected.lng,
-      img
-    });
+  localStorage.setItem("shots",JSON.stringify(shots));
 
-    localStorage.setItem("shots",JSON.stringify(shots));
-
-    draw();
-    alert("저장 완료");
-  };
-
-  if(file){
-    const r = new FileReader();
-    r.onload = ()=>store(r.result);
-    r.readAsDataURL(file);
-  }else store();
+  draw();
+  alert("저장 완료");
 
   document.getElementById("name").value="";
   document.getElementById("memo").value="";
 }
 
-/* ================= MARKERS ================= */
+/* ================= DRAW ================= */
 function draw(){
 
   markers.forEach(m=>map.removeLayer(m));
@@ -276,23 +266,11 @@ function draw(){
   });
 }
 
-/* ================= MENU ================= */
-const menuBtn = document.getElementById("menuBtn");
-const submenu = document.getElementById("submenu");
-const panel = document.getElementById("panel");
-
-menuBtn.onclick = ()=>{
-  submenu.style.display =
-    submenu.style.display==="flex"?"none":"flex";
-};
-
-function openPanel(){
-  panel.classList.add("show");
-  submenu.style.display="none";
-}
-
+/* ================= GPS ================= */
 function gps(){
+
   navigator.geolocation.getCurrentPosition(pos=>{
+
     map.setView([pos.coords.latitude,pos.coords.longitude],15);
 
     L.marker([pos.coords.latitude,pos.coords.longitude])
