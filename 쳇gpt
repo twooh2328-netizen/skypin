@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SkyPin 복구 테스트</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body { margin:0; height:100%; }
+#map { height:100vh; }
+
+#menuBtn {
+  position:absolute;
+  top:10px; left:10px;
+  z-index:2000;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+<button id="menuBtn">메뉴</button>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+let map;
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  map = L.map('map').setView([37.5665,126.9780],10);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap'
+  }).addTo(map);
+
+  document.getElementById("menuBtn").addEventListener("click", function(){
+    alert("메뉴 버튼 정상 작동");
+  });
+
+});
+
+</script>
+
+</body>
+</html>
