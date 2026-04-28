@@ -104,228 +104,159 @@
   </div>
   <!-- Leaflet JS -->
  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
- <script>
-   // 지도 초기화
-const map = L.map('map').setView([37.5665, 126.9780], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+<script>
+/* 통합 정리본: 중복/오류 제거, 안전 검사 포함 */
 
-// 메뉴 버튼 제어
+/* 데이터 */
+const recommendList = ["남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리","정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동","속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"];
+const categories = { 역사:["경복궁","수원화성","창덕궁","불국사","해인사"], 산:["설악산","지리산","북한산","치악산","오대산"], 바다:["해운대","광안리","속초해수욕장","정동진","월미도"], 일출:["정동진","간절곶","성산일출봉","울산대왕암","호미곶"] };
+const regions = { 서울:["광화문","남산타워","청계천","명동","북한산"], 부산:["해운대","광안리","태종대","부산타워","자갈치시장"], 인천:["월미도","차이나타운","송도센트럴파크","인천대교","강화도"], 강원:["설악산","정동진","속초해수욕장","춘천호수","오대산"] };
+const locationCoords = { "남산타워":[37.5512,126.9882], "경복궁":[37.5796,126.9770], "해운대":[35.1587,129.1603], "광안리":[35.1531,129.1185], "정동진":[37.6896,129.0340], "성산일출봉":[33.4589,126.9425] };
+
+/* 전역 상태 */
+let myShots = [];
+let shotMarkers = [];
+
+/* 공통 함수 */
+function hideAllTabs(){
+  document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+}
+function showTab(tabId){
+  hideAllTabs();
+  const el = document.getElementById(tabId);
+  if(el) el.style.display = 'block';
+  const sp = document.getElementById('sidePanel');
+  if(sp) sp.classList.add('show');
+  if(tabId === "myshots"){
+    const input = document.getElementById("shotName");
+    setTimeout(()=>{ if(input && document.activeElement !== input) input.focus(); }, 100);
+  }
+}
+function addMarker(name){
+  if(typeof L === 'undefined' || !window.map) { console.warn('map 미초기화'); return; }
+  if(locationCoords[name]){
+    const [lat,lng] = locationCoords[name];
+    L.marker([lat,lng]).addTo(map).bindPopup(name).openPopup();
+    map.setView([lat,lng], 12);
+  } else {
+    alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
+  }
+}
+
+/* 지도 초기화 (한 번만) */
+const map = L.map('map').setView([37.5665,126.9780], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ maxZoom:19, attribution:'© OpenStreetMap contributors' }).addTo(map);
+
+/* UI 요소 안전 참조 */
 const menuBtn = document.getElementById('menuBtn');
 const submenu = document.getElementById('submenu');
 const sidePanel = document.getElementById('sidePanel');
 const closePanelBtn = document.getElementById('closePanelBtn');
 
-// 메뉴 버튼
-menuBtn.addEventListener('click', () => {
+/* 메뉴 토글 */
+menuBtn?.addEventListener('click', ()=> {
+  if(!submenu) return;
   submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
 });
+closePanelBtn?.addEventListener('click', ()=> { if(sidePanel) sidePanel.classList.remove('show'); hideAllTabs(); });
 
-// 닫기 버튼
-closePanelBtn.addEventListener('click', () => {
-  sidePanel.classList.remove('show');
-  hideAllTabs();
-});
-
-// 데이터 구조
-const recommendList = [
-  "남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리",
-  "정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동",
-  "속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"
-];
-
-const categories = {
-  역사: ["경복궁","수원화성","창덕궁","불국사","해인사"],
-  산: ["설악산","지리산","북한산","치악산","오대산"],
-  바다: ["해운대","광안리","속초해수욕장","정동진","월미도"],
-  일출: ["정동진","간절곶","성산일출봉","울산대왕암","호미곶"]
-};
-
-const regions = {
-  서울: ["광화문","남산타워","청계천","명동","북한산"],
-  부산: ["해운대","광안리","태종대","부산타워","자갈치시장"],
-  인천: ["월미도","차이나타운","송도센트럴파크","인천대교","강화도"],
-  강원: ["설악산","정동진","속초해수욕장","춘천호수","오대산"]
-};
-// 좌표 데이터
-const locationCoords = {
-  "남산타워": [37.5512, 126.9882],
-  "경복궁": [37.5796, 126.9770],
-  "해운대": [35.1587, 129.1603],
-  "광안리": [35.1531, 129.1185],
-  "정동진": [37.6896, 129.0340],
-  "성산일출봉": [33.4589, 126.9425]
-  // 필요한 위치들을 계속 추가
-};
-
- // 공통 함수
-function addMarker(name) {
-  if(locationCoords[name]) {
-    const [lat, lng] = locationCoords[name];
-    L.marker([lat, lng]).addTo(map).bindPopup(name).openPopup();
-    map.setView([lat, lng], 12);
-  } else {
-    alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
-  }
-}
-// 탭 업데이트 함수 (수정)
-function updateTabContent(tabId, items) {
+/* 탭 업데이트 보조 */
+function updateTabContent(tabId, items){
   const container = document.getElementById(tabId);
-  container.innerHTML = `<h3>${tabId}</h3><ul>` + 
-    items.map(item => `<li onclick="addMarker('${item}')">${item}</li>`).join("") + "</ul>";
+  if(!container) return;
+  container.innerHTML = `<h3>${tabId}</h3><ul>` + items.map(item => `<li class="tab-item" data-name="${item}">${item}</li>`).join('') + `</ul>`;
+  container.querySelectorAll('.tab-item').forEach(li => li.addEventListener('click', ()=> addMarker(li.dataset.name)));
 }
 
-// 버튼 이벤트
-document.querySelector(".recommend").addEventListener("click", () => {
-  updateTabContent("recommend", recommendList);
-  showTab("recommend");
-});
-document.querySelector(".category").addEventListener("click", () => {
+/* 버튼 이벤트 바인딩 */
+document.querySelector(".recommend")?.addEventListener("click", ()=> { updateTabContent("recommend", recommendList); showTab("recommend"); });
+
+document.querySelector(".category")?.addEventListener("click", ()=> {
+  const container = document.getElementById("category");
+  if(!container) return;
   let html = "<h3>카테고리</h3>";
-  for (let cat in categories) {
-    html += `<h4>${cat}</h4><ul>` + categories[cat].map(m => `<li>${m}</li>`).join("") + "</ul>";
-  }
-  document.getElementById("category").innerHTML = html;
+  for(let cat in categories) html += `<h4>${cat}</h4><ul>` + categories[cat].map(m=>`<li class="cat-item" data-name="${m}">${m}</li>`).join('') + `</ul>`;
+  container.innerHTML = html;
+  container.querySelectorAll('.cat-item').forEach(li => li.addEventListener('click', ()=> addMarker(li.dataset.name)));
   showTab("category");
 });
-// 지역별 버튼
- document.querySelector(".region").addEventListener("click",()=>{
-      const container=document.getElementById("region");
-      container.innerHTML="<h3>지역별</h3>";
-      for(let reg in regions){
-        const btn=document.createElement("button");
-        btn.textContent=reg;
-        btn.addEventListener("click",()=>{
-          container.innerHTML=`<h3>${reg}</h3><ul>`+
-            regions[reg].map(m=>`<li onclick="addMarker('${m}')">${m}</li>`).join("")+"</ul>";
-        });
-        container.appendChild(btn);
-      }
-      showTab("region");
-    });  
-// 내 촬영지 등록/삭제
-let myShots = [];
-let shotMarkers = [];
 
-function renderMyShots() {
+document.querySelector(".region")?.addEventListener("click", ()=> {
+  const container = document.getElementById("region");
+  if(!container) return;
+  container.innerHTML = "<h3>지역별</h3>";
+  for(let reg in regions){
+    const btn = document.createElement("button");
+    btn.textContent = reg;
+    btn.addEventListener('click', ()=> {
+      container.innerHTML = `<h3>${reg}</h3><ul>` + regions[reg].map(m=>`<li class="region-item" data-name="${m}">${m}</li>`).join('') + `</ul>`;
+      container.querySelectorAll('.region-item').forEach(li => li.addEventListener('click', ()=> addMarker(li.dataset.name)));
+    });
+    container.appendChild(btn);
+  }
+  showTab("region");
+});
+
+/* 내 촬영지 등록/삭제 */
+function renderMyShots(){
   const list = document.getElementById("myshots-list");
-  list.innerHTML = myShots.map((s,i) => 
-    `<div>${s.name} - ${s.memo} 
-      <button onclick="deleteShot(${i})">삭제</button></div>`).join("");
+  if(!list) return;
+  list.innerHTML = myShots.map((s,i)=>`<div class="myshot-item"><strong>${s.name}</strong> - ${s.memo} <button class="delete-shot" data-index="${i}">삭제</button></div>`).join('');
+  list.querySelectorAll('.delete-shot').forEach(btn => btn.addEventListener('click', ()=> deleteShot(Number(btn.dataset.index))));
 }
-
-function addShot(name, memo, lat, lng) {
+function addShot(name,memo,lat,lng){
+  if(typeof L === 'undefined' || !window.map) return;
   const marker = L.marker([lat,lng]).addTo(map).bindPopup(name);
-  myShots.push({name, memo, lat, lng});
+  myShots.push({name,memo,lat,lng});
   shotMarkers.push(marker);
   renderMyShots();
 }
-
-function deleteShot(index) {
-  myShots.splice(index,1);
-  map.removeLayer(shotMarkers[index]);
+function deleteShot(index){
+  if(index < 0 || index >= myShots.length) return;
+  if(shotMarkers[index]) map.removeLayer(shotMarkers[index]);
   shotMarkers.splice(index,1);
+  myShots.splice(index,1);
   renderMyShots();
 }
-
-document.getElementById("addShotBtn").addEventListener("click", () => {
-  const name = document.getElementById("shotName").value.trim();
-  const memo = document.getElementById("shotMemo").value.trim();
-  if(name) {
-    const center = map.getCenter();
-    addShot(name, memo, center.lat, center.lng);
-    document.getElementById("shotName").value = "";
-    document.getElementById("shotMemo").value = "";
-  }
+document.querySelector(".shots")?.addEventListener("click", ()=> { showTab("myshots"); renderMyShots(); });
+document.getElementById("addShotBtn")?.addEventListener("click", ()=> {
+  const nameEl = document.getElementById("shotName");
+  const memoEl = document.getElementById("shotMemo");
+  if(!nameEl) return;
+  const name = nameEl.value.trim(); const memo = memoEl ? memoEl.value.trim() : "";
+  if(!name) return alert("촬영지 이름을 입력하세요.");
+  const center = map.getCenter();
+  addShot(name,memo,center.lat,center.lng);
+  nameEl.value = ""; if(memoEl) memoEl.value = "";
 });
 
-// 일출 방향 화살표 표시
- function showSunArrow(direction){
-      const sunDiv=document.getElementById("sun-direction");
-      let arrow="";
-      if(direction==="동") arrow="→";
-      else if(direction==="서") arrow="←";
-      else if(direction==="남") arrow="↓";
-      else if(direction==="북") arrow="↑";
-      sunDiv.textContent=arrow;
-      if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(pos=>{
-          const lat=pos.coords.latitude;
-          const lng=pos.coords.longitude;
-          L.marker([lat,lng],{
-            icon:L.divIcon({className:'sun-arrow',html:arrow,iconSize:[20,20]})
-          }).addTo(map).bindPopup("일출 방향");
-        });
-      }
-    }
-    document.querySelector(".sun").addEventListener("click",()=>{
-      showSunArrow("동");
-      showTab("sun");
+/* 일출 방향 표시 (단일 핸들러) */
+function showSunArrow(direction){
+  const sunDiv = document.getElementById("sun-direction");
+  if(!sunDiv) return;
+  let arrow = "";
+  if(direction==="동") arrow="→"; else if(direction==="서") arrow="←"; else if(direction==="남") arrow="↓"; else if(direction==="북") arrow="↑";
+  sunDiv.textContent = arrow;
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+      L.marker([lat,lng], { icon: L.divIcon({className:'sun-arrow', html:arrow, iconSize:[20,20]}) }).addTo(map).bindPopup("일출 방향");
     });
-// 지도에 화살표 마커 표시
-      if(navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          L.marker([lat, lng], {
-            icon: L.divIcon({className: 'sun-arrow', html: arrow, iconSize:[20,20]})
-          }).addTo(map).bindPopup("일출 방향");
-        });
-      }
-    }
-
-document.querySelector(".sun").addEventListener("click", () => {
-  showSunArrow("동");
-  showTab("sun");
-});
-
-// 현재 위치 표시
-document.getElementById("locateBtn").addEventListener("click", () => {
-  if(navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      document.getElementById("location-info").textContent = `위도: ${lat}, 경도: ${lng}`;
-      L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
-      map.setView([lat, lng], 13);
-    });
-  } else {
-    document.getElementById("location-info").textContent = "브라우저에서 위치 정보를 지원하지 않습니다.";
   }
-});
-
-// 탭 제어
-function hideAllTabs() {
-  document.querySelectorAll('.tab-content').forEach(tab => {
-    tab.style.display = 'none';
-  });
 }
+document.querySelector(".sun")?.addEventListener("click", ()=> { showSunArrow("동"); showTab("sun"); });
 
-function showTab(tabId) {
-  hideAllTabs();
-  document.getElementById(tabId).style.display = 'block';
-  sidePanel.classList.add('show');
- // autofocus 충돌 방지: myshots 탭일 때만 지연 포커스
-      if(tabId==="myshots") {
-        const input=document.getElementById("shotName");
-        setTimeout(()=>{ if(document.activeElement!==input) input.focus(); },100);
-      }
-    }
-  // 여기에 script.js 내용 전체 붙여넣기
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
-
-    function addMarker(name) {
-      if(locationCoords[name]) {
-        const [lat, lng] = locationCoords[name];
-        L.marker([lat, lng]).addTo(map).bindPopup(name).openPopup();
-        map.setView([lat, lng], 12);
-      } else {
-        alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
-      }
-    }
- </script>
+/* 현재 위치 */
+document.getElementById("locateBtn")?.addEventListener("click", ()=> {
+  const info = document.getElementById("location-info");
+  if(!navigator.geolocation){ if(info) info.textContent = "브라우저에서 위치 정보를 지원하지 않습니다."; return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+    if(info) info.textContent = `위도: ${lat}, 경도: ${lng}`;
+    L.marker([lat,lng]).addTo(map).bindPopup("내 위치").openPopup();
+    map.setView([lat,lng],13);
+  }, ()=> { if(info) info.textContent = "위치 정보를 가져오지 못했습니다."; });
+});
+</script>
 </body>
 </html>
