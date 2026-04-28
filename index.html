@@ -26,6 +26,25 @@ html, body { margin:0; height:100%; }
   box-shadow:0 4px 10px rgba(0,0,0,0.2);
   cursor:pointer;
 }
+#submenu {
+  position:fixed;
+  top:100px;
+  left:50px;
+  z-index:9999;
+
+  display:none;
+  flex-direction:column;
+  gap:10px;
+}
+
+#submenu button {
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  background:#333;
+  color:white;
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -33,12 +52,24 @@ html, body { margin:0; height:100%; }
 
 <div id="map"></div>
 <button id="menuBtn">메뉴</button>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- 🔥 여기 넣기 -->
+<div id="submenu">
+  <button>추천</button>
+  <button>카테고리</button>
+  <button>지역</button>
+  <button>촬영지</button>
+  <button>일출</button>
+</div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-document.getElementById("menuBtn").addEventListener("click", function(){
-  alert("메뉴 작동 확인");
+const menuBtn = document.getElementById("menuBtn");
+const submenu = document.getElementById("submenu");
+
+menuBtn.addEventListener("click", function(){
+  submenu.style.display =
+    submenu.style.display === "flex" ? "none" : "flex";
 });
   var map = L.map('map').setView([37.5665,126.9780], 10);
 
