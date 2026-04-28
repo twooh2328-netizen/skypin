@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Stable Click Fix</title>
+<title>SkyPin Final Stable Fixed</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -141,57 +141,45 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 let markers=[];
 let shotMarkers=[];
 
-/* 🔥 CLICK POSITION (안정화 핵심) */
+/* 🔥 안정 좌표 */
 let selectedPos = {
   lat:37.5665,
   lng:126.9780
 };
 
 /* =====================
-   DB
-===================== */
-const DB=[
-
-  {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
-  {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
-  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
-  {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
-  {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
-  {n:"월미도",lat:37.4701,lng:126.6008,m:"rec",t:"인천"},
-  {n:"정동진",lat:37.6910,lng:129.0330,m:"rec",t:"강원도"},
-  {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
-  {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
-  {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
-
-  {n:"광안리",lat:35.1532,lng:129.1187,m:"region",t:"부산"},
-  {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
-  {n:"속초",lat:38.2070,lng:128.5918,m:"region",t:"강원도"},
-
-  {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
-  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
-  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"},
-  {n:"불국사",lat:35.7901,lng:129.3325,m:"cat",t:"역사"},
-  {n:"한옥마을",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
-];
-
-/* =====================
-   MAP CLICK FIX (핵심)
+   CLICK FIX (핵심)
 ===================== */
 App.map.on("click", function(e){
 
   selectedPos = {
-    lat: e.latlng.lat,
-    lng: e.latlng.lng
+    lat: Number(e.latlng.lat),
+    lng: Number(e.latlng.lng)
   };
 
   L.popup()
     .setLatLng(e.latlng)
-    .setContent("📍 선택됨 (촬영지 등록 가능)")
+    .setContent("📍 선택 위치 저장됨")
     .openOn(App.map);
 });
 
 /* =====================
-   GO + MARKER
+   DB
+===================== */
+const DB=[
+  {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
+  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
+  {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
+  {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
+
+  {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
+  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"}
+];
+
+/* =====================
+   GO
 ===================== */
 function go(lat,lng,name){
 
@@ -201,7 +189,7 @@ function go(lat,lng,name){
 
   const m=L.marker([lat,lng])
     .addTo(App.map)
-    .bindPopup("📍 "+name)
+    .bindPopup(name)
     .openPopup();
 
   markers.push(m);
@@ -225,15 +213,14 @@ function render(type){
   const list=DB.filter(p=>p.m===type);
 
   el.innerHTML=list.map(p=>
-    `<button class="btn"
-      onclick="go(${p.lat},${p.lng},'${p.n}')">
+    `<button class="btn" onclick="go(${p.lat},${p.lng},'${p.n}')">
       📍 ${p.n} (${p.t})
     </button>`
   ).join("");
 }
 
 /* =====================
-   SHOTS
+   SHOTS (핵심 안정화)
 ===================== */
 let shots = JSON.parse(localStorage.getItem("shots")||"[]");
 
@@ -272,7 +259,7 @@ function renderShots(){
 }
 
 /* =====================
-   ADD SHOT (CLICK FIX 핵심)
+   ADD SHOT (완전 FIX)
 ===================== */
 function addShot(){
 
@@ -281,7 +268,11 @@ function addShot(){
 
   const memo=prompt("메모");
 
-  const pos = selectedPos; // 🔥 항상 최신 클릭 위치
+  // 🔥 항상 숫자 좌표 보장
+  const pos = {
+    lat:Number(selectedPos.lat),
+    lng:Number(selectedPos.lng)
+  };
 
   shots.push({
     name,
@@ -290,6 +281,14 @@ function addShot(){
     lng:pos.lng
   });
 
+  renderShots();
+}
+
+/* =====================
+   DELETE
+===================== */
+function delShot(i){
+  shots.splice(i,1);
   renderShots();
 }
 
@@ -311,7 +310,7 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
     panel.classList.add("show");
 
     if(a==="rec") render("rec");
-    if(a==="region") render("region");
+    if(a==="region") render("rec");
     if(a==="cat") render("cat");
     if(a==="shot") renderShots();
 
