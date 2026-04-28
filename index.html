@@ -33,7 +33,7 @@
 <body>
   <div id="map"></div>
 
-  <div id="menuBtn" class="fab">메뉴</div>
+  <div id="menuBtn" class="fab" role="button" aria-label="메뉴">메뉴</div>
 
   <div id="submenu" class="submenu" aria-hidden="true">
     <button class="recommend" title="추천">추천</button>
@@ -78,8 +78,6 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-  /* 통합 스크립트: DOMContentLoaded 내부에서 안전하게 바인딩, 포커스 충돌 방지 포함 */
-
   document.addEventListener('DOMContentLoaded', () => {
     /* 데이터 */
     const recommendList = ["남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리","정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동","속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"];
@@ -87,16 +85,16 @@
     const regions = { 서울:["광화문","남산타워","청계천","명동","북한산"], 부산:["해운대","광안리","태종대","부산타워","자갈치시장"], 인천:["월미도","차이나타운","송도센트럴파크","인천대교","강화도"], 강원:["설악산","정동진","속초해수욕장","춘천호수","오대산"] };
     const locationCoords = { "남산타워":[37.5512,126.9882], "경복궁":[37.5796,126.9770], "해운대":[35.1587,129.1603], "광안리":[35.1531,129.1185], "정동진":[37.6896,129.0340], "성산일출봉":[33.4589,126.9425] };
 
-    /* 전역 상태 */
+    /* 상태 */
     let myShots = [];
     let shotMarkers = [];
 
-    /* 지도 초기화 (한 번만) */
+    /* 지도 초기화 */
     const map = L.map('map').setView([37.5665, 126.9780], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap contributors' }).addTo(map);
-    window.map = map; // 전역 접근 허용 (기존 코드 호환)
+    window.map = map;
 
-    /* 안전한 DOM 참조 */
+    /* DOM 참조 */
     const menuBtn = document.getElementById('menuBtn');
     const submenu = document.getElementById('submenu');
     const sidePanel = document.getElementById('sidePanel');
@@ -107,13 +105,35 @@
       document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
     }
 
+    // 안전한 포커스 함수: 포커스 충돌 회피
     function focusShotName() {
       const input = document.getElementById('shotName');
       if (!input) return;
       if (document.activeElement === input) return;
-      setTimeout(() => { if (document.activeElement !== input) input.focus(); }, 100);
+
+      try {
+        const active = document.activeElement;
+        if (active && active !== document.body && active !== input) {
+          active.blur();
+        }
+      } catch (e) {}
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            try {
+              if (document.activeElement !== input) {
+                input.focus({ preventScroll: true });
+              }
+            } catch (err) {
+              try { if (document.activeElement !== input) input.focus(); } catch(e) {}
+            }
+          }, 50);
+        });
+      });
     }
 
+    // showTab: myshots일 때만 안전 포커스 호출
     function showTab(tabId) {
       hideAllTabs();
       const el = document.getElementById(tabId);
@@ -225,7 +245,7 @@
       if (memoEl) memoEl.value = "";
     });
 
-    /* 일출 방향 (단일 핸들러) */
+    /* 일출 방향 */
     function showSunArrow(direction) {
       const sunDiv = document.getElementById("sun-direction");
       if (!sunDiv) return;
@@ -256,7 +276,7 @@
       }, () => { if (info) info.textContent = "위치 정보를 가져오지 못했습니다."; });
     });
 
-    /* 접근성: ESC로 사이드패널 닫기 */
+    /* ESC로 사이드패널 닫기 */
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (sidePanel) sidePanel.classList.remove('show');
