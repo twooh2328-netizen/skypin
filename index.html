@@ -126,6 +126,31 @@
     const addShotBtn = document.getElementById('addShotBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
 
+    // 붉은색 긴 화살표 표시 함수
+function showSunArrow(lat, lng) {
+  const arrowHtml = `
+    <svg class="sun-arrow" xmlns="http://www.w3.org/2000/svg" width="120" height="20">
+      <line x1="0" y1="10" x2="100" y2="10" class="shaft"/>
+      <polygon points="100,5 120,10 100,15" class="head"/>
+    </svg>
+  `;
+  const arrowIcon = L.divIcon({
+    html: arrowHtml,
+    className: '',
+    iconSize: [120, 20],
+    iconAnchor: [60, 10]
+  });
+  const arrowMarker = L.marker([lat, lng], { icon: arrowIcon }).addTo(map);
+
+  // 5초 후 자동 제거
+  setTimeout(() => {
+    map.removeLayer(arrowMarker);
+  }, 5000);
+}
+
+// 예시: 서울 좌표에 화살표 표시
+showSunArrow(37.5665, 126.9780);
+
     /* 공통 함수 */
     function hideAllTabs() {
       document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
