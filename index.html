@@ -45,6 +45,26 @@ html, body { margin:0; height:100%; }
   color:white;
   cursor:pointer;
 }
+#sidePanel {
+  position:fixed;
+  top:0;
+  right:-300px;
+  width:300px;
+  height:100%;
+  background:#f8f9fa;
+  box-shadow:-2px 0 6px rgba(0,0,0,0.3);
+  transition:0.3s;
+  z-index:9999;
+  padding:15px;
+}
+
+#sidePanel.show {
+  right:0;
+}
+
+#closePanel {
+  margin-bottom:10px;
+}
 </style>
 </head>
 
@@ -64,13 +84,40 @@ html, body { margin:0; height:100%; }
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-const menuBtn = document.getElementById("menuBtn");
-const submenu = document.getElementById("submenu");
 
-menuBtn.addEventListener("click", function(){
-  submenu.style.display =
-    submenu.style.display === "flex" ? "none" : "flex";
-});
+  // 🔹 요소 먼저 가져오기
+  const sidePanel = document.getElementById("sidePanel");
+  const panelContent = document.getElementById("panelContent");
+  const closePanel = document.getElementById("closePanel");
+
+  const menuBtn = document.getElementById("menuBtn");
+  const submenu = document.getElementById("submenu");
+
+  // 🔹 메뉴 버튼
+  menuBtn.addEventListener("click", function(){
+    submenu.style.display =
+      submenu.style.display === "flex" ? "none" : "flex";
+  });
+
+  // 🔹 닫기 버튼
+  closePanel.addEventListener("click", function(){
+    sidePanel.classList.remove("show");
+  });
+
+  // 🔹 서브메뉴 클릭
+  document.querySelectorAll("#submenu button").forEach(btn => {
+    btn.addEventListener("click", function(){
+
+      const text = this.textContent;
+
+      panelContent.innerHTML = `<h3>${text}</h3><p>${text} 내용 표시</p>`;
+
+      sidePanel.classList.add("show");
+
+    });
+  });
+
+  // 🔹 지도
   var map = L.map('map').setView([37.5665,126.9780], 10);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
