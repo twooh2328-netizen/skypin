@@ -6,25 +6,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    html,body { height:100%; margin:0; }
-    #map { height: 100vh; width: 100%; z-index: 1; }
- 
+    html, body { height:100%; margin:0; }
+    #map { height:100vh; width:100%; z-index:1; }
+
     /* 메뉴 버튼 스타일 */
-  #menuBtn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    background: white;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-  }
-    .sun-arrow .shaft { stroke:#e60000; stroke-width:6; stroke-linecap:round; }
-    .sun-arrow .head { fill:#e60000; }
-  </style> 
-    .fab { position: fixed; bottom: 20px; right: 20px; background:#333; color:#fff; border-radius:8px; width:80px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
-    .submenu { position: fixed; bottom: 70px; right: 20px; display: none; flex-direction: column; gap: 10px; z-index: 1000; }
+    #menuBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background:#333;
+      color:#fff;
+      border-radius:8px;
+      width:80px;
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:16px;
+      box-shadow:0 4px 6px rgba(0,0,0,0.3);
+      z-index:1000;
+    }
+
+    .submenu {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+
     .submenu button { width: 60px; height: 60px; border-radius:50%; border:none; cursor:pointer; color:#fff; font-size:14px; font-weight:bold; }
     .submenu button:hover { filter: brightness(85%); }
     .recommend { background: #28a745; }
@@ -33,17 +57,32 @@
     .shots { background: #ffc107; color:#000; }
     .sun { background: #fd7e14; }
     .location { background: #007bff; }
+
     /* 사이드패널 폭을 260px로 축소 */
-    .side-panel { position: fixed; top: 0; right: -100%; width: 260px; height: 100%; background:#f8f9fa; box-shadow:-2px 0 6px rgba(0,0,0,0.3); transition: right 0.28s ease; overflow-y:auto; z-index:999; padding:16px; }
+    .side-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 260px;
+      height: 100%;
+      background:#f8f9fa;
+      box-shadow:-2px 0 6px rgba(0,0,0,0.3);
+      transition: right 0.28s ease;
+      overflow-y:auto;
+      z-index:999;
+      padding:16px;
+    }
     .side-panel.show { right: 0; }
     .tab-content { display: none; margin-bottom: 12px; }
     .myshot-item { margin-bottom:8px; }
     #submenu.show { display:flex; }
+
     @media (max-width:768px) {
       .side-panel { width:100%; }
       .fab { width:70px; height:35px; font-size:14px; }
       .submenu button { width:50px; height:50px; font-size:12px; }
     }
+
     .sun-arrow { font-size:18px; line-height:20px; text-align:center; }
     .small-btn { padding:4px 8px; margin-left:6px; font-size:12px; }
     #category-buttons button.small-btn { background:#eee; border:1px solid #ccc; padding:6px 10px; border-radius:6px; }
@@ -52,12 +91,20 @@
     .sun-arrow-wrap { display:flex; align-items:center; gap:8px; }
     .sun-arrow-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#ffd966; color:#333; font-weight:bold; }
     .info-muted { color:#666; font-size:13px; margin-top:6px; }
+
+    /* 화살표 색상 (일출) */
+    .sun-arrow .shaft { stroke:#e60000; stroke-width:6; stroke-linecap:round; }
+    .sun-arrow .head { fill:#e60000; }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <button id="menuBtn">메뉴</button>
-  <div id="menuBtn" class="fab" role="button" aria-label="메뉴">메뉴</div>
+
+  <!-- 메뉴 버튼: id는 유일하게 유지 -->
+  <button id="menuBtn" aria-label="메뉴">메뉴</button>
+
+  <!-- 플로팅 액션 버튼은 class로 구분 -->
+  <div class="fab" role="button" aria-label="메뉴">메뉴</div>
 
   <div id="submenu" class="submenu" aria-hidden="true">
     <button class="recommend" title="추천">추천</button>
@@ -72,9 +119,7 @@
     <button id="closePanelBtn" aria-label="닫기">닫기 ✖</button>
 
     <div class="tab-content" id="recommend"></div>
-
     <div class="tab-content" id="category"></div>
-
     <div class="tab-content" id="region"></div>
 
     <div class="tab-content" id="myshots">
@@ -105,8 +150,8 @@
       <div id="location-info" class="info-muted"></div>
     </div>
   </div>
-
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- 지도 초기화 스크립트는 여기에 추가하세요 -->
  <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
  <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -121,7 +166,21 @@
     const times = SunCalc.getTimes(new Date(), 37.5665, 126.9780);
     console.log("서울 일출:", times.sunrise);
   });
+function showSunArrow(lat, lng) {
+    const arrowHtml = `
+      <svg class="sun-arrow" xmlns="http://www.w3.org/2000/svg" width="200" height="20">
+        <line x1="0" y1="10" x2="180" y2="10" class="shaft"/>
+        <polygon points="180,5 200,10 180,15" class="head"/>
+      </svg>
+    `;
+    const arrowIcon = L.divIcon({ html: arrowHtml, className: '', iconSize: [200,20], iconAnchor: [100,10] });
+    const arrowMarker = L.marker([lat, lng], { icon: arrowIcon }).addTo(map);
+    setTimeout(()=> map.removeLayer(arrowMarker), 5000);
+  }
 
+  // 예시 호출 (map이 준비된 이후에)
+  showSunArrow(37.5665, 126.9780);
+});
     /* 데이터 */
     const recommendList = ["남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리","정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동","속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"];
     const categories = { 역사:["경복궁","수원화성","창덕궁","불국사","해인사"], 산:["설악산","지리산","북한산","치악산","오대산"], 바다:["해운대","광안리","속초해수욕장","정동진","월미도"], 일출:["정동진","간절곶","성산일출봉","울산대왕암","호미곶"] };
@@ -147,30 +206,6 @@
     const addShotBtn = document.getElementById('addShotBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-    // 붉은색 긴 화살표 표시 함수
-function showSunArrow(lat, lng) {
-  const arrowHtml = `
-    <svg class="sun-arrow" xmlns="http://www.w3.org/2000/svg" width="200" height="20">
-      <line x1="0" y1="10" x2="180" y2="10" class="shaft"/>
-      <polygon points="180,5 200,10 180,15" class="head"/>
-    </svg>
-  `;
-  const arrowIcon = L.divIcon({
-    html: arrowHtml,
-    className: '',
-    iconSize: [200, 20],
-    iconAnchor: [100, 10]
-  });
-  const arrowMarker = L.marker([lat, lng], { icon: arrowIcon }).addTo(map);
-
-  // 5초 후 자동 제거
-  setTimeout(() => {
-    map.removeLayer(arrowMarker);
-  }, 5000);
-}
-
-// 예시: 서울 좌표에 화살표 표시
-showSunArrow(37.5665, 126.9780);
 
     /* 공통 함수 */
     function hideAllTabs() {
