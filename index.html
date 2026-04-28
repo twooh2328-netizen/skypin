@@ -28,6 +28,7 @@
       .submenu button { width:50px; height:50px; font-size:12px; }
     }
     .sun-arrow { font-size:18px; line-height:20px; text-align:center; }
+    .small-btn { padding:4px 8px; margin-left:6px; font-size:12px; }
   </style>
 </head>
 <body>
@@ -60,6 +61,7 @@
       <input type="text" id="shotMemo" placeholder="메모" />
       <br />
       <button id="addShotBtn">등록</button>
+      <button id="cancelEditBtn" style="display:none;" class="small-btn">취소</button>
       <div id="myshots-list"></div>
     </div>
 
@@ -86,8 +88,11 @@
     const locationCoords = { "남산타워":[37.5512,126.9882], "경복궁":[37.5796,126.9770], "해운대":[35.1587,129.1603], "광안리":[35.1531,129.1185], "정동진":[37.6896,129.0340], "성산일출봉":[33.4589,126.9425] };
 
     /* 상태 */
-    let myShots = [];
-    let shotMarkers = [];
+    let myShots = [];                 // {id,name,memo,lat,lng}
+    let shotMarkersMap = {};          // id -> marker
+
+    /* 로컬스토리지 키 */
+    const STORAGE_KEY = 'sky_pins_myshots_v1';
 
     /* 지도 초기화 */
     const map = L.map('map').setView([37.5665, 126.9780], 10);
@@ -100,31 +105,27 @@
     const sidePanel = document.getElementById('sidePanel');
     const closePanelBtn = document.getElementById('closePanelBtn');
 
+    const addShotBtn = document.getElementById('addShotBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
     /* 공통 함수 */
     function hideAllTabs() {
       document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
     }
 
-    // 안전한 포커스 함수: 포커스 충돌 회피
     function focusShotName() {
       const input = document.getElementById('shotName');
       if (!input) return;
       if (document.activeElement === input) return;
-
       try {
         const active = document.activeElement;
-        if (active && active !== document.body && active !== input) {
-          active.blur();
-        }
+        if (active && active !== document.body && active !== input) active.blur();
       } catch (e) {}
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(() => {
             try {
-              if (document.activeElement !== input) {
-                input.focus({ preventScroll: true });
-              }
+              if (document.activeElement !== input) input.focus({ preventScroll: true });
             } catch (err) {
               try { if (document.activeElement !== input) input.focus(); } catch(e) {}
             }
@@ -133,7 +134,6 @@
       });
     }
 
-    // showTab: myshots일 때만 안전 포커스 호출
     function showTab(tabId) {
       hideAllTabs();
       const el = document.getElementById(tabId);
@@ -142,6 +142,182 @@
       if (tabId === 'myshots') focusShotName();
     }
 
+    function generateId() {
+      return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
+    }
+
+    /* 저장/복원 */
+    function saveShots() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(myShots));
+      } catch (e) {
+        console.warn('localStorage 저장 실패', e);
+      }
+    }
+
+    function clearAllShotMarkers() {
+      Object.values(shotMarkersMap).forEach(m => {
+        try { map.removeLayer(m); } catch(e) {}
+      });
+      shotMarkersMap = {};
+    }
+
+    function loadShots() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const arr = JSON.parse(raw);
+        if (!Array.isArray(arr)) return;
+        myShots = arr;
+      } catch (e) {
+        console.warn('저장된 촬영지 파싱 실패', e);
+        myShots = [];
+      }
+      clearAllShotMarkers();
+      myShots.forEach(s => {
+        try {
+          const m = L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name);
+          shotMarkersMap[s.id] = m;
+        } catch(e) {}
+      });
+      renderMyShots();
+    }
+
+    /* 마커/목록 렌더링 */
+    function renderMyShots() {
+      const list = document.getElementById("myshots-list");
+      if (!list) return;
+      if (myShots.length === 0) {
+        list.innerHTML = '<div>등록된 촬영지가 없습니다.</div>';
+        return;
+      }
+      list.innerHTML = myShots.map((s) => {
+        return `<div class="myshot-item" data-id="${s.id}">
+          <strong>${escapeHtml(s.name)}</strong> - ${escapeHtml(s.memo || '')}
+          <button class="small-btn edit-shot" data-id="${s.id}">수정</button>
+          <button class="small-btn delete-shot" data-id="${s.id}">삭제</button>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('.delete-shot').forEach(btn => btn.addEventListener('click', () => deleteShotById(btn.dataset.id)));
+      list.querySelectorAll('.edit-shot').forEach(btn => btn.addEventListener('click', () => startEditShot(btn.dataset.id)));
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
+    }
+
+    function isDuplicateShot(name, lat, lng, excludeId = null) {
+      const normName = (name || '').trim().toLowerCase();
+      const round = (v) => Math.round(v * 1e5) / 1e5;
+      for (const s of myShots) {
+        if (excludeId && s.id === excludeId) continue;
+        if (s.name.trim().toLowerCase() === normName) return {type:'name', item:s};
+        if (round(s.lat) === round(lat) && round(s.lng) === round(lng)) return {type:'coords', item:s};
+      }
+      return null;
+    }
+
+    /* 추가 / 수정 / 삭제 */
+    function addShot(name, memo, lat, lng) {
+      const dup = isDuplicateShot(name, lat, lng);
+      if (dup) {
+        if (dup.type === 'name') {
+          if (!confirm(`같은 이름의 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 등록하시겠습니까?`)) return;
+        } else {
+          if (!confirm(`같은 위치에 등록된 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 등록하시겠습니까?`)) return;
+        }
+      }
+      const id = generateId();
+      const shot = { id, name, memo, lat, lng };
+      myShots.push(shot);
+      const marker = L.marker([lat, lng]).addTo(map).bindPopup(name);
+      shotMarkersMap[id] = marker;
+      saveShots();
+      renderMyShots();
+    }
+
+    function startEditShot(id) {
+      const shot = myShots.find(s => s.id === id);
+      if (!shot) return;
+      document.getElementById('shotName').value = shot.name;
+      document.getElementById('shotMemo').value = shot.memo || '';
+      addShotBtn.textContent = '수정 저장';
+      addShotBtn.dataset.editId = id;
+      cancelEditBtn.style.display = 'inline-block';
+      showTab('myshots');
+      focusShotName();
+    }
+
+    function applyEditShot(id, name, memo) {
+      const idx = myShots.findIndex(s => s.id === id);
+      if (idx === -1) return;
+      const s = myShots[idx];
+      const centerLat = s.lat;
+      const centerLng = s.lng;
+      const dup = isDuplicateShot(name, centerLat, centerLng, id);
+      if (dup) {
+        if (dup.type === 'name') {
+          if (!confirm(`같은 이름의 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 저장하시겠습니까?`)) return false;
+        } else {
+          if (!confirm(`같은 위치에 등록된 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 저장하시겠습니까?`)) return false;
+        }
+      }
+      myShots[idx].name = name;
+      myShots[idx].memo = memo;
+      const marker = shotMarkersMap[id];
+      if (marker) marker.bindPopup(name);
+      saveShots();
+      renderMyShots();
+      return true;
+    }
+
+    function cancelEditMode() {
+      delete addShotBtn.dataset.editId;
+      addShotBtn.textContent = '등록';
+      cancelEditBtn.style.display = 'none';
+      document.getElementById('shotName').value = '';
+      document.getElementById('shotMemo').value = '';
+    }
+
+    function deleteShotById(id) {
+      const idx = myShots.findIndex(s => s.id === id);
+      if (idx === -1) return;
+      if (!confirm(`촬영지 "${myShots[idx].name}"을(를) 삭제하시겠습니까?`)) return;
+      if (shotMarkersMap[id]) {
+        try { map.removeLayer(shotMarkersMap[id]); } catch(e) {}
+        delete shotMarkersMap[id];
+      }
+      myShots.splice(idx, 1);
+      saveShots();
+      renderMyShots();
+    }
+
+    /* addShotBtn 클릭 처리 */
+    addShotBtn?.addEventListener('click', () => {
+      const nameEl = document.getElementById('shotName');
+      const memoEl = document.getElementById('shotMemo');
+      if (!nameEl) return;
+      const name = nameEl.value.trim();
+      const memo = memoEl ? memoEl.value.trim() : '';
+      if (!name) return alert('촬영지 이름을 입력하세요.');
+      const editId = addShotBtn.dataset.editId;
+      if (editId) {
+        const ok = applyEditShot(editId, name, memo);
+        if (ok) cancelEditMode();
+        return;
+      }
+      const center = map.getCenter();
+      addShot(name, memo, center.lat, center.lng);
+      nameEl.value = '';
+      if (memoEl) memoEl.value = '';
+    });
+
+    cancelEditBtn?.addEventListener('click', () => {
+      cancelEditMode();
+    });
+
+    /* addMarker (추천/카테고리 클릭용) */
     function addMarker(name) {
       if (typeof L === 'undefined' || !window.map) { console.warn('map 미초기화'); return; }
       if (locationCoords[name]) {
@@ -164,13 +340,14 @@
       if (sidePanel) sidePanel.classList.remove('show');
       hideAllTabs();
       if (submenu) { submenu.classList.remove('show'); submenu.setAttribute('aria-hidden', 'true'); }
+      cancelEditMode();
     });
 
     /* 탭 업데이트 보조 */
     function updateTabContent(tabId, items) {
       const container = document.getElementById(tabId);
       if (!container) return;
-      container.innerHTML = `<h3>${tabId}</h3><ul>` + items.map(item => `<li class="tab-item" data-name="${item}">${item}</li>`).join('') + `</ul>`;
+      container.innerHTML = `<h3>${tabId}</h3><ul>` + items.map(item => `<li class="tab-item" data-name="${item}">${escapeHtml(item)}</li>`).join('') + `</ul>`;
       container.querySelectorAll('.tab-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
     }
 
@@ -182,7 +359,7 @@
       if (!container) return;
       let html = "<h3>카테고리</h3>";
       for (let cat in categories) {
-        html += `<h4>${cat}</h4><ul>` + categories[cat].map(m => `<li class="cat-item" data-name="${m}">${m}</li>`).join("") + `</ul>`;
+        html += `<h4>${escapeHtml(cat)}</h4><ul>` + categories[cat].map(m => `<li class="cat-item" data-name="${m}">${escapeHtml(m)}</li>`).join("") + `</ul>`;
       }
       container.innerHTML = html;
       container.querySelectorAll('.cat-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
@@ -198,7 +375,7 @@
         btn.className = "region-btn";
         btn.textContent = reg;
         btn.addEventListener("click", () => {
-          container.innerHTML = `<h3>${reg}</h3><ul>` + regions[reg].map(m => `<li class="region-item" data-name="${m}">${m}</li>`).join("") + `</ul>`;
+          container.innerHTML = `<h3>${escapeHtml(reg)}</h3><ul>` + regions[reg].map(m => `<li class="region-item" data-name="${m}">${escapeHtml(m)}</li>`).join("") + `</ul>`;
           container.querySelectorAll('.region-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
         });
         container.appendChild(btn);
@@ -206,44 +383,8 @@
       showTab("region");
     });
 
-    /* 내 촬영지 등록/삭제 */
-    function renderMyShots() {
-      const list = document.getElementById("myshots-list");
-      if (!list) return;
-      list.innerHTML = myShots.map((s, i) => `<div class="myshot-item"><strong>${s.name}</strong> - ${s.memo} <button class="delete-shot" data-index="${i}">삭제</button></div>`).join("");
-      list.querySelectorAll('.delete-shot').forEach(btn => btn.addEventListener('click', () => deleteShot(Number(btn.dataset.index))));
-    }
-
-    function addShot(name, memo, lat, lng) {
-      if (typeof L === 'undefined' || !window.map) return;
-      const marker = L.marker([lat, lng]).addTo(map).bindPopup(name);
-      myShots.push({ name, memo, lat, lng });
-      shotMarkers.push(marker);
-      renderMyShots();
-    }
-
-    function deleteShot(index) {
-      if (index < 0 || index >= myShots.length) return;
-      if (shotMarkers[index]) map.removeLayer(shotMarkers[index]);
-      shotMarkers.splice(index, 1);
-      myShots.splice(index, 1);
-      renderMyShots();
-    }
-
+    /* 내 촬영지 탭 열기 */
     document.querySelector(".shots")?.addEventListener("click", () => { showTab("myshots"); renderMyShots(); });
-
-    document.getElementById("addShotBtn")?.addEventListener("click", () => {
-      const nameEl = document.getElementById("shotName");
-      const memoEl = document.getElementById("shotMemo");
-      if (!nameEl) return;
-      const name = nameEl.value.trim();
-      const memo = memoEl ? memoEl.value.trim() : "";
-      if (!name) return alert("촬영지 이름을 입력하세요.");
-      const center = map.getCenter();
-      addShot(name, memo, center.lat, center.lng);
-      nameEl.value = "";
-      if (memoEl) memoEl.value = "";
-    });
 
     /* 일출 방향 */
     function showSunArrow(direction) {
@@ -281,8 +422,12 @@
       if (e.key === 'Escape') {
         if (sidePanel) sidePanel.classList.remove('show');
         hideAllTabs();
+        cancelEditMode();
       }
     });
+
+    /* 초기 로드: 저장된 촬영지 복원 */
+    loadShots();
   });
   </script>
 </body>
