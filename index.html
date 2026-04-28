@@ -2,17 +2,63 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Stable Core</title>
+<title>SkyPin Final UI Restore</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html,body{margin:0;height:100%;font-family:sans-serif;}
-#map{height:100vh;width:100%;}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:sans-serif;
+}
 
-/* PANEL */
+#map{
+  height:100vh;
+  width:100%;
+  z-index:1;
+}
+
+/* =====================
+   MENU (복구 핵심)
+===================== */
+#menuBtn{
+  position:fixed;
+  bottom:80px;
+  right:15px;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:#ff3b30;
+  color:#fff;
+  border:none;
+  z-index:99999;
+  font-size:20px;
+}
+
+#submenu{
+  position:fixed;
+  bottom:150px;
+  right:15px;
+  display:none;
+  flex-direction:column;
+  gap:6px;
+  z-index:99999;
+}
+
+#submenu button{
+  padding:8px;
+  border:none;
+  border-radius:6px;
+  background:#333;
+  color:#fff;
+}
+
+/* =====================
+   PANEL
+===================== */
 #panel{
   position:fixed;
   top:0;
@@ -23,11 +69,13 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   box-shadow:-2px 0 10px rgba(0,0,0,0.2);
   transform:translateX(100%);
   transition:0.3s;
-  z-index:9999;
+  z-index:99998;
   overflow:auto;
 }
 
-#panel.show{transform:translateX(0);}
+#panel.show{
+  transform:translateX(0);
+}
 
 #close{
   position:sticky;
@@ -39,7 +87,9 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   border:none;
 }
 
-.box{padding:10px;}
+.box{
+  padding:10px;
+}
 
 input,textarea{
   width:100%;
@@ -54,8 +104,8 @@ button{
 }
 
 .item{
-  border-bottom:1px solid #ddd;
   padding:8px;
+  border-bottom:1px solid #ddd;
 }
 </style>
 </head>
@@ -64,6 +114,13 @@ button{
 
 <div id="map"></div>
 
+<button id="menuBtn">☰</button>
+
+<div id="submenu">
+  <button onclick="openPanel()">📍 촬영지</button>
+  <button onclick="gps()">📌 내 위치</button>
+</div>
+
 <div id="panel">
   <button id="close">닫기</button>
 
@@ -71,7 +128,7 @@ button{
 
     <h3>📍 촬영지 등록</h3>
 
-    <div id="info">지도 클릭하세요</div>
+    <div id="info">지도에서 클릭하세요</div>
 
     <input id="name" placeholder="이름">
     <textarea id="memo" placeholder="메모"></textarea>
@@ -100,37 +157,36 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 }).addTo(map);
 
 /* =====================
-   STATE (핵심)
+   STATE
 ===================== */
-let selectedPoint = null;
+let selected = {
+  lat:37.5665,
+  lng:126.9780
+};
+
 let shots = JSON.parse(localStorage.getItem("shots")||"[]");
 let markers = [];
 
 /* =====================
-   CLICK → PANEL OPEN
+   CLICK FIX
 ===================== */
 map.on("click", e=>{
 
-  selectedPoint = {
-    lat: e.latlng.lat,
-    lng: e.latlng.lng
+  selected = {
+    lat: Number(e.latlng.lat),
+    lng: Number(e.latlng.lng)
   };
 
   document.getElementById("info").innerText =
-    `📍 선택됨: ${selectedPoint.lat.toFixed(5)}, ${selectedPoint.lng.toFixed(5)}`;
+    `📍 선택됨: ${selected.lat.toFixed(5)}, ${selected.lng.toFixed(5)}`;
 
   document.getElementById("panel").classList.add("show");
 });
 
 /* =====================
-   SAVE (핵심 안정)
+   SAVE
 ===================== */
 function save(){
-
-  if(!selectedPoint){
-    alert("지도에서 위치를 클릭하세요");
-    return;
-  }
 
   const name = document.getElementById("name").value;
   const memo = document.getElementById("memo").value;
@@ -146,8 +202,8 @@ function save(){
     shots.push({
       name,
       memo,
-      lat:selectedPoint.lat,
-      lng:selectedPoint.lng,
+      lat:selected.lat,
+      lng:selected.lng,
       img
     });
 
@@ -182,7 +238,7 @@ function drawMarkers(){
 
   shots.forEach(s=>{
 
-    const m = L.marker([s.lat,s.lng])
+    const m=L.marker([s.lat,s.lng])
       .addTo(map)
       .bindPopup(s.name);
 
@@ -195,13 +251,13 @@ function drawMarkers(){
 ===================== */
 function render(){
 
-  const el = document.getElementById("list");
+  const el=document.getElementById("list");
 
-  el.innerHTML = "<h4>📌 목록</h4>";
+  el.innerHTML="<h4>📌 목록</h4>";
 
   shots.forEach((s,i)=>{
 
-    el.innerHTML += `
+    el.innerHTML+=`
       <div class="item">
         <b>${s.name}</b><br>
         <small>${s.memo||""}</small><br>
@@ -233,10 +289,42 @@ function del(i){
 }
 
 /* =====================
-   CLOSE
+   MENU FIX
 ===================== */
+const menuBtn = document.getElementById("menuBtn");
+const submenu = document.getElementById("submenu");
+const panel = document.getElementById("panel");
+
+menuBtn.onclick=()=>{
+  submenu.style.display =
+    submenu.style.display==="flex"?"none":"flex";
+};
+
+function openPanel(){
+  panel.classList.add("show");
+  submenu.style.display="none";
+}
+
+function gps(){
+  navigator.geolocation.getCurrentPosition(pos=>{
+
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+
+    map.setView([lat,lng],15);
+
+    L.marker([lat,lng])
+      .addTo(map)
+      .bindPopup("📍 내 위치")
+      .openPopup();
+  });
+
+  submenu.style.display="none";
+}
+
+/* CLOSE */
 document.getElementById("close").onclick=()=>{
-  document.getElementById("panel").classList.remove("show");
+  panel.classList.remove("show");
 };
 
 /* INIT */
