@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Fixed</title>
+<title>SkyPin Final Full</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -57,7 +57,7 @@ html,body{
   position:fixed;
   top:0;
   right:0;
-  width:65%;
+  width:60%;
   max-width:300px;
   height:100%;
   background:#fff;
@@ -86,13 +86,19 @@ html,body{
   padding:12px;
 }
 
-button.list{
+.btn{
   width:100%;
   padding:10px;
   margin:5px 0;
   border:none;
   background:#f1f1f1;
   border-radius:6px;
+}
+
+.smallBtn{
+  margin:2px;
+  padding:5px;
+  font-size:12px;
 }
 </style>
 </head>
@@ -107,6 +113,7 @@ button.list{
   <button data-action="recommend">추천</button>
   <button data-action="region">지역</button>
   <button data-action="category">카테고리</button>
+  <button data-action="shots">내 촬영지</button>
   <button data-action="mylocation">내 위치</button>
 </div>
 
@@ -122,7 +129,7 @@ button.list{
 <script>
 
 /* =====================
-   MAP INIT
+   MAP
 ===================== */
 const App={
   map:null
@@ -135,9 +142,10 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 }).addTo(App.map);
 
 /* =====================
-   MARKER SYSTEM (핵심 수정)
+   MARKERS
 ===================== */
 let markers=[];
+let shotMarkers=[];
 
 function clearMarkers(){
   markers.forEach(m=>App.map.removeLayer(m));
@@ -145,11 +153,12 @@ function clearMarkers(){
 }
 
 /* =====================
-   DRONE DB (20개 추천)
+   DRONE DB (20개)
 ===================== */
 const DB=[
-  {n:"남산타워",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
-  {n:"한강반포",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
+
+  {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
+  {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
   {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
   {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
   {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
@@ -158,10 +167,10 @@ const DB=[
   {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
   {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
   {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
-  {n:"여수밤바다",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
+  {n:"여수",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
   {n:"순천만",lat:34.9143,lng:127.5126,m:"rec",t:"전남"},
-  {n:"전주한옥",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
-  {n:"경주불국사",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
+  {n:"전주",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
+  {n:"경주",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
   {n:"보문호",lat:35.8453,lng:129.2175,m:"rec",t:"경북"},
   {n:"대왕암",lat:35.4922,lng:129.4310,m:"rec",t:"울산"},
   {n:"태안",lat:36.5851,lng:126.3242,m:"rec",t:"충남"},
@@ -181,7 +190,7 @@ const DB=[
 ];
 
 /* =====================
-   GO (이동 + 마커)
+   GO + MARKER FIX
 ===================== */
 function go(lat,lng,name){
 
@@ -198,7 +207,7 @@ function go(lat,lng,name){
 }
 
 /* =====================
-   RENDER MENU
+   RENDER LIST
 ===================== */
 function render(type){
 
@@ -207,11 +216,74 @@ function render(type){
   const list=DB.filter(p=>p.m===type);
 
   el.innerHTML=list.map(p=>
-    `<button class="list"
+    `<button class="btn"
       onclick="go(${p.lat},${p.lng},'${p.n}')">
       📍 ${p.n} (${p.t})
     </button>`
   ).join("");
+}
+
+/* =====================
+   SHOTS SYSTEM
+===================== */
+let shots=JSON.parse(localStorage.getItem("shots")||"[]");
+
+function renderShots(){
+
+  shotMarkers.forEach(m=>App.map.removeLayer(m));
+  shotMarkers=[];
+
+  const el=document.getElementById("tabContent");
+
+  el.innerHTML=`
+    <h3>📍 내 촬영지</h3>
+    <button onclick="addShot()">+ 현재 위치 저장</button>
+  `;
+
+  shots.forEach((s,i)=>{
+
+    el.innerHTML+=`
+      <div style="padding:6px;border-bottom:1px solid #ddd">
+        <b>${s.name}</b><br>
+        <small>${s.memo||""}</small><br>
+
+        <button class="smallBtn" onclick="go(${s.lat},${s.lng},'${s.name}')">이동</button>
+        <button class="smallBtn" onclick="delShot(${i})">삭제</button>
+      </div>
+    `;
+
+    const m=L.marker([s.lat,s.lng]).addTo(App.map);
+    shotMarkers.push(m);
+  });
+
+  saveShots();
+}
+
+function addShot(){
+
+  const name=prompt("이름");
+  if(!name) return;
+
+  const memo=prompt("메모");
+
+  const c=App.map.getCenter();
+
+  shots.push({
+    name,memo,
+    lat:c.lat,
+    lng:c.lng
+  });
+
+  renderShots();
+}
+
+function delShot(i){
+  shots.splice(i,1);
+  renderShots();
+}
+
+function saveShots(){
+  localStorage.setItem("shots",JSON.stringify(shots));
 }
 
 /* =====================
@@ -234,6 +306,7 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
     if(a==="recommend") render("rec");
     if(a==="region") render("region");
     if(a==="category") render("cat");
+    if(a==="shots") renderShots();
 
     if(a==="mylocation"){
 
