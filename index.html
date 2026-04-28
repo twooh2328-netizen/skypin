@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Full</title>
+<title>SkyPin Final Stable Full</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -95,9 +95,7 @@ html,body{
   border-radius:6px;
 }
 
-.smallBtn{
-  margin:2px;
-  padding:5px;
+.small{
   font-size:12px;
 }
 </style>
@@ -110,17 +108,17 @@ html,body{
 <button id="menuBtn">☰</button>
 
 <div id="submenu">
-  <button data-action="recommend">추천</button>
+  <button data-action="rec">추천</button>
   <button data-action="region">지역</button>
-  <button data-action="category">카테고리</button>
-  <button data-action="shots">내 촬영지</button>
-  <button data-action="mylocation">내 위치</button>
+  <button data-action="cat">카테고리</button>
+  <button data-action="shot">내 촬영지</button>
+  <button data-action="gps">내 위치</button>
 </div>
 
 <div id="panel" class="panel">
   <button class="closeBtn" id="closePanel">닫기</button>
   <div class="content">
-    <div id="tabContent"></div>
+    <div id="tab"></div>
   </div>
 </div>
 
@@ -128,35 +126,32 @@ html,body{
 
 <script>
 
-/* =====================
+/* =========================
    MAP
-===================== */
-const App={
+========================= */
+const App = {
   map:null
 };
 
-App.map=L.map("map").setView([37.5665,126.9780],10);
+App.map = L.map("map").setView([37.5665,126.9780],10);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
   attribution:"© OSM"
 }).addTo(App.map);
 
-/* =====================
-   MARKERS
-===================== */
+/* =========================
+   STATE
+========================= */
 let markers=[];
 let shotMarkers=[];
+let selectedPos=null;
 
-function clearMarkers(){
-  markers.forEach(m=>App.map.removeLayer(m));
-  markers=[];
-}
+let shots = JSON.parse(localStorage.getItem("shots")||"[]");
 
-/* =====================
-   DRONE DB (20개)
-===================== */
-const DB=[
-
+/* =========================
+   DB (20개 추천)
+========================= */
+const DB = [
   {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
   {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
   {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
@@ -189,9 +184,21 @@ const DB=[
   {n:"한옥마을",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
 ];
 
-/* =====================
-   GO + MARKER FIX
-===================== */
+/* =========================
+   MAP CLICK (촬영 위치 선택)
+========================= */
+App.map.on("click",e=>{
+  selectedPos = e.latlng;
+
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent("📍 선택된 위치")
+    .openOn(App.map);
+});
+
+/* =========================
+   GO (이동 + 마커)
+========================= */
 function go(lat,lng,name){
 
   clearMarkers();
@@ -206,12 +213,20 @@ function go(lat,lng,name){
   markers.push(m);
 }
 
-/* =====================
+/* =========================
+   MARKER CLEAR
+========================= */
+function clearMarkers(){
+  markers.forEach(m=>App.map.removeLayer(m));
+  markers=[];
+}
+
+/* =========================
    RENDER LIST
-===================== */
+========================= */
 function render(type){
 
-  const el=document.getElementById("tabContent");
+  const el=document.getElementById("tab");
 
   const list=DB.filter(p=>p.m===type);
 
@@ -223,40 +238,41 @@ function render(type){
   ).join("");
 }
 
-/* =====================
-   SHOTS SYSTEM
-===================== */
-let shots=JSON.parse(localStorage.getItem("shots")||"[]");
-
+/* =========================
+   SHOTS
+========================= */
 function renderShots(){
 
   shotMarkers.forEach(m=>App.map.removeLayer(m));
   shotMarkers=[];
 
-  const el=document.getElementById("tabContent");
+  const el=document.getElementById("tab");
 
   el.innerHTML=`
     <h3>📍 내 촬영지</h3>
-    <button onclick="addShot()">+ 현재 위치 저장</button>
+    <button onclick="addShot()">+ 등록</button>
   `;
 
   shots.forEach((s,i)=>{
 
     el.innerHTML+=`
-      <div style="padding:6px;border-bottom:1px solid #ddd">
+      <div style="padding:8px;border-bottom:1px solid #ddd">
         <b>${s.name}</b><br>
         <small>${s.memo||""}</small><br>
 
-        <button class="smallBtn" onclick="go(${s.lat},${s.lng},'${s.name}')">이동</button>
-        <button class="smallBtn" onclick="delShot(${i})">삭제</button>
+        <button onclick="go(${s.lat},${s.lng},'${s.name}')">이동</button>
+        <button onclick="delShot(${i})">삭제</button>
       </div>
     `;
 
-    const m=L.marker([s.lat,s.lng]).addTo(App.map);
+    const m=L.marker([s.lat,s.lng])
+      .addTo(App.map)
+      .bindPopup(s.name);
+
     shotMarkers.push(m);
   });
 
-  saveShots();
+  localStorage.setItem("shots",JSON.stringify(shots));
 }
 
 function addShot(){
@@ -266,12 +282,13 @@ function addShot(){
 
   const memo=prompt("메모");
 
-  const c=App.map.getCenter();
+  const pos = selectedPos || App.map.getCenter();
 
   shots.push({
-    name,memo,
-    lat:c.lat,
-    lng:c.lng
+    name,
+    memo,
+    lat:pos.lat,
+    lng:pos.lng
   });
 
   renderShots();
@@ -282,13 +299,9 @@ function delShot(i){
   renderShots();
 }
 
-function saveShots(){
-  localStorage.setItem("shots",JSON.stringify(shots));
-}
-
-/* =====================
-   MENU CONTROL
-===================== */
+/* =========================
+   MENU
+========================= */
 const panel=document.getElementById("panel");
 const submenu=document.getElementById("submenu");
 
@@ -303,12 +316,12 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
 
     panel.classList.add("show");
 
-    if(a==="recommend") render("rec");
+    if(a==="rec") render("rec");
     if(a==="region") render("region");
-    if(a==="category") render("cat");
-    if(a==="shots") renderShots();
+    if(a==="cat") render("cat");
+    if(a==="shot") renderShots();
 
-    if(a==="mylocation"){
+    if(a==="gps"){
 
       navigator.geolocation.getCurrentPosition(pos=>{
 
