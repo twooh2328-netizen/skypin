@@ -2,26 +2,54 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Stable</title>
+<title>SkyPin Fix Stable</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html, body {
+html,body{
   margin:0;
   height:100%;
   font-family:sans-serif;
 }
 
-/* MAP */
-#map {
+#map{
   height:100vh;
   width:100%;
 }
 
-/* MENU BUTTON */
+/* 🔥 패널 더 줄임 (핵심 수정) */
+.panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:60%;          /* ✔ 기존 70% → 60% */
+  max-width:280px;
+  height:100%;
+  background:#fff;
+  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
+  transform:translateX(100%);
+  transition:0.3s;
+  z-index:9999;
+  overflow:auto;
+}
+
+.panel.show{
+  transform:translateX(0);
+}
+
+.closeBtn{
+  position:sticky;
+  top:0;
+  width:100%;
+  padding:10px;
+  background:#111;
+  color:#fff;
+  border:none;
+}
+
 #menuBtn{
   position:fixed;
   bottom:70px;
@@ -35,7 +63,6 @@ html, body {
   z-index:9999;
 }
 
-/* MENU LIST */
 #submenu{
   position:fixed;
   bottom:140px;
@@ -54,43 +81,8 @@ html, body {
   color:#fff;
 }
 
-/* PANEL (좁게 수정됨 - 핵심) */
-.panel{
-  position:fixed;
-  top:0;
-  right:0;
-  width:70%;          /* 🔥 지도 안 가리게 축소 */
-  max-width:300px;
-  height:100%;
-  background:#fff;
-  box-shadow:-2px 0 15px rgba(0,0,0,0.2);
-  transform:translateX(100%);
-  transition:0.3s;
-  z-index:10000;
-  overflow:auto;
-}
+.content{padding:12px;}
 
-.panel.show{
-  transform:translateX(0);
-}
-
-/* CLOSE BUTTON */
-.closeBtn{
-  position:sticky;
-  top:0;
-  width:100%;
-  padding:12px;
-  background:#111;
-  color:#fff;
-  border:none;
-}
-
-/* CONTENT */
-.content{
-  padding:12px;
-}
-
-/* ITEM */
 .item{
   display:flex;
   justify-content:space-between;
@@ -98,14 +90,12 @@ html, body {
   border-bottom:1px solid #eee;
 }
 
-/* INPUT */
 input{
   width:100%;
   padding:10px;
   margin:5px 0;
 }
 
-/* SAVE */
 .saveBtn{
   width:100%;
   padding:10px;
@@ -132,21 +122,20 @@ input{
   <button data-action="mylocation">내 위치</button>
 </div>
 
-<!-- SIDE PANEL -->
+<!-- PANEL -->
 <div id="panel" class="panel">
   <button class="closeBtn" id="closePanel">✖ 닫기</button>
   <div class="content">
-    <h3>탐색</h3>
     <div id="tabContent"></div>
   </div>
 </div>
 
-<!-- SHOT PANEL -->
+<!-- SHOT -->
 <div id="shotPanel" class="panel">
   <button class="closeBtn" id="closeShotPanel">✖ 닫기</button>
-
   <div class="content">
-    <h3>📍 내 촬영지</h3>
+
+    <h3>📍 촬영지</h3>
 
     <input id="name" placeholder="이름">
     <input id="memo" placeholder="메모">
@@ -154,6 +143,7 @@ input{
     <button class="saveBtn" onclick="addShot()">저장</button>
 
     <div id="list"></div>
+
   </div>
 </div>
 
@@ -161,69 +151,67 @@ input{
 
 <script>
 
-/* =========================
-   MAP INIT
-========================= */
-const App = {
+/* =====================
+   MAP
+===================== */
+const App={
   map:null,
-  shots: JSON.parse(localStorage.getItem("shots")||"[]"),
+  shots:JSON.parse(localStorage.getItem("shots")||"[]"),
   markers:[]
 };
 
-App.map = L.map("map").setView([37.5665,126.9780], 10);
+App.map=L.map("map").setView([37.5665,126.9780],10);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
   attribution:"© OSM"
 }).addTo(App.map);
 
-/* =========================
-   DRONE DB (핵심 연결)
-========================= */
-const DroneDB = [
-  {name:"남산타워", lat:37.5512, lng:126.9882, mode:"recommend", tag:"서울"},
-  {name:"한강 반포", lat:37.5086, lng:126.9968, mode:"recommend", tag:"야경"},
-  {name:"광안리", lat:35.1532, lng:129.1187, mode:"recommend", tag:"부산"},
+/* =====================
+   DB (정상 유지)
+===================== */
+const DroneDB=[
+  {name:"남산",lat:37.5512,lng:126.9882,mode:"recommend",tag:"서울"},
+  {name:"한강",lat:37.5086,lng:126.9968,mode:"recommend",tag:"야경"},
+  {name:"광안리",lat:35.1532,lng:129.1187,mode:"recommend",tag:"부산"},
 
-  {name:"정동진", lat:37.6910, lng:129.0330, mode:"region", tag:"강원도"},
-  {name:"제부도", lat:37.1696, lng:126.6219, mode:"region", tag:"경기도"},
+  {name:"정동진",lat:37.6910,lng:129.0330,mode:"region",tag:"강원도"},
+  {name:"제부도",lat:37.1696,lng:126.6219,mode:"region",tag:"경기도"},
 
-  {name:"설악산", lat:38.1194, lng:128.4655, mode:"category", tag:"산"},
-  {name:"불국사", lat:35.7901, lng:129.3325, mode:"category", tag:"역사"}
+  {name:"설악산",lat:38.1194,lng:128.4655,mode:"category",tag:"산"},
+  {name:"불국사",lat:35.7901,lng:129.3325,mode:"category",tag:"역사"}
 ];
 
 let mapMarkers=[];
 
-/* =========================
-   SHOW PLACES (DB 연결 핵심)
-========================= */
-function showPlaces(mode, tag){
+/* =====================
+   🔥 FIXED MAP FUNCTION
+===================== */
+function showPlaces(mode,tag){
 
   mapMarkers.forEach(m=>App.map.removeLayer(m));
   mapMarkers=[];
 
-  const filtered = DroneDB.filter(p =>
-    p.mode===mode && p.tag===tag
-  );
+  const list=DroneDB.filter(p=>p.mode===mode && p.tag===tag);
 
-  if(filtered.length===0){
+  if(list.length===0){
     alert("데이터 없음");
     return;
   }
 
-  filtered.forEach(p=>{
-    const m = L.marker([p.lat,p.lng])
+  list.forEach(p=>{
+    const m=L.marker([p.lat,p.lng])
       .addTo(App.map)
-      .bindPopup(`<b>${p.name}</b>`);
+      .bindPopup(p.name);
 
     mapMarkers.push(m);
   });
 
-  App.map.setView([filtered[0].lat,filtered[0].lng],11);
+  App.map.setView([list[0].lat,list[0].lng],11);
 }
 
-/* =========================
-   SHOTS (저장/삭제)
-========================= */
+/* =====================
+   SHOT
+===================== */
 function renderShots(){
 
   const list=document.getElementById("list");
@@ -237,20 +225,10 @@ function renderShots(){
     const row=document.createElement("div");
     row.className="item";
 
-    const title=document.createElement("span");
-    title.textContent="📍 "+s.name;
-
-    const del=document.createElement("button");
-    del.textContent="삭제";
-
-    del.onclick=()=>{
-      App.shots.splice(i,1);
-      save();
-      renderShots();
-    };
-
-    row.appendChild(title);
-    row.appendChild(del);
+    row.innerHTML=`
+      <span>📍 ${s.name}</span>
+      <button onclick="del(${i})">삭제</button>
+    `;
 
     list.appendChild(row);
 
@@ -258,7 +236,7 @@ function renderShots(){
     App.markers.push(m);
   });
 
-  save();
+  localStorage.setItem("shots",JSON.stringify(App.shots));
 }
 
 function addShot(){
@@ -272,19 +250,17 @@ function addShot(){
 
   App.shots.push({name,memo,lat:c.lat,lng:c.lng});
 
-  document.getElementById("name").value="";
-  document.getElementById("memo").value="";
-
   renderShots();
 }
 
-function save(){
-  localStorage.setItem("shots",JSON.stringify(App.shots));
+function del(i){
+  App.shots.splice(i,1);
+  renderShots();
 }
 
-/* =========================
-   MENU CONTROL (정상 연결)
-========================= */
+/* =====================
+   MENU FIXED
+===================== */
 const submenu=document.getElementById("submenu");
 const panel=document.getElementById("panel");
 const shotPanel=document.getElementById("shotPanel");
@@ -320,6 +296,8 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
         <button onclick="showPlaces('${a}','부산')">부산</button>
         <button onclick="showPlaces('${a}','야경')">야경</button>
         <button onclick="showPlaces('${a}','산')">산</button>
+        <button onclick="showPlaces('${a}','경기도')">경기도</button>
+        <button onclick="showPlaces('${a}','강원도')">강원도</button>
       `;
     }
 
@@ -331,7 +309,6 @@ document.querySelectorAll("#submenu button").forEach(btn=>{
 document.getElementById("closePanel").onclick=()=>panel.classList.remove("show");
 document.getElementById("closeShotPanel").onclick=()=>shotPanel.classList.remove("show");
 
-/* INIT */
 renderShots();
 
 </script>
