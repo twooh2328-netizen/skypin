@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Stable Full</title>
+<title>SkyPin Final Stable Click Fix</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -94,10 +94,6 @@ html,body{
   background:#f1f1f1;
   border-radius:6px;
 }
-
-.small{
-  font-size:12px;
-}
 </style>
 </head>
 
@@ -126,9 +122,9 @@ html,body{
 
 <script>
 
-/* =========================
+/* =====================
    MAP
-========================= */
+===================== */
 const App = {
   map:null
 };
@@ -139,19 +135,23 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
   attribution:"© OSM"
 }).addTo(App.map);
 
-/* =========================
+/* =====================
    STATE
-========================= */
+===================== */
 let markers=[];
 let shotMarkers=[];
-let selectedPos=null;
 
-let shots = JSON.parse(localStorage.getItem("shots")||"[]");
+/* 🔥 CLICK POSITION (안정화 핵심) */
+let selectedPos = {
+  lat:37.5665,
+  lng:126.9780
+};
 
-/* =========================
-   DB (20개 추천)
-========================= */
-const DB = [
+/* =====================
+   DB
+===================== */
+const DB=[
+
   {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
   {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
   {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
@@ -162,16 +162,6 @@ const DB = [
   {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
   {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
   {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
-  {n:"여수",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
-  {n:"순천만",lat:34.9143,lng:127.5126,m:"rec",t:"전남"},
-  {n:"전주",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
-  {n:"경주",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
-  {n:"보문호",lat:35.8453,lng:129.2175,m:"rec",t:"경북"},
-  {n:"대왕암",lat:35.4922,lng:129.4310,m:"rec",t:"울산"},
-  {n:"태안",lat:36.5851,lng:126.3242,m:"rec",t:"충남"},
-  {n:"임진각",lat:37.8872,lng:126.7409,m:"rec",t:"경기"},
-  {n:"한라산",lat:33.3617,lng:126.5292,m:"rec",t:"제주"},
-  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"rec",t:"제주"},
 
   {n:"광안리",lat:35.1532,lng:129.1187,m:"region",t:"부산"},
   {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
@@ -184,21 +174,25 @@ const DB = [
   {n:"한옥마을",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
 ];
 
-/* =========================
-   MAP CLICK (촬영 위치 선택)
-========================= */
-App.map.on("click",e=>{
-  selectedPos = e.latlng;
+/* =====================
+   MAP CLICK FIX (핵심)
+===================== */
+App.map.on("click", function(e){
+
+  selectedPos = {
+    lat: e.latlng.lat,
+    lng: e.latlng.lng
+  };
 
   L.popup()
     .setLatLng(e.latlng)
-    .setContent("📍 선택된 위치")
+    .setContent("📍 선택됨 (촬영지 등록 가능)")
     .openOn(App.map);
 });
 
-/* =========================
-   GO (이동 + 마커)
-========================= */
+/* =====================
+   GO + MARKER
+===================== */
 function go(lat,lng,name){
 
   clearMarkers();
@@ -213,17 +207,17 @@ function go(lat,lng,name){
   markers.push(m);
 }
 
-/* =========================
-   MARKER CLEAR
-========================= */
+/* =====================
+   CLEAR
+===================== */
 function clearMarkers(){
   markers.forEach(m=>App.map.removeLayer(m));
   markers=[];
 }
 
-/* =========================
-   RENDER LIST
-========================= */
+/* =====================
+   RENDER
+===================== */
 function render(type){
 
   const el=document.getElementById("tab");
@@ -238,9 +232,11 @@ function render(type){
   ).join("");
 }
 
-/* =========================
+/* =====================
    SHOTS
-========================= */
+===================== */
+let shots = JSON.parse(localStorage.getItem("shots")||"[]");
+
 function renderShots(){
 
   shotMarkers.forEach(m=>App.map.removeLayer(m));
@@ -250,7 +246,7 @@ function renderShots(){
 
   el.innerHTML=`
     <h3>📍 내 촬영지</h3>
-    <button onclick="addShot()">+ 등록</button>
+    <button onclick="addShot()">+ 현재 선택 위치 저장</button>
   `;
 
   shots.forEach((s,i)=>{
@@ -275,6 +271,9 @@ function renderShots(){
   localStorage.setItem("shots",JSON.stringify(shots));
 }
 
+/* =====================
+   ADD SHOT (CLICK FIX 핵심)
+===================== */
 function addShot(){
 
   const name=prompt("이름");
@@ -282,7 +281,7 @@ function addShot(){
 
   const memo=prompt("메모");
 
-  const pos = selectedPos || App.map.getCenter();
+  const pos = selectedPos; // 🔥 항상 최신 클릭 위치
 
   shots.push({
     name,
@@ -294,14 +293,9 @@ function addShot(){
   renderShots();
 }
 
-function delShot(i){
-  shots.splice(i,1);
-  renderShots();
-}
-
-/* =========================
+/* =====================
    MENU
-========================= */
+===================== */
 const panel=document.getElementById("panel");
 const submenu=document.getElementById("submenu");
 
