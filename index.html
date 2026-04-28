@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Fix Stable</title>
+<title>SkyPin Final Complete</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -20,36 +20,7 @@ html,body{
   width:100%;
 }
 
-/* 🔥 패널 더 줄임 (핵심 수정) */
-.panel{
-  position:fixed;
-  top:0;
-  right:0;
-  width:60%;          /* ✔ 기존 70% → 60% */
-  max-width:280px;
-  height:100%;
-  background:#fff;
-  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
-  transform:translateX(100%);
-  transition:0.3s;
-  z-index:9999;
-  overflow:auto;
-}
-
-.panel.show{
-  transform:translateX(0);
-}
-
-.closeBtn{
-  position:sticky;
-  top:0;
-  width:100%;
-  padding:10px;
-  background:#111;
-  color:#fff;
-  border:none;
-}
-
+/* MENU */
 #menuBtn{
   position:fixed;
   bottom:70px;
@@ -81,28 +52,47 @@ html,body{
   color:#fff;
 }
 
-.content{padding:12px;}
-
-.item{
-  display:flex;
-  justify-content:space-between;
-  padding:8px;
-  border-bottom:1px solid #eee;
+/* PANEL */
+.panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:65%;
+  max-width:300px;
+  height:100%;
+  background:#fff;
+  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
+  transform:translateX(100%);
+  transition:0.3s;
+  z-index:9999;
+  overflow:auto;
 }
 
-input{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
+.panel.show{
+  transform:translateX(0);
 }
 
-.saveBtn{
+.closeBtn{
+  position:sticky;
+  top:0;
   width:100%;
   padding:10px;
-  background:#007aff;
+  background:#111;
   color:#fff;
   border:none;
-  border-radius:8px;
+}
+
+.content{
+  padding:12px;
+}
+
+button.list{
+  width:100%;
+  padding:10px;
+  margin:4px 0;
+  border:none;
+  background:#f1f1f1;
+  border-radius:6px;
 }
 </style>
 </head>
@@ -118,32 +108,14 @@ input{
   <button data-action="recommend">추천</button>
   <button data-action="region">지역</button>
   <button data-action="category">카테고리</button>
-  <button data-action="shots">내 촬영지</button>
   <button data-action="mylocation">내 위치</button>
 </div>
 
 <!-- PANEL -->
 <div id="panel" class="panel">
-  <button class="closeBtn" id="closePanel">✖ 닫기</button>
+  <button class="closeBtn" id="closePanel">닫기</button>
   <div class="content">
     <div id="tabContent"></div>
-  </div>
-</div>
-
-<!-- SHOT -->
-<div id="shotPanel" class="panel">
-  <button class="closeBtn" id="closeShotPanel">✖ 닫기</button>
-  <div class="content">
-
-    <h3>📍 촬영지</h3>
-
-    <input id="name" placeholder="이름">
-    <input id="memo" placeholder="메모">
-
-    <button class="saveBtn" onclick="addShot()">저장</button>
-
-    <div id="list"></div>
-
   </div>
 </div>
 
@@ -151,12 +123,11 @@ input{
 
 <script>
 
-/* =====================
-   MAP
-===================== */
+/* =========================
+   MAP INIT
+========================= */
 const App={
   map:null,
-  shots:JSON.parse(localStorage.getItem("shots")||"[]"),
   markers:[]
 };
 
@@ -166,150 +137,142 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
   attribution:"© OSM"
 }).addTo(App.map);
 
-/* =====================
-   DB (정상 유지)
-===================== */
-const DroneDB=[
-  {name:"남산",lat:37.5512,lng:126.9882,mode:"recommend",tag:"서울"},
-  {name:"한강",lat:37.5086,lng:126.9968,mode:"recommend",tag:"야경"},
-  {name:"광안리",lat:35.1532,lng:129.1187,mode:"recommend",tag:"부산"},
+/* =========================
+   DRONE DB (20개 추천 포함)
+========================= */
+const DB=[
 
-  {name:"정동진",lat:37.6910,lng:129.0330,mode:"region",tag:"강원도"},
-  {name:"제부도",lat:37.1696,lng:126.6219,mode:"region",tag:"경기도"},
+  // 🌟 추천 20
+  {n:"남산타워",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
+  {n:"한강반포",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
+  {n:"광안대교",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
+  {n:"송도센트럴파크",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
+  {n:"월미도",lat:37.4701,lng:126.6008,m:"rec",t:"인천"},
+  {n:"정동진",lat:37.6910,lng:129.0330,m:"rec",t:"강원도"},
+  {n:"속초해변",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
+  {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
+  {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
+  {n:"여수밤바다",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
+  {n:"순천만",lat:34.9143,lng:127.5126,m:"rec",t:"전남"},
+  {n:"전주한옥마을",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
+  {n:"경주불국사",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
+  {n:"보문호",lat:35.8453,lng:129.2175,m:"rec",t:"경북"},
+  {n:"대왕암",lat:35.4922,lng:129.4310,m:"rec",t:"울산"},
+  {n:"태안꽃지",lat:36.5851,lng:126.3242,m:"rec",t:"충남"},
+  {n:"임진각",lat:37.8872,lng:126.7409,m:"rec",t:"경기"},
+  {n:"한라산",lat:33.3617,lng:126.5292,m:"rec",t:"제주"},
+  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"rec",t:"제주"},
 
-  {name:"설악산",lat:38.1194,lng:128.4655,mode:"category",tag:"산"},
-  {name:"불국사",lat:35.7901,lng:129.3325,mode:"category",tag:"역사"}
+  // 🗺 지역
+  {n:"광안리",lat:35.1532,lng:129.1187,m:"region",t:"부산"},
+  {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
+  {n:"속초",lat:38.2070,lng:128.5918,m:"region",t:"강원도"},
+
+  // 🧭 카테고리
+  {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
+  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"},
+  {n:"불국사",lat:35.7901,lng:129.3325,m:"cat",t:"역사"},
+  {n:"한옥마을",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
 ];
 
-let mapMarkers=[];
+let marks=[];
 
-/* =====================
-   🔥 FIXED MAP FUNCTION
-===================== */
-function showPlaces(mode,tag){
+/* =========================
+   SHOW MAP
+========================= */
+function show(mode,tag){
 
-  mapMarkers.forEach(m=>App.map.removeLayer(m));
-  mapMarkers=[];
+  marks.forEach(m=>App.map.removeLayer(m));
+  marks=[];
 
-  const list=DroneDB.filter(p=>p.mode===mode && p.tag===tag);
+  const list=DB.filter(p=>p.m===mode && p.t===tag);
 
-  if(list.length===0){
-    alert("데이터 없음");
-    return;
-  }
+  if(list.length===0) return;
 
   list.forEach(p=>{
     const m=L.marker([p.lat,p.lng])
       .addTo(App.map)
-      .bindPopup(p.name);
+      .bindPopup(p.n);
 
-    mapMarkers.push(m);
+    marks.push(m);
   });
 
   App.map.setView([list[0].lat,list[0].lng],11);
 }
 
-/* =====================
-   SHOT
-===================== */
-function renderShots(){
-
-  const list=document.getElementById("list");
-  list.innerHTML="";
-
-  App.markers.forEach(m=>App.map.removeLayer(m));
-  App.markers=[];
-
-  App.shots.forEach((s,i)=>{
-
-    const row=document.createElement("div");
-    row.className="item";
-
-    row.innerHTML=`
-      <span>📍 ${s.name}</span>
-      <button onclick="del(${i})">삭제</button>
-    `;
-
-    list.appendChild(row);
-
-    const m=L.marker([s.lat,s.lng]).addTo(App.map);
-    App.markers.push(m);
-  });
-
-  localStorage.setItem("shots",JSON.stringify(App.shots));
-}
-
-function addShot(){
-
-  const name=document.getElementById("name").value;
-  const memo=document.getElementById("memo").value;
-
-  if(!name) return alert("이름 입력");
-
-  const c=App.map.getCenter();
-
-  App.shots.push({name,memo,lat:c.lat,lng:c.lng});
-
-  renderShots();
-}
-
-function del(i){
-  App.shots.splice(i,1);
-  renderShots();
-}
-
-/* =====================
-   MENU FIXED
-===================== */
-const submenu=document.getElementById("submenu");
+/* =========================
+   UI
+========================= */
 const panel=document.getElementById("panel");
-const shotPanel=document.getElementById("shotPanel");
+const submenu=document.getElementById("submenu");
 
 document.getElementById("menuBtn").onclick=()=>{
   submenu.style.display=submenu.style.display==="flex"?"none":"flex";
 };
 
-document.querySelectorAll("#submenu button").forEach(btn=>{
-  btn.onclick=()=>{
+document.querySelectorAll("#submenu button").forEach(b=>{
+  b.onclick=()=>{
 
-    const a=btn.dataset.action;
+    const a=b.dataset.action;
 
-    if(a==="shots"){
-      shotPanel.classList.add("show");
-      panel.classList.remove("show");
-      renderShots();
+    panel.classList.add("show");
+
+    if(a==="recommend"){
+      render("rec");
     }
 
-    else if(a==="mylocation"){
+    if(a==="region"){
+      render("region");
+    }
+
+    if(a==="category"){
+      render("cat");
+    }
+
+    if(a==="mylocation"){
       navigator.geolocation.getCurrentPosition(pos=>{
-        App.map.setView([pos.coords.latitude,pos.coords.longitude],15);
+        const lat=pos.coords.latitude;
+        const lng=pos.coords.longitude;
+
+        App.map.setView([lat,lng],15);
+
+        L.marker([lat,lng])
+          .addTo(App.map)
+          .bindPopup("📍 내 위치")
+          .openPopup();
       });
-    }
-
-    else{
-      panel.classList.add("show");
-      shotPanel.classList.remove("show");
-
-      document.getElementById("tabContent").innerHTML=`
-        <h4>${a}</h4>
-        <button onclick="showPlaces('${a}','서울')">서울</button>
-        <button onclick="showPlaces('${a}','부산')">부산</button>
-        <button onclick="showPlaces('${a}','야경')">야경</button>
-        <button onclick="showPlaces('${a}','산')">산</button>
-        <button onclick="showPlaces('${a}','경기도')">경기도</button>
-        <button onclick="showPlaces('${a}','강원도')">강원도</button>
-      `;
     }
 
     submenu.style.display="none";
   };
 });
 
-/* CLOSE */
-document.getElementById("closePanel").onclick=()=>panel.classList.remove("show");
-document.getElementById("closeShotPanel").onclick=()=>shotPanel.classList.remove("show");
+/* =========================
+   RENDER MENU
+========================= */
+function render(type){
 
-renderShots();
+  const el=document.getElementById("tabContent");
+
+  const list=DB.filter(p=>p.m===type);
+
+  el.innerHTML=list.map(p=>
+    `<button class="list" onclick="go(${p.lat},${p.lng})">
+      📍 ${p.n} (${p.t})
+    </button>`
+  ).join("");
+}
+
+function go(lat,lng){
+  App.map.setView([lat,lng],13);
+}
+
+/* CLOSE */
+document.getElementById("closePanel").onclick=()=>{
+  panel.classList.remove("show");
+};
 
 </script>
 
