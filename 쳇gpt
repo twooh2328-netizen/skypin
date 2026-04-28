@@ -1,57 +1,99 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<title>스카이핀 드론 지도앱 (정상화 버전)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>SkyPin Final Fixed</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html, body { height:100%; margin:0; }
-#map { height:100vh; width:100%; }
-
-#menuBtn {
-  position:absolute; top:10px; left:10px;
-  z-index:1000; background:white;
-  padding:8px 12px; border:1px solid #ccc;
-  cursor:pointer;
+html,body{
+  margin:0;
+  height:100%;
+  font-family:sans-serif;
 }
 
-.fab {
-  position:fixed; bottom:20px; right:20px;
-  background:#333; color:#fff;
-  padding:10px; border-radius:8px;
-  cursor:pointer; z-index:1000;
-}
-/* 🔥 이 줄만 추가 */
-#menuBtn, .fab {
-  z-index: 2000;
-}
-.submenu {
-  position:fixed; bottom:70px; right:20px;
-  display:none; flex-direction:column; gap:10px;
-  z-index:1000;
-}
-.submenu.show { display:flex; }
-
-.submenu button {
-  width:60px; height:60px;
-  border-radius:50%; border:none;
-  color:#fff; cursor:pointer;
+#map{
+  height:100vh;
+  width:100%;
 }
 
-.side-panel {
-  position:fixed; top:0; right:-100%;
-  width:260px; height:100%;
-  background:#f8f9fa;
+/* MENU */
+#menuBtn{
+  position:fixed;
+  bottom:70px;
+  right:15px;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:#ff3b30;
+  color:#fff;
+  border:none;
+  z-index:9999;
+}
+
+#submenu{
+  position:fixed;
+  bottom:140px;
+  right:15px;
+  display:none;
+  flex-direction:column;
+  gap:6px;
+  z-index:9999;
+}
+
+#submenu button{
+  padding:8px;
+  border:none;
+  border-radius:6px;
+  background:#333;
+  color:#fff;
+}
+
+/* PANEL */
+.panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:65%;
+  max-width:300px;
+  height:100%;
+  background:#fff;
+  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
+  transform:translateX(100%);
   transition:0.3s;
-  z-index:999; padding:16px;
-  overflow-y:auto;
+  z-index:9999;
+  overflow:auto;
 }
-.side-panel.show { right:0; }
 
-.tab-content { display:none; }
+.panel.show{
+  transform:translateX(0);
+}
+
+.closeBtn{
+  position:sticky;
+  top:0;
+  width:100%;
+  padding:10px;
+  background:#111;
+  color:#fff;
+  border:none;
+}
+
+.content{
+  padding:12px;
+}
+
+button.list{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  background:#f1f1f1;
+  border-radius:6px;
+}
 </style>
 </head>
 
@@ -59,200 +101,168 @@ html, body { height:100%; margin:0; }
 
 <div id="map"></div>
 
-<button id="menuBtn">메뉴</button>
-<div class="fab">메뉴</div>
+<button id="menuBtn">☰</button>
 
-<div id="submenu" class="submenu">
-  <button class="shots">촬영지</button>
-  <button class="sun">일출</button>
-  <button class="location">위치</button>
+<div id="submenu">
+  <button data-action="recommend">추천</button>
+  <button data-action="region">지역</button>
+  <button data-action="category">카테고리</button>
+  <button data-action="mylocation">내 위치</button>
 </div>
 
-<div id="sidePanel" class="side-panel">
-  <button id="closePanelBtn">닫기</button>
-
-  <div id="myshots" class="tab-content">
-    <h3>촬영지</h3>
-    <input id="shotName" placeholder="이름"><br>
-    <input id="shotMemo" placeholder="메모"><br>
-    <button id="addShotBtn">등록</button>
-    <div id="myshots-list"></div>
-  </div>
-
-  <div id="sun" class="tab-content">
-    <h3>일출 방향</h3>
-    <div id="sun-info">위치 필요</div>
-  </div>
-
-  <div id="location" class="tab-content">
-    <h3>현재 위치</h3>
-    <button id="locateBtn">내 위치</button>
-    <div id="location-info"></div>
+<div id="panel" class="panel">
+  <button class="closeBtn" id="closePanel">닫기</button>
+  <div class="content">
+    <div id="tabContent"></div>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
 
 <script>
 
-// 🔥 전역
-let map;
-let myShots = [];
-let markers = {};
-let userPos = null;
-let userMarker = null;
-let sunMarker = null;
+/* =====================
+   MAP INIT
+===================== */
+const App={
+  map:null
+};
 
-// 🔥 초기화
-document.addEventListener('DOMContentLoaded', () => {
+App.map=L.map("map").setView([37.5665,126.9780],10);
 
-  map = L.map('map').setView([37.5665,126.9780],10);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  attribution:"© OSM"
+}).addTo(App.map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© OpenStreetMap'
-  }).addTo(map);
+/* =====================
+   MARKER SYSTEM (핵심 수정)
+===================== */
+let markers=[];
 
-  loadShots();
-
-  const submenu = document.getElementById('submenu');
-
-  const menuBtn = document.getElementById('menuBtn');
-const fabBtn = document.querySelector('.fab');
-
-menuBtn.addEventListener('click', () => {
-  submenu.classList.toggle('show');
-});
-
-fabBtn.addEventListener('click', () => {
-  submenu.classList.toggle('show');
-});
-
-  document.getElementById('closePanelBtn').onclick = () => {
-    document.getElementById('sidePanel').classList.remove('show');
-  };
-
-  document.querySelector('.shots').onclick = () => {
-    openTab('myshots');
-    renderShots();
-  };
-
-  document.querySelector('.location').onclick = () => {
-    openTab('location');
-    locate();
-  };
-
-  document.querySelector('.sun').onclick = () => {
-    openTab('sun');
-    showSun();
-  };
-
-  document.getElementById('locateBtn').onclick = locate;
-
-document.getElementById('addShotBtn').onclick = () => {
-
-  const name = shotName.value.trim();
-  const memo = shotMemo.value.trim();
-
-  if(!name) return alert("이름 입력");
-
-  const center = map.getCenter();
-  const id = Date.now();
-
-  myShots.push({
-    id,
-    name,
-    memo,
-    lat:center.lat,
-    lng:center.lng
-  });
-
-  saveShots();
-  renderShots();
-
-  shotName.value = '';
-  shotMemo.value = '';
-});
-
-// 🔥 공통
-function openTab(id){
-  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
-  document.getElementById(id).style.display='block';
-  document.getElementById('sidePanel').classList.add('show');
+function clearMarkers(){
+  markers.forEach(m=>App.map.removeLayer(m));
+  markers=[];
 }
 
-// 🔥 위치
-function locate(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+/* =====================
+   DRONE DB (20개 추천)
+===================== */
+const DB=[
+  {n:"남산타워",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
+  {n:"한강반포",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
+  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
+  {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
+  {n:"월미도",lat:37.4701,lng:126.6008,m:"rec",t:"인천"},
+  {n:"정동진",lat:37.6910,lng:129.0330,m:"rec",t:"강원도"},
+  {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
+  {n:"설악산",lat:38.1194,lng:128.4655,m:"rec",t:"강원도"},
+  {n:"제부도",lat:37.1696,lng:126.6219,m:"rec",t:"경기도"},
+  {n:"여수밤바다",lat:34.7604,lng:127.6622,m:"rec",t:"전남"},
+  {n:"순천만",lat:34.9143,lng:127.5126,m:"rec",t:"전남"},
+  {n:"전주한옥",lat:35.8151,lng:127.1530,m:"rec",t:"전북"},
+  {n:"경주불국사",lat:35.7901,lng:129.3325,m:"rec",t:"경북"},
+  {n:"보문호",lat:35.8453,lng:129.2175,m:"rec",t:"경북"},
+  {n:"대왕암",lat:35.4922,lng:129.4310,m:"rec",t:"울산"},
+  {n:"태안",lat:36.5851,lng:126.3242,m:"rec",t:"충남"},
+  {n:"임진각",lat:37.8872,lng:126.7409,m:"rec",t:"경기"},
+  {n:"한라산",lat:33.3617,lng:126.5292,m:"rec",t:"제주"},
+  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"rec",t:"제주"},
 
-    userPos = {lat,lng};
+  {n:"광안리",lat:35.1532,lng:129.1187,m:"region",t:"부산"},
+  {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
+  {n:"속초",lat:38.2070,lng:128.5918,m:"region",t:"강원도"},
 
-    if(userMarker) map.removeLayer(userMarker);
-    userMarker = L.marker([lat,lng]).addTo(map);
+  {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
+  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
+  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"},
+  {n:"불국사",lat:35.7901,lng:129.3325,m:"cat",t:"역사"},
+  {n:"한옥마을",lat:35.8151,lng:127.1530,m:"cat",t:"문화"}
+];
 
-    map.setView([lat,lng],13);
-    document.getElementById("location-info").innerText =
-      lat.toFixed(4)+","+lng.toFixed(4);
-  });
+/* =====================
+   GO (이동 + 마커)
+===================== */
+function go(lat,lng,name){
+
+  clearMarkers();
+
+  App.map.setView([lat,lng],13);
+
+  const m=L.marker([lat,lng])
+    .addTo(App.map)
+    .bindPopup("📍 "+name)
+    .openPopup();
+
+  markers.push(m);
 }
 
-// 🔥 일출
-function showSun(){
-  if(!userPos){
-    locate();
-    return;
-  }
+/* =====================
+   RENDER MENU
+===================== */
+function render(type){
 
-  const {lat,lng} = userPos;
-  const times = SunCalc.getTimes(new Date(),lat,lng);
-  const pos = SunCalc.getPosition(times.sunrise,lat,lng);
+  const el=document.getElementById("tabContent");
 
-  let deg = pos.azimuth * 180/Math.PI + 180;
-  deg = (deg+360)%360;
+  const list=DB.filter(p=>p.m===type);
 
-  document.getElementById('sun-info').innerText =
-    "일출 방위: "+deg.toFixed(1)+"°";
-
-  if(sunMarker) map.removeLayer(sunMarker);
-  sunMarker = L.marker([lat,lng]).addTo(map)
-    .bindPopup("일출 "+deg.toFixed(1)+"°").openPopup();
+  el.innerHTML=list.map(p=>
+    `<button class="list"
+      onclick="go(${p.lat},${p.lng},'${p.n}')">
+      📍 ${p.n} (${p.t})
+    </button>`
+  ).join("");
 }
 
-// 🔥 촬영지
-function renderShots(){
-  const list = document.getElementById('myshots-list');
-  list.innerHTML = '';
+/* =====================
+   MENU CONTROL
+===================== */
+const panel=document.getElementById("panel");
+const submenu=document.getElementById("submenu");
 
-  myShots.forEach(s=>{
-    const div = document.createElement('div');
-  
-    div.innerHTML = `
-  <strong>${s.name}</strong><br>
-  ${s.memo || ''}
-`;
-    div.onclick = ()=>{
-      map.setView([s.lat,s.lng],13);
-    };
+document.getElementById("menuBtn").onclick=()=>{
+  submenu.style.display=submenu.style.display==="flex"?"none":"flex";
+};
 
-    list.appendChild(div);
+document.querySelectorAll("#submenu button").forEach(btn=>{
+  btn.onclick=()=>{
 
-    if(!markers[s.id]){
-      markers[s.id] = L.marker([s.lat,s.lng]).addTo(map);
+    const a=btn.dataset.action;
+
+    panel.classList.add("show");
+
+    if(a==="recommend") render("rec");
+    if(a==="region") render("region");
+    if(a==="category") render("cat");
+
+    if(a==="mylocation"){
+
+      navigator.geolocation.getCurrentPosition(pos=>{
+
+        const lat=pos.coords.latitude;
+        const lng=pos.coords.longitude;
+
+        App.map.setView([lat,lng],15);
+
+        clearMarkers();
+
+        const m=L.marker([lat,lng])
+          .addTo(App.map)
+          .bindPopup("📍 내 위치")
+          .openPopup();
+
+        markers.push(m);
+      });
     }
-  });
-}
 
-// 🔥 저장
-function saveShots(){
-  localStorage.setItem("shots",JSON.stringify(myShots));
-}
+    submenu.style.display="none";
+  };
+});
 
-function loadShots(){
-  const data = localStorage.getItem("shots");
-  if(data) myShots = JSON.parse(data);
-}
+/* CLOSE */
+document.getElementById("closePanel").onclick=()=>{
+  panel.classList.remove("show");
+};
 
 </script>
 
