@@ -56,7 +56,7 @@
 </head>
 <body>
   <div id="map"></div>
-
+  <button id="menuBtn">메뉴</button>
   <div id="menuBtn" class="fab" role="button" aria-label="메뉴">메뉴</div>
 
   <div id="submenu" class="submenu" aria-hidden="true">
@@ -110,6 +110,18 @@
  <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
  <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // 지도 초기화
+    const map = L.map('map').setView([37.5665, 126.9780], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // SunCalc 예시
+    const times = SunCalc.getTimes(new Date(), 37.5665, 126.9780);
+    console.log("서울 일출:", times.sunrise);
+  });
+
     /* 데이터 */
     const recommendList = ["남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리","정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동","속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"];
     const categories = { 역사:["경복궁","수원화성","창덕궁","불국사","해인사"], 산:["설악산","지리산","북한산","치악산","오대산"], 바다:["해운대","광안리","속초해수욕장","정동진","월미도"], 일출:["정동진","간절곶","성산일출봉","울산대왕암","호미곶"] };
@@ -125,11 +137,6 @@
 
     /* 로컬스토리지 키 */
     const STORAGE_KEY = 'sky_pins_myshots_v1';
-
-    /* 지도 초기화 */
-    const map = L.map('map').setView([37.5665, 126.9780], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap contributors' }).addTo(map);
-    window.map = map;
 
     /* DOM 참조 */
     const menuBtn = document.getElementById('menuBtn');
