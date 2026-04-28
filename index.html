@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Final Stable Fixed</title>
+<title>SkyPin Click Register FIX</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -20,45 +20,13 @@ html,body{
   width:100%;
 }
 
-/* MENU */
-#menuBtn{
-  position:fixed;
-  bottom:70px;
-  right:15px;
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  background:#ff3b30;
-  color:#fff;
-  border:none;
-  z-index:9999;
-}
-
-#submenu{
-  position:fixed;
-  bottom:140px;
-  right:15px;
-  display:none;
-  flex-direction:column;
-  gap:6px;
-  z-index:9999;
-}
-
-#submenu button{
-  padding:8px;
-  border:none;
-  border-radius:6px;
-  background:#333;
-  color:#fff;
-}
-
 /* PANEL */
 .panel{
   position:fixed;
   top:0;
   right:0;
-  width:60%;
-  max-width:300px;
+  width:70%;
+  max-width:320px;
   height:100%;
   background:#fff;
   box-shadow:-2px 0 10px rgba(0,0,0,0.2);
@@ -86,13 +54,22 @@ html,body{
   padding:12px;
 }
 
-.btn{
+input,textarea{
   width:100%;
-  padding:10px;
   margin:5px 0;
-  border:none;
-  background:#f1f1f1;
-  border-radius:6px;
+  padding:8px;
+}
+
+button{
+  padding:8px;
+  margin:5px 0;
+  width:100%;
+}
+
+/* LIST */
+.item{
+  padding:8px;
+  border-bottom:1px solid #ddd;
 }
 </style>
 </head>
@@ -101,20 +78,26 @@ html,body{
 
 <div id="map"></div>
 
-<button id="menuBtn">☰</button>
-
-<div id="submenu">
-  <button data-action="rec">추천</button>
-  <button data-action="region">지역</button>
-  <button data-action="cat">카테고리</button>
-  <button data-action="shot">내 촬영지</button>
-  <button data-action="gps">내 위치</button>
-</div>
-
 <div id="panel" class="panel">
   <button class="closeBtn" id="closePanel">닫기</button>
+
   <div class="content">
-    <div id="tab"></div>
+
+    <h3>📍 촬영지 등록</h3>
+
+    <div id="posInfo">지도에서 위치를 클릭하세요</div>
+
+    <input id="name" placeholder="이름">
+    <textarea id="memo" placeholder="메모"></textarea>
+
+    <input type="file" id="img">
+
+    <button onclick="saveShot()">저장</button>
+
+    <hr>
+
+    <div id="list"></div>
+
   </div>
 </div>
 
@@ -125,223 +108,156 @@ html,body{
 /* =====================
    MAP
 ===================== */
-const App = {
-  map:null
-};
-
-App.map = L.map("map").setView([37.5665,126.9780],10);
+const map = L.map("map").setView([37.5665,126.9780],10);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
   attribution:"© OSM"
-}).addTo(App.map);
+}).addTo(map);
 
 /* =====================
    STATE
 ===================== */
-let markers=[];
-let shotMarkers=[];
-
-/* 🔥 안정 좌표 */
-let selectedPos = {
-  lat:37.5665,
-  lng:126.9780
-};
+let selected = null;
+let shots = JSON.parse(localStorage.getItem("shots")||"[]");
+let markers = [];
 
 /* =====================
-   CLICK FIX (핵심)
+   CLICK → REGISTER OPEN
 ===================== */
-App.map.on("click", function(e){
+map.on("click", function(e){
 
-  selectedPos = {
-    lat: Number(e.latlng.lat),
-    lng: Number(e.latlng.lng)
+  selected = {
+    lat: e.latlng.lat,
+    lng: e.latlng.lng
   };
 
-  L.popup()
-    .setLatLng(e.latlng)
-    .setContent("📍 선택 위치 저장됨")
-    .openOn(App.map);
+  document.getElementById("posInfo").innerHTML =
+    `📍 선택됨: ${selected.lat.toFixed(5)}, ${selected.lng.toFixed(5)}`;
+
+  document.getElementById("panel").classList.add("show");
 });
 
 /* =====================
-   DB
+   SAVE SHOT (핵심)
 ===================== */
-const DB=[
-  {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
-  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
-  {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
-  {n:"송도",lat:37.3940,lng:126.6406,m:"rec",t:"인천"},
-  {n:"속초",lat:38.2070,lng:128.5918,m:"rec",t:"강원도"},
+function saveShot(){
 
-  {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
-  {n:"해운대",lat:35.1587,lng:129.1604,m:"cat",t:"바다"},
-  {n:"성산일출봉",lat:33.4581,lng:126.9425,m:"cat",t:"일출"}
-];
+  if(!selected){
+    alert("지도에서 위치를 먼저 클릭하세요");
+    return;
+  }
 
-/* =====================
-   GO
-===================== */
-function go(lat,lng,name){
+  const name = document.getElementById("name").value;
+  const memo = document.getElementById("memo").value;
+  const file = document.getElementById("img").files[0];
 
-  clearMarkers();
+  if(!name){
+    alert("이름 입력");
+    return;
+  }
 
-  App.map.setView([lat,lng],13);
+  const saveData = (img="")=>{
 
-  const m=L.marker([lat,lng])
-    .addTo(App.map)
-    .bindPopup(name)
-    .openPopup();
+    shots.push({
+      name,
+      memo,
+      lat:selected.lat,
+      lng:selected.lng,
+      img
+    });
 
-  markers.push(m);
+    localStorage.setItem("shots",JSON.stringify(shots));
+
+    addMarker();
+
+    renderList();
+
+    alert("저장 완료!");
+  };
+
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ()=> saveData(reader.result);
+    reader.readAsDataURL(file);
+  }else{
+    saveData();
+  }
+
+  document.getElementById("name").value="";
+  document.getElementById("memo").value="";
+  document.getElementById("img").value="";
 }
 
 /* =====================
-   CLEAR
+   MARKER
 ===================== */
-function clearMarkers(){
-  markers.forEach(m=>App.map.removeLayer(m));
+function addMarker(){
+
+  markers.forEach(m=>map.removeLayer(m));
   markers=[];
+
+  shots.forEach(s=>{
+
+    const m = L.marker([s.lat,s.lng])
+      .addTo(map)
+      .bindPopup(s.name);
+
+    markers.push(m);
+  });
 }
 
 /* =====================
-   RENDER
+   LIST
 ===================== */
-function render(type){
+function renderList(){
 
-  const el=document.getElementById("tab");
+  const el = document.getElementById("list");
 
-  const list=DB.filter(p=>p.m===type);
-
-  el.innerHTML=list.map(p=>
-    `<button class="btn" onclick="go(${p.lat},${p.lng},'${p.n}')">
-      📍 ${p.n} (${p.t})
-    </button>`
-  ).join("");
-}
-
-/* =====================
-   SHOTS (핵심 안정화)
-===================== */
-let shots = JSON.parse(localStorage.getItem("shots")||"[]");
-
-function renderShots(){
-
-  shotMarkers.forEach(m=>App.map.removeLayer(m));
-  shotMarkers=[];
-
-  const el=document.getElementById("tab");
-
-  el.innerHTML=`
-    <h3>📍 내 촬영지</h3>
-    <button onclick="addShot()">+ 현재 선택 위치 저장</button>
-  `;
+  el.innerHTML = "<h4>📌 저장 목록</h4>";
 
   shots.forEach((s,i)=>{
 
-    el.innerHTML+=`
-      <div style="padding:8px;border-bottom:1px solid #ddd">
+    el.innerHTML += `
+      <div class="item">
         <b>${s.name}</b><br>
         <small>${s.memo||""}</small><br>
 
-        <button onclick="go(${s.lat},${s.lng},'${s.name}')">이동</button>
-        <button onclick="delShot(${i})">삭제</button>
+        ${s.img ? `<img src="${s.img}" style="width:100%;border-radius:6px">`:""}
+
+        <button onclick="go(${s.lat},${s.lng})">이동</button>
+        <button onclick="del(${i})">삭제</button>
       </div>
     `;
-
-    const m=L.marker([s.lat,s.lng])
-      .addTo(App.map)
-      .bindPopup(s.name);
-
-    shotMarkers.push(m);
   });
-
-  localStorage.setItem("shots",JSON.stringify(shots));
 }
 
 /* =====================
-   ADD SHOT (완전 FIX)
+   MOVE
 ===================== */
-function addShot(){
-
-  const name=prompt("이름");
-  if(!name) return;
-
-  const memo=prompt("메모");
-
-  // 🔥 항상 숫자 좌표 보장
-  const pos = {
-    lat:Number(selectedPos.lat),
-    lng:Number(selectedPos.lng)
-  };
-
-  shots.push({
-    name,
-    memo,
-    lat:pos.lat,
-    lng:pos.lng
-  });
-
-  renderShots();
+function go(lat,lng){
+  map.setView([lat,lng],14);
 }
 
 /* =====================
    DELETE
 ===================== */
-function delShot(i){
+function del(i){
   shots.splice(i,1);
-  renderShots();
+  localStorage.setItem("shots",JSON.stringify(shots));
+  renderList();
+  addMarker();
 }
 
 /* =====================
-   MENU
+   CLOSE PANEL
 ===================== */
-const panel=document.getElementById("panel");
-const submenu=document.getElementById("submenu");
-
-document.getElementById("menuBtn").onclick=()=>{
-  submenu.style.display=submenu.style.display==="flex"?"none":"flex";
-};
-
-document.querySelectorAll("#submenu button").forEach(btn=>{
-  btn.onclick=()=>{
-
-    const a=btn.dataset.action;
-
-    panel.classList.add("show");
-
-    if(a==="rec") render("rec");
-    if(a==="region") render("rec");
-    if(a==="cat") render("cat");
-    if(a==="shot") renderShots();
-
-    if(a==="gps"){
-
-      navigator.geolocation.getCurrentPosition(pos=>{
-
-        const lat=pos.coords.latitude;
-        const lng=pos.coords.longitude;
-
-        App.map.setView([lat,lng],15);
-
-        clearMarkers();
-
-        const m=L.marker([lat,lng])
-          .addTo(App.map)
-          .bindPopup("📍 내 위치")
-          .openPopup();
-
-        markers.push(m);
-      });
-    }
-
-    submenu.style.display="none";
-  };
-});
-
-/* CLOSE */
 document.getElementById("closePanel").onclick=()=>{
-  panel.classList.remove("show");
+  document.getElementById("panel").classList.remove("show");
 };
+
+/* INIT */
+renderList();
+addMarker();
 
 </script>
 
