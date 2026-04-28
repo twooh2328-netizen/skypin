@@ -354,17 +354,51 @@
     /* 버튼 이벤트 바인딩 */
     document.querySelector(".recommend")?.addEventListener("click", () => { updateTabContent("recommend", recommendList); showTab("recommend"); });
 
-    document.querySelector(".category")?.addEventListener("click", () => {
-      const container = document.getElementById("category");
-      if (!container) return;
-      let html = "<h3>카테고리</h3>";
-      for (let cat in categories) {
-        html += `<h4>${escapeHtml(cat)}</h4><ul>` + categories[cat].map(m => `<li class="cat-item" data-name="${m}">${escapeHtml(m)}</li>`).join("") + `</ul>`;
-      }
-      container.innerHTML = html;
-      container.querySelectorAll('.cat-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
-      showTab("category");
+  document.querySelector(".category")?.addEventListener("click", () => {
+  const container = document.getElementById("category");
+  if (!container) return;
+
+  // 사이드패널 열기
+  showTab("category");
+
+  // 카테고리 버튼 영역 초기화
+  container.innerHTML = '<h3>카테고리 선택</h3><div id="category-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div><div id="category-list"></div>';
+
+  const btnArea = document.getElementById("category-buttons");
+  if (!btnArea) return;
+
+  // 카테고리 이름 배열 (categories 객체의 키로 자동 생성)
+  const catNames = Object.keys(categories);
+
+  // 버튼 생성
+  catNames.forEach(cat => {
+    const b = document.createElement("button");
+    b.textContent = cat;
+    b.className = "small-btn";
+    b.style.cursor = "pointer";
+    b.style.opacity = '0.8';
+    b.addEventListener("click", () => {
+      // 선택된 카테고리 강조
+      btnArea.querySelectorAll('button').forEach(x => x.style.opacity = '0.6');
+      b.style.opacity = '1';
+
+      // 카테고리 항목 렌더링
+      const listDiv = document.getElementById("category-list");
+      listDiv.innerHTML = `<h4>${cat}</h4><ul>` + (categories[cat] || []).map(item => `<li class="cat-item" data-name="${item}" style="cursor:pointer">${item}</li>`).join('') + `</ul>`;
+
+      // 항목 클릭 시 지도에 마커 추가
+      listDiv.querySelectorAll('.cat-item').forEach(li => li.addEventListener('click', () => {
+        const name = li.dataset.name;
+        addMarker(name);
+      }));
     });
+    btnArea.appendChild(b);
+  });
+
+  // 자동으로 첫 카테고리 버튼 클릭
+  const firstBtn = btnArea.querySelector('button');
+  if (firstBtn) firstBtn.click();
+});
 
     document.querySelector(".region")?.addEventListener("click", () => {
       const container = document.getElementById("region");
