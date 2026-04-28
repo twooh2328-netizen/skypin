@@ -1,643 +1,243 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>스카이핀 드론 지도앱 (일출 정밀 계산 포함)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <style>
-    html, body { height:100%; margin:0; }
-    #map { height:100vh; width:100%; z-index:1; }
+<meta charset="UTF-8" />
+<title>SkyPin 드론 지도앱</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    /* 메뉴 버튼 스타일 */
-    #menuBtn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-    .fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background:#333;
-      color:#fff;
-      border-radius:8px;
-      width:80px;
-      height:40px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      font-size:16px;
-      box-shadow:0 4px 6px rgba(0,0,0,0.3);
-      z-index:1000;
-    }
+<style>
+html, body { height:100%; margin:0; }
+#map { height:100vh; }
 
-    .submenu {
-      position: fixed;
-      bottom: 70px;
-      right: 20px;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 1000;
-    }
+#menuBtn {
+  position:absolute; top:10px; left:10px;
+  z-index:1000; background:white;
+  padding:8px 12px; border:1px solid #ccc;
+}
 
-    .submenu button { width: 60px; height: 60px; border-radius:50%; border:none; cursor:pointer; color:#fff; font-size:14px; font-weight:bold; }
-    .submenu button:hover { filter: brightness(85%); }
-    .recommend { background: #28a745; }
-    .category { background: #6f42c1; }
-    .region { background: #17a2b8; }
-    .shots { background: #ffc107; color:#000; }
-    .sun { background: #fd7e14; }
-    .location { background: #007bff; }
+.fab {
+  position:fixed; bottom:20px; right:20px;
+  background:#333; color:#fff;
+  padding:10px 16px; border-radius:8px;
+  cursor:pointer; z-index:1000;
+}
 
-    /* 사이드패널 폭을 260px로 축소 */
-    .side-panel {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 260px;
-      height: 100%;
-      background:#f8f9fa;
-      box-shadow:-2px 0 6px rgba(0,0,0,0.3);
-      transition: right 0.28s ease;
-      overflow-y:auto;
-      z-index:999;
-      padding:16px;
-    }
-    .side-panel.show { right: 0; }
-    .tab-content { display: none; margin-bottom: 12px; }
-    .myshot-item { margin-bottom:8px; }
-    #submenu.show { display:flex; }
+.submenu {
+  position:fixed; bottom:70px; right:20px;
+  display:none; flex-direction:column; gap:8px;
+  z-index:1000;
+}
+.submenu.show { display:flex; }
 
-    @media (max-width:768px) {
-      .side-panel { width:100%; }
-      .fab { width:70px; height:35px; font-size:14px; }
-      .submenu button { width:50px; height:50px; font-size:12px; }
-    }
+.submenu button {
+  width:60px; height:60px;
+  border:none; border-radius:50%;
+  color:white; cursor:pointer;
+}
 
-    .sun-arrow { font-size:18px; line-height:20px; text-align:center; }
-    .small-btn { padding:4px 8px; margin-left:6px; font-size:12px; }
-    #category-buttons button.small-btn { background:#eee; border:1px solid #ccc; padding:6px 10px; border-radius:6px; }
-    #category-buttons button.small-btn:focus { outline:2px solid #007bff; }
-    #category-list ul { padding-left:16px; margin-top:8px; }
-    .sun-arrow-wrap { display:flex; align-items:center; gap:8px; }
-    .sun-arrow-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#ffd966; color:#333; font-weight:bold; }
-    .info-muted { color:#666; font-size:13px; margin-top:6px; }
+.recommend { background:#28a745; }
+.category { background:#6f42c1; }
+.region { background:#17a2b8; }
+.shots { background:#ffc107; color:black; }
+.sun { background:#fd7e14; }
+.location { background:#007bff; }
 
-    /* 화살표 색상 (일출) */
-    .sun-arrow .shaft { stroke:#e60000; stroke-width:6; stroke-linecap:round; }
-    .sun-arrow .head { fill:#e60000; }
-  </style>
+.side-panel {
+  position:fixed; top:0; right:-100%;
+  width:260px; height:100%;
+  background:#f8f9fa;
+  transition:0.3s; z-index:999;
+  padding:16px; overflow-y:auto;
+}
+.side-panel.show { right:0; }
+
+.tab-content { display:none; }
+.small-btn { margin:4px; }
+
+.sun-arrow-icon {
+  font-size:24px;
+  transition:0.3s;
+}
+</style>
 </head>
+
 <body>
-  <div id="map"></div>
 
-  <!-- 메뉴 버튼: id는 유일하게 유지 -->
-  <button id="menuBtn" aria-label="메뉴">메뉴</button>
+<div id="map"></div>
 
-  <!-- 플로팅 액션 버튼은 class로 구분 -->
-  <div class="fab" role="button" aria-label="메뉴">메뉴</div>
+<button id="menuBtn">메뉴</button>
+<div class="fab">메뉴</div>
 
-  <div id="submenu" class="submenu" aria-hidden="true">
-    <button class="recommend" title="추천">추천</button>
-    <button class="category" title="카테고리">카테고리</button>
-    <button class="region" title="지역별">지역</button>
-    <button class="shots" title="내 촬영지">촬영지</button>
-    <button class="sun" title="일출">일출</button>
-    <button class="location" title="위치">위치</button>
+<div id="submenu" class="submenu">
+  <button class="shots">촬영지</button>
+  <button class="sun">일출</button>
+  <button class="location">위치</button>
+</div>
+
+<div id="sidePanel" class="side-panel">
+  <button id="closePanelBtn">닫기</button>
+
+  <div id="myshots" class="tab-content">
+    <h3>촬영지</h3>
+    <input id="shotName" placeholder="이름"><br>
+    <input id="shotMemo" placeholder="메모"><br>
+    <button id="addShotBtn">등록</button>
+    <div id="myshots-list"></div>
   </div>
 
-  <div id="sidePanel" class="side-panel" aria-hidden="true">
-    <button id="closePanelBtn" aria-label="닫기">닫기 ✖</button>
-
-    <div class="tab-content" id="recommend"></div>
-    <div class="tab-content" id="category"></div>
-    <div class="tab-content" id="region"></div>
-
-    <div class="tab-content" id="myshots">
-      <h3>내 촬영지</h3>
-      <input type="text" id="shotName" placeholder="촬영지 이름" />
-      <br />
-      <input type="text" id="shotMemo" placeholder="메모" />
-      <br />
-      <button id="addShotBtn">등록</button>
-      <button id="cancelEditBtn" style="display:none;" class="small-btn">취소</button>
-      <div id="myshots-list"></div>
-    </div>
-
-    <div class="tab-content" id="sun">
-      <h3>일출 방향</h3>
-      <div id="sun-direction" class="sun-arrow-wrap" data-requested="false">
-        <div class="sun-arrow-icon" id="sun-arrow-icon">↑</div>
-        <div>
-          <div id="sun-info">일출 방위를 계산하려면 위치를 가져오세요.</div>
-          <div id="sun-subinfo" class="info-muted"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tab-content" id="location">
-      <h3>현재 위치</h3>
-      <button id="locateBtn">내 위치 보기</button>
-      <div id="location-info" class="info-muted"></div>
-    </div>
+  <div id="sun" class="tab-content">
+    <h3>일출 방향</h3>
+    <div id="sun-info">위치를 가져오세요</div>
+    <div class="sun-arrow-icon" id="sun-arrow">↑</div>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- 지도 초기화 스크립트는 여기에 추가하세요 -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
- <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // 지도 초기화
-    const map = L.map('map').setView([37.5665, 126.9780], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
 
-    // SunCalc 예시
-    const times = SunCalc.getTimes(new Date(), 37.5665, 126.9780);
-    console.log("서울 일출:", times.sunrise);
+  <div id="location" class="tab-content">
+    <h3>현재 위치</h3>
+    <button id="locateBtn">내 위치</button>
+    <div id="location-info"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+
+<script>
+
+let map;
+let myShots = [];
+let markers = {};
+let userPos = null;
+let userMarker = null;
+let sunMarker = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 지도
+  map = L.map('map').setView([37.5665,126.9780],10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  loadShots();
+
+  // 메뉴
+  const submenu = document.getElementById('submenu');
+  document.getElementById('menuBtn').onclick =
+  document.querySelector('.fab').onclick =
+    () => submenu.classList.toggle('show');
+
+  document.getElementById('closePanelBtn').onclick = () => {
+    document.getElementById('sidePanel').classList.remove('show');
+  };
+
+  // 촬영지 추가
+  document.getElementById('addShotBtn').onclick = () => {
+    const name = shotName.value.trim();
+    if(!name) return alert("이름 입력");
+
+    const center = map.getCenter();
+    const id = Date.now();
+
+    myShots.push({id,name,lat:center.lat,lng:center.lng});
+    saveShots();
+    renderShots();
+  };
+
+  document.querySelector('.shots').onclick = () => {
+    openTab('myshots');
+    renderShots();
+  };
+
+  document.querySelector('.location').onclick = () => {
+    openTab('location');
+    locate();
+  };
+
+  document.getElementById('locateBtn').onclick = locate;
+
+  document.querySelector('.sun').onclick = () => {
+    openTab('sun');
+    showSun();
+  };
+
+});
+
+function openTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.getElementById(id).style.display='block';
+  document.getElementById('sidePanel').classList.add('show');
+}
+
+// 위치
+function locate(){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    userPos = {lat,lng};
+
+    if(userMarker) map.removeLayer(userMarker);
+    userMarker = L.marker([lat,lng]).addTo(map);
+
+    map.setView([lat,lng],13);
+    locationInfo.innerText = lat.toFixed(4)+","+lng.toFixed(4);
   });
-function showSunArrow(lat, lng) {
-    const arrowHtml = `
-      <svg class="sun-arrow" xmlns="http://www.w3.org/2000/svg" width="200" height="20">
-        <line x1="0" y1="10" x2="180" y2="10" class="shaft"/>
-        <polygon points="180,5 200,10 180,15" class="head"/>
-      </svg>
-    `;
-    const arrowIcon = L.divIcon({ html: arrowHtml, className: '', iconSize: [200,20], iconAnchor: [100,10] });
-    const arrowMarker = L.marker([lat, lng], { icon: arrowIcon }).addTo(map);
-    setTimeout(()=> map.removeLayer(arrowMarker), 5000);
+}
+
+// 일출
+function showSun(){
+  if(!userPos){
+    locate();
+    return;
   }
 
-  // 예시 호출 (map이 준비된 이후에)
-  showSunArrow(37.5665, 126.9780);
-});
-    /* 데이터 */
-    const recommendList = ["남산타워","한강공원","경복궁","수원화성","설악산","지리산","해운대","광안리","정동진","간절곶","월미도","차이나타운","북한산","청계천","동대문","명동","속초해수욕장","춘천호수","울산대왕암","제주성산일출봉"];
-    const categories = { 역사:["경복궁","수원화성","창덕궁","불국사","해인사"], 산:["설악산","지리산","북한산","치악산","오대산"], 바다:["해운대","광안리","속초해수욕장","정동진","월미도"], 일출:["정동진","간절곶","성산일출봉","울산대왕암","호미곶"] };
-    const regions = { 서울:["광화문","남산타워","청계천","명동","북한산"], 부산:["해운대","광안리","태종대","부산타워","자갈치시장"], 인천:["월미도","차이나타운","송도센트럴파크","인천대교","강화도"], 강원:["설악산","정동진","속초해수욕장","춘천호수","오대산"] };
-    const locationCoords = { "남산타워":[37.5512,126.9882], "경복궁":[37.5796,126.9770], "해운대":[35.1587,129.1603], "광안리":[35.1531,129.1185], "정동진":[37.6896,129.0340], "성산일출봉":[33.4589,126.9425] };
+  const {lat,lng} = userPos;
+  const times = SunCalc.getTimes(new Date(),lat,lng);
+  const pos = SunCalc.getPosition(times.sunrise,lat,lng);
 
-    /* 상태 */
-    let myShots = [];                 // {id,name,memo,lat,lng}
-    let shotMarkersMap = {};          // id -> marker
-    let lastUserPos = null;
-    let userMarker = null;
-    let sunMarker = null;
+  let deg = pos.azimuth * 180/Math.PI + 180;
+  deg = (deg+360)%360;
 
-    /* 로컬스토리지 키 */
-    const STORAGE_KEY = 'sky_pins_myshots_v1';
+  document.getElementById('sun-info').innerText = "방위: "+deg.toFixed(1)+"°";
+  document.getElementById('sun-arrow').style.transform = `rotate(${deg}deg)`;
 
-    /* DOM 참조 */
-    const menuBtn = document.getElementById('menuBtn');
-    const submenu = document.getElementById('submenu');
-    const sidePanel = document.getElementById('sidePanel');
-    const closePanelBtn = document.getElementById('closePanelBtn');
+  if(sunMarker) map.removeLayer(sunMarker);
+  sunMarker = L.marker([lat,lng]).addTo(map)
+    .bindPopup("일출 "+deg.toFixed(1)+"°").openPopup();
+}
 
-    const addShotBtn = document.getElementById('addShotBtn');
-    const cancelEditBtn = document.getElementById('cancelEditBtn');
+// 촬영지
+function renderShots(){
+  const list = document.getElementById('myshots-list');
+  list.innerHTML = '';
 
+  myShots.forEach(s=>{
+    const div = document.createElement('div');
+    div.innerHTML = s.name;
 
-    /* 공통 함수 */
-    function hideAllTabs() {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+    div.onclick = ()=>{
+      map.setView([s.lat,s.lng],13);
+    };
+
+    list.appendChild(div);
+
+    if(!markers[s.id]){
+      markers[s.id] = L.marker([s.lat,s.lng]).addTo(map);
     }
-
-    function focusShotName() {
-      const input = document.getElementById('shotName');
-      if (!input) return;
-      if (document.activeElement === input) return;
-      try {
-        const active = document.activeElement;
-        if (active && active !== document.body && active !== input) active.blur();
-      } catch (e) {}
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            try {
-              if (document.activeElement !== input) input.focus({ preventScroll: true });
-            } catch (err) {
-              try { if (document.activeElement !== input) input.focus(); } catch(e) {}
-            }
-          }, 50);
-        });
-      });
-    }
-
-    function showTab(tabId) {
-      hideAllTabs();
-      const el = document.getElementById(tabId);
-      if (el) el.style.display = 'block';
-      if (sidePanel) sidePanel.classList.add('show');
-      if (tabId === 'myshots') focusShotName();
-    }
-
-    function generateId() {
-      return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
-    }
-
-    /* 저장/복원 */
-    function saveShots() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(myShots));
-      } catch (e) {
-        console.warn('localStorage 저장 실패', e);
-      }
-    }
-
-    function clearAllShotMarkers() {
-      Object.values(shotMarkersMap).forEach(m => {
-        try { map.removeLayer(m); } catch(e) {}
-      });
-      shotMarkersMap = {};
-    }
-
-    function loadShots() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      try {
-        const arr = JSON.parse(raw);
-        if (!Array.isArray(arr)) return;
-        myShots = arr;
-      } catch (e) {
-        console.warn('저장된 촬영지 파싱 실패', e);
-        myShots = [];
-      }
-      clearAllShotMarkers();
-      myShots.forEach(s => {
-        try {
-          const m = L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name);
-          shotMarkersMap[s.id] = m;
-        } catch(e) {}
-      });
-      renderMyShots();
-    }
-
-    /* 마커/목록 렌더링 */
-    function renderMyShots() {
-      const list = document.getElementById("myshots-list");
-      if (!list) return;
-      if (myShots.length === 0) {
-        list.innerHTML = '<div>등록된 촬영지가 없습니다.</div>';
-        return;
-      }
-      list.innerHTML = myShots.map((s) => {
-        return `<div class="myshot-item" data-id="${s.id}">
-          <strong>${escapeHtml(s.name)}</strong> - ${escapeHtml(s.memo || '')}
-          <button class="small-btn edit-shot" data-id="${s.id}">수정</button>
-          <button class="small-btn delete-shot" data-id="${s.id}">삭제</button>
-          <button class="small-btn goto-shot" data-id="${s.id}">이동</button>
-        </div>`;
-      }).join('');
-      list.querySelectorAll('.delete-shot').forEach(btn => btn.addEventListener('click', () => deleteShotById(btn.dataset.id)));
-      list.querySelectorAll('.edit-shot').forEach(btn => btn.addEventListener('click', () => startEditShot(btn.dataset.id)));
-      list.querySelectorAll('.goto-shot').forEach(btn => btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const s = myShots.find(x => x.id === id);
-        if (s) {
-          map.setView([s.lat, s.lng], 13);
-          if (shotMarkersMap[id]) shotMarkersMap[id].openPopup();
-        }
-      }));
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
-    }
-
-    function isDuplicateShot(name, lat, lng, excludeId = null) {
-      const normName = (name || '').trim().toLowerCase();
-      const round = (v) => Math.round(v * 1e5) / 1e5;
-      for (const s of myShots) {
-        if (excludeId && s.id === excludeId) continue;
-        if (s.name.trim().toLowerCase() === normName) return {type:'name', item:s};
-        if (round(s.lat) === round(lat) && round(s.lng) === round(lng)) return {type:'coords', item:s};
-      }
-      return null;
-    }
-
-    /* 추가 / 수정 / 삭제 */
-    function addShot(name, memo, lat, lng) {
-      const dup = isDuplicateShot(name, lat, lng);
-      if (dup) {
-        if (dup.type === 'name') {
-          if (!confirm(`같은 이름의 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 등록하시겠습니까?`)) return;
-        } else {
-          if (!confirm(`같은 위치에 등록된 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 등록하시겠습니까?`)) return;
-        }
-      }
-      const id = generateId();
-      const shot = { id, name, memo, lat, lng };
-      myShots.push(shot);
-      const marker = L.marker([lat, lng]).addTo(map).bindPopup(name);
-      shotMarkersMap[id] = marker;
-      saveShots();
-      renderMyShots();
-    }
-
-    function startEditShot(id) {
-      const shot = myShots.find(s => s.id === id);
-      if (!shot) return;
-      document.getElementById('shotName').value = shot.name;
-      document.getElementById('shotMemo').value = shot.memo || '';
-      addShotBtn.textContent = '수정 저장';
-      addShotBtn.dataset.editId = id;
-      cancelEditBtn.style.display = 'inline-block';
-      showTab('myshots');
-      focusShotName();
-    }
-
-    function applyEditShot(id, name, memo) {
-      const idx = myShots.findIndex(s => s.id === id);
-      if (idx === -1) return;
-      const s = myShots[idx];
-      const centerLat = s.lat;
-      const centerLng = s.lng;
-      const dup = isDuplicateShot(name, centerLat, centerLng, id);
-      if (dup) {
-        if (dup.type === 'name') {
-          if (!confirm(`같은 이름의 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 저장하시겠습니까?`)) return false;
-        } else {
-          if (!confirm(`같은 위치에 등록된 촬영지("${dup.item.name}")가 이미 있습니다. 그래도 저장하시겠습니까?`)) return false;
-        }
-      }
-      myShots[idx].name = name;
-      myShots[idx].memo = memo;
-      const marker = shotMarkersMap[id];
-      if (marker) marker.bindPopup(name);
-      saveShots();
-      renderMyShots();
-      return true;
-    }
-
-    function cancelEditMode() {
-      delete addShotBtn.dataset.editId;
-      addShotBtn.textContent = '등록';
-      cancelEditBtn.style.display = 'none';
-      document.getElementById('shotName').value = '';
-      document.getElementById('shotMemo').value = '';
-    }
-
-    function deleteShotById(id) {
-      const idx = myShots.findIndex(s => s.id === id);
-      if (idx === -1) return;
-      if (!confirm(`촬영지 "${myShots[idx].name}"을(를) 삭제하시겠습니까?`)) return;
-      if (shotMarkersMap[id]) {
-        try { map.removeLayer(shotMarkersMap[id]); } catch(e) {}
-        delete shotMarkersMap[id];
-      }
-      myShots.splice(idx, 1);
-      saveShots();
-      renderMyShots();
-    }
-
-    /* addShotBtn 클릭 처리 */
-    addShotBtn?.addEventListener('click', () => {
-      const nameEl = document.getElementById('shotName');
-      const memoEl = document.getElementById('shotMemo');
-      if (!nameEl) return;
-      const name = nameEl.value.trim();
-      const memo = memoEl ? memoEl.value.trim() : '';
-      if (!name) return alert('촬영지 이름을 입력하세요.');
-      const editId = addShotBtn.dataset.editId;
-      if (editId) {
-        const ok = applyEditShot(editId, name, memo);
-        if (ok) cancelEditMode();
-        return;
-      }
-      const center = map.getCenter();
-      addShot(name, memo, center.lat, center.lng);
-      nameEl.value = '';
-      if (memoEl) memoEl.value = '';
-    });
-
-    cancelEditBtn?.addEventListener('click', () => {
-      cancelEditMode();
-    });
-
-    /* addMarker (추천/카테고리 클릭용) */
-    function addMarker(name) {
-      if (typeof L === 'undefined' || !window.map) { console.warn('map 미초기화'); return; }
-      if (locationCoords[name]) {
-        const [lat, lng] = locationCoords[name];
-        L.marker([lat, lng]).addTo(map).bindPopup(name).openPopup();
-        map.setView([lat, lng], 12);
-      } else {
-        alert(`${name} 좌표가 아직 등록되지 않았습니다.`);
-      }
-    }
-
-    /* 위치 조회 및 표시 함수 (정밀 일출 연동 포함) */
-    function locateAndShow() {
-      const info = document.getElementById("location-info");
-      if (!navigator.geolocation) {
-        if (info) info.textContent = "브라우저에서 위치 정보를 지원하지 않습니다.";
-        return;
-      }
-      if (info) info.textContent = "위치 정보를 가져오는 중...";
-      navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        lastUserPos = { lat, lng };
-        if (info) info.textContent = `위도: ${lat.toFixed(6)}, 경도: ${lng.toFixed(6)}`;
-        try { if (userMarker) map.removeLayer(userMarker); } catch(e) {}
-        userMarker = L.circleMarker([lat, lng], { radius:8, color:'#007bff', fillColor:'#007bff', fillOpacity:0.9 }).addTo(map);
-        userMarker.bindPopup("내 위치").openPopup();
-        map.setView([lat, lng], 13);
-        // 일출 탭에서 요청한 경우 일출 계산 실행
-        const sd = document.getElementById('sun-direction');
-        if (sd && sd.dataset.requested === 'true') {
-          sd.dataset.requested = 'false';
-          showSunArrowUsingLastPos();
-        }
-      }, err => {
-        if (info) info.textContent = "위치 정보를 가져오지 못했습니다.";
-        console.warn('geolocation error', err);
-      }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
-    }
-
-    /* 정밀 일출 방위 계산 및 표시 (SunCalc 사용) */
-    function showSunArrowUsingLastPos() {
-      const sunDiv = document.getElementById("sun-direction");
-      const sunInfo = document.getElementById("sun-info");
-      const sunSub = document.getElementById("sun-subinfo");
-      const sunIcon = document.getElementById("sun-arrow-icon");
-      if (!sunDiv || !sunInfo || !sunIcon) return;
-
-      if (!lastUserPos) {
-        sunInfo.textContent = '위치 정보를 먼저 가져옵니다...';
-        sunDiv.dataset.requested = 'true';
-        locateAndShow();
-        return;
-      }
-
-      try {
-        const { lat, lng } = lastUserPos;
-        // 오늘 날짜의 일출 시간 계산
-        const now = new Date();
-        const times = SunCalc.getTimes(now, lat, lng);
-        const sunrise = times.sunrise || times.sunriseEnd || times.sunrise; // 안전하게
-        if (!sunrise) {
-          sunInfo.textContent = '일출 시간을 계산할 수 없습니다.';
-          sunSub.textContent = '';
-          return;
-        }
-        // 일출 시점의 태양 위치(방위각) 계산
-        const pos = SunCalc.getPosition(sunrise, lat, lng);
-        // SunCalc의 azimuth은 라디안 단위, 북쪽을 기준으로 시계방향 음수/양수 처리됨.
-        // 변환: 도 단위로 바꾸고 시각적 회전값으로 맞춤
-        let azimuthRad = pos.azimuth; // radians
-        let azimuthDeg = azimuthRad * 180 / Math.PI; // degrees
-        // SunCalc azimuth: -π..π, where 0 = south. Convert to compass bearing (0 = north, clockwise)
-        // Formula: bearing = (azimuthDeg + 180) -> degrees from north clockwise
-        let bearing = (azimuthDeg + 180);
-        // Normalize 0-360
-        bearing = (bearing % 360 + 360) % 360;
-
-        // Update UI text
-        sunInfo.textContent = `일출 방위: ${bearing.toFixed(1)}° (북 기준 시계방향)`;
-        const sunriseTimeStr = sunrise.toLocaleTimeString();
-        sunSub.textContent = `일출 시각: ${sunriseTimeStr}`;
-
-        // 표시: 화살표 아이콘을 bearing 각도로 회전
-        // CSS transform rotate uses degrees clockwise; rotate(0deg) shows arrow pointing up (북)
-        sunIcon.style.transform = `rotate(${bearing}deg)`;
-
-        // 지도에 마커로 시각적 표시 (화살표 아이콘)
-        try { if (sunMarker) map.removeLayer(sunMarker); } catch(e) {}
-        const arrowHtml = `<div style="transform:rotate(${bearing}deg);font-size:18px;line-height:18px;">↑</div>`;
-        sunMarker = L.marker([lat, lng], {
-          icon: L.divIcon({ className: 'sun-arrow', html: arrowHtml, iconSize: [36,36], iconAnchor: [18,18] })
-        }).addTo(map).bindPopup(`일출 방위 ${bearing.toFixed(1)}°`);
-        sunMarker.openPopup();
-        // 중심을 사용자 위치로 유지 (줌 레벨은 현재보다 작으면 13으로)
-        map.setView([lat, lng], Math.max(map.getZoom(), 13));
-      } catch (e) {
-        console.warn('suncalc error', e);
-        sunInfo.textContent = '일출 방위 계산 중 오류가 발생했습니다.';
-        sunSub.textContent = '';
-      }
-    }
-
-    /* 메뉴 토글 */
-    menuBtn?.addEventListener('click', () => {
-      if (!submenu) return;
-      const isShown = submenu.classList.toggle('show');
-      submenu.setAttribute('aria-hidden', (!isShown).toString());
-    });
-
-    closePanelBtn?.addEventListener('click', () => {
-      if (sidePanel) sidePanel.classList.remove('show');
-      hideAllTabs();
-      if (submenu) { submenu.classList.remove('show'); submenu.setAttribute('aria-hidden', 'true'); }
-      cancelEditMode();
-    });
-
-    /* 탭 업데이트 보조 */
-    function updateTabContent(tabId, items) {
-      const container = document.getElementById(tabId);
-      if (!container) return;
-      container.innerHTML = `<h3>${escapeHtml(tabId)}</h3><ul>` + items.map(item => `<li class="tab-item" data-name="${item}">${escapeHtml(item)}</li>`).join('') + `</ul>`;
-      container.querySelectorAll('.tab-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
-    }
-
-    /* 버튼 이벤트 바인딩 */
-    document.querySelector(".recommend")?.addEventListener("click", () => { updateTabContent("recommend", recommendList); showTab("recommend"); });
-
-    /* 카테고리: 버튼 생성 방식 (역사/산/바다/일출) */
-    document.querySelector(".category")?.addEventListener("click", () => {
-      const container = document.getElementById("category");
-      if (!container) return;
-      showTab("category");
-      container.innerHTML = '<h3>카테고리 선택</h3><div id="category-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div><div id="category-list"></div>';
-      const btnArea = document.getElementById("category-buttons");
-      if (!btnArea) return;
-      const catNames = Object.keys(categories);
-      catNames.forEach(cat => {
-        const b = document.createElement("button");
-        b.textContent = cat;
-        b.className = "small-btn";
-        b.style.cursor = "pointer";
-        b.style.opacity = '0.8';
-        b.addEventListener("click", () => {
-          btnArea.querySelectorAll('button').forEach(x => x.style.opacity = '0.6');
-          b.style.opacity = '1';
-          const listDiv = document.getElementById("category-list");
-          listDiv.innerHTML = `<h4>${escapeHtml(cat)}</h4><ul>` + (categories[cat] || []).map(item => `<li class="cat-item" data-name="${item}" style="cursor:pointer">${escapeHtml(item)}</li>`).join('') + `</ul>`;
-          listDiv.querySelectorAll('.cat-item').forEach(li => li.addEventListener('click', () => {
-            const name = li.dataset.name;
-            addMarker(name);
-          }));
-        });
-        btnArea.appendChild(b);
-      });
-      const firstBtn = btnArea.querySelector('button');
-      if (firstBtn) firstBtn.click();
-    });
-
-    document.querySelector(".region")?.addEventListener("click", () => {
-      const container = document.getElementById("region");
-      if (!container) return;
-      container.innerHTML = "<h3>지역별</h3>";
-      for (let reg in regions) {
-        const btn = document.createElement("button");
-        btn.className = "region-btn";
-        btn.textContent = reg;
-        btn.addEventListener("click", () => {
-          container.innerHTML = `<h3>${escapeHtml(reg)}</h3><ul>` + regions[reg].map(m => `<li class="region-item" data-name="${m}">${escapeHtml(m)}</li>`).join("") + `</ul>`;
-          container.querySelectorAll('.region-item').forEach(li => li.addEventListener('click', () => addMarker(li.dataset.name)));
-        });
-        container.appendChild(btn);
-      }
-      showTab("region");
-    });
-
-    /* 내 촬영지 탭 열기 */
-    document.querySelector(".shots")?.addEventListener("click", () => { showTab("myshots"); renderMyShots(); });
-
-    /* 일출 버튼: 사이드패널 열고 일출 표시(정밀 계산) */
-    document.querySelector(".sun")?.addEventListener("click", () => {
-      showTab("sun");
-      // 요청 플래그 초기화
-      const sd = document.getElementById('sun-direction');
-      if (sd) sd.dataset.requested = 'false';
-      // 즉시 계산 시도 (위치 없으면 locateAndShow가 호출됨)
-      setTimeout(() => { showSunArrowUsingLastPos(); }, 120);
-    });
-
-    /* 위치 버튼(서브메뉴) 클릭 시: 사이드패널 열고 즉시 위치 조회 */
-    document.querySelector(".location")?.addEventListener("click", () => {
-      showTab("location");
-      setTimeout(() => { locateAndShow(); }, 120);
-    });
-
-    /* 사이드패널 내 '내 위치 보기' 버튼 */
-    document.getElementById("locateBtn")?.addEventListener("click", () => {
-      locateAndShow();
-    });
-
-    /* ESC로 사이드패널 닫기 */
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (sidePanel) sidePanel.classList.remove('show');
-        hideAllTabs();
-        cancelEditMode();
-      }
-    });
-
-    /* 초기 로드: 저장된 촬영지 복원 */
-    loadShots();
   });
-  </script>
+}
+
+// 저장
+function saveShots(){
+  localStorage.setItem("shots",JSON.stringify(myShots));
+}
+
+function loadShots(){
+  const data = localStorage.getItem("shots");
+  if(data) myShots = JSON.parse(data);
+}
+
+</script>
+
 </body>
 </html>
