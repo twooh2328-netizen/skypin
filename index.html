@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<title>스카이핀 드론 지도앱</title>
+<title>스카이핀 드론 지도앱 (정상화 버전)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 html, body { height:100%; margin:0; }
-#map { height:100vh; }
+#map { height:100vh; width:100%; }
 
 #menuBtn {
   position:absolute; top:10px; left:10px;
@@ -38,14 +38,7 @@ html, body { height:100%; margin:0; }
   color:#fff; cursor:pointer;
 }
 
-.recommend{background:#28a745;}
-.category{background:#6f42c1;}
-.region{background:#17a2b8;}
-.shots{background:#ffc107;color:#000;}
-.sun{background:#fd7e14;}
-.location{background:#007bff;}
-
-.side-panel{
+.side-panel {
   position:fixed; top:0; right:-100%;
   width:260px; height:100%;
   background:#f8f9fa;
@@ -53,10 +46,9 @@ html, body { height:100%; margin:0; }
   z-index:999; padding:16px;
   overflow-y:auto;
 }
-.side-panel.show{right:0;}
+.side-panel.show { right:0; }
 
-.tab-content{display:none;}
-.small-btn{margin:4px;}
+.tab-content { display:none; }
 </style>
 </head>
 
@@ -68,9 +60,6 @@ html, body { height:100%; margin:0; }
 <div class="fab">메뉴</div>
 
 <div id="submenu" class="submenu">
-  <button class="recommend">추천</button>
-  <button class="category">카테고리</button>
-  <button class="region">지역</button>
   <button class="shots">촬영지</button>
   <button class="sun">일출</button>
   <button class="location">위치</button>
@@ -78,10 +67,6 @@ html, body { height:100%; margin:0; }
 
 <div id="sidePanel" class="side-panel">
   <button id="closePanelBtn">닫기</button>
-
-  <div id="recommend" class="tab-content"></div>
-  <div id="category" class="tab-content"></div>
-  <div id="region" class="tab-content"></div>
 
   <div id="myshots" class="tab-content">
     <h3>촬영지</h3>
@@ -93,7 +78,7 @@ html, body { height:100%; margin:0; }
 
   <div id="sun" class="tab-content">
     <h3>일출 방향</h3>
-    <div id="sun-info"></div>
+    <div id="sun-info">위치 필요</div>
   </div>
 
   <div id="location" class="tab-content">
@@ -108,6 +93,7 @@ html, body { height:100%; margin:0; }
 
 <script>
 
+// 🔥 전역
 let map;
 let myShots = [];
 let markers = {};
@@ -115,16 +101,19 @@ let userPos = null;
 let userMarker = null;
 let sunMarker = null;
 
+// 🔥 초기화
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 지도
   map = L.map('map').setView([37.5665,126.9780],10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap'
+  }).addTo(map);
 
   loadShots();
 
-  // 메뉴
   const submenu = document.getElementById('submenu');
+
   document.getElementById('menuBtn').onclick =
   document.querySelector('.fab').onclick =
     () => submenu.classList.toggle('show');
@@ -133,17 +122,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sidePanel').classList.remove('show');
   };
 
-  // 추천
-  document.querySelector('.recommend').onclick = () => {
-    openTab('recommend');
-    updateList('recommend', ["남산타워","한강공원","경복궁"]);
-  };
-
-  // 촬영지
   document.querySelector('.shots').onclick = () => {
     openTab('myshots');
     renderShots();
   };
+
+  document.querySelector('.location').onclick = () => {
+    openTab('location');
+    locate();
+  };
+
+  document.querySelector('.sun').onclick = () => {
+    openTab('sun');
+    showSun();
+  };
+
+  document.getElementById('locateBtn').onclick = locate;
 
   document.getElementById('addShotBtn').onclick = () => {
     const name = shotName.value.trim();
@@ -157,36 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
     renderShots();
   };
 
-  // 위치
-  document.querySelector('.location').onclick = () => {
-    openTab('location');
-    locate();
-  };
-
-  document.getElementById('locateBtn').onclick = locate;
-
-  // 일출
-  document.querySelector('.sun').onclick = () => {
-    openTab('sun');
-    showSun();
-  };
-
 });
 
-// 공통
+// 🔥 공통
 function openTab(id){
   document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
   document.getElementById(id).style.display='block';
   document.getElementById('sidePanel').classList.add('show');
 }
 
-// 추천 리스트
-function updateList(id, arr){
-  const el = document.getElementById(id);
-  el.innerHTML = arr.map(v=>`<div>${v}</div>`).join('');
-}
-
-// 위치
+// 🔥 위치
 function locate(){
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat = pos.coords.latitude;
@@ -198,11 +172,12 @@ function locate(){
     userMarker = L.marker([lat,lng]).addTo(map);
 
     map.setView([lat,lng],13);
-    locationInfo.innerText = lat.toFixed(4)+","+lng.toFixed(4);
+    document.getElementById("location-info").innerText =
+      lat.toFixed(4)+","+lng.toFixed(4);
   });
 }
 
-// 일출
+// 🔥 일출
 function showSun(){
   if(!userPos){
     locate();
@@ -224,7 +199,7 @@ function showSun(){
     .bindPopup("일출 "+deg.toFixed(1)+"°").openPopup();
 }
 
-// 촬영지
+// 🔥 촬영지
 function renderShots(){
   const list = document.getElementById('myshots-list');
   list.innerHTML = '';
@@ -245,7 +220,7 @@ function renderShots(){
   });
 }
 
-// 저장
+// 🔥 저장
 function saveShots(){
   localStorage.setItem("shots",JSON.stringify(myShots));
 }
