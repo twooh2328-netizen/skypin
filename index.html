@@ -84,12 +84,73 @@ html, body { margin:0; height:100%; }
 </div>
 <div id="sidePanel">
   <button id="closePanel">닫기 ✖</button>
-  <div id="panelContent"></div>
+ 
+  <div id="panelContent">
+   <h3>촬영지 등록</h3>
+    <input id="shotName" placeholder="촬영지 이름"><br><br>
+    <input id="shotMemo" placeholder="메모"><br><br>
+    <button id="saveShot">저장</button>
+
+    <h4>저장 목록</h4>
+    <div id="shotList"></div>
+  </div>
 </div> 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+let shots = JSON.parse(localStorage.getItem("shots") || "[]");
+let markers = [];
+function saveShot() {
+  const name = document.getElementById("shotName").value;
+  const memo = document.getElementById("shotMemo").value;
+
+  if (!name) {
+    alert("이름 입력하세요");
+    return;
+  }
+
+  const center = map.getCenter();
+
+  const shot = {
+    name,
+    memo,
+    lat: center.lat,
+    lng: center.lng
+  };
+
+  shots.push(shot);
+  localStorage.setItem("shots", JSON.stringify(shots));
+
+  renderShots();
+}  
+function renderShots() {
+
+  // 기존 마커 제거
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  const list = document.getElementById("shotList");
+
+  list.innerHTML = "";
+
+  shots.forEach((s, index) => {
+
+    // 목록
+    const div = document.createElement("div");
+    div.innerHTML = `📍 ${s.name} (${s.memo})`;
+    list.appendChild(div);
+
+    // 지도 마커
+    const marker = L.marker([s.lat, s.lng])
+      .addTo(map)
+      .bindPopup(`<b>${s.name}</b><br>${s.memo}`);
+
+    markers.push(marker);
+  });
+}
+document.getElementById("saveShot").addEventListener("click", saveShot);
+renderShots();
 
   // 🔹 요소 먼저 가져오기
   const sidePanel = document.getElementById("sidePanel");
