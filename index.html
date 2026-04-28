@@ -5,22 +5,33 @@
 <title>SkyPin 정상 복구</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
 html, body { margin:0; height:100%; }
 #map { height:100vh; }
+#menuBtn {
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index:2000;
+  background:white;
+  padding:8px 12px;
+  border:1px solid #ccc;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
 <div id="map"></div>
-
+<button id="menuBtn">메뉴</button>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
+document.getElementById("menuBtn").addEventListener("click", function(){
+  alert("메뉴 작동 확인");
+});
   var map = L.map('map').setView([37.5665,126.9780], 10);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
