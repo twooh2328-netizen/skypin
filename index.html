@@ -139,18 +139,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('locateBtn').onclick = locate;
 
-  document.getElementById('addShotBtn').onclick = () => {
-    const name = shotName.value.trim();
-    if(!name) return alert("이름 입력");
+document.getElementById('addShotBtn').onclick = () => {
 
-    const center = map.getCenter();
-    const id = Date.now();
+  const name = shotName.value.trim();
+  const memo = shotMemo.value.trim();
 
-    myShots.push({id,name,lat:center.lat,lng:center.lng});
-    saveShots();
-    renderShots();
-  };
+  if(!name) return alert("이름 입력");
 
+  const center = map.getCenter();
+  const id = Date.now();
+
+  myShots.push({
+    id,
+    name,
+    memo,
+    lat:center.lat,
+    lng:center.lng
+  });
+
+  saveShots();
+  renderShots();
+
+  shotName.value = '';
+  shotMemo.value = '';
 });
 
 // 🔥 공통
@@ -206,8 +217,11 @@ function renderShots(){
 
   myShots.forEach(s=>{
     const div = document.createElement('div');
-    div.innerHTML = s.name;
-
+  
+    div.innerHTML = `
+  <strong>${s.name}</strong><br>
+  ${s.memo || ''}
+`;
     div.onclick = ()=>{
       map.setView([s.lat,s.lng],13);
     };
