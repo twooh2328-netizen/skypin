@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin STEP 2</title>
+<title>SkyPin STEP 3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -11,68 +11,46 @@
 html,body{margin:0;height:100%;}
 #map{height:100vh;}
 
-/* 🔥 UI 레이어 */
 #ui{
- position:fixed;
- top:0;left:0;width:100%;height:100%;
- pointer-events:none;
- z-index:10000;
+ position:fixed;top:0;left:0;width:100%;height:100%;
+ pointer-events:none;z-index:10000;
 }
 
-/* 클릭 가능 */
 #menuBtn,#menu,#panel{ pointer-events:auto; }
 
-/* 메뉴 버튼 */
 #menuBtn{
- position:absolute;
- bottom:80px;
- right:15px;
- width:55px;height:55px;
- border-radius:50%;
+ position:absolute;bottom:80px;right:15px;
+ width:55px;height:55px;border-radius:50%;
  background:#ff3b30;color:#fff;border:none;
 }
 
-/* 메뉴 */
 #menu{
- position:absolute;
- bottom:150px;
- right:15px;
- display:none;
- flex-direction:column;
- gap:6px;
+ position:absolute;bottom:150px;right:15px;
+ display:none;flex-direction:column;gap:6px;
 }
 #menu button{
  padding:8px;background:#333;color:#fff;border:none;
 }
 
-/* 🔥 패널 */
 #panel{
- position:absolute;
- top:0;
- right:0;
- width:320px;
- height:100%;
- background:#fff;
- transform:translateX(100%);
- transition:.3s;
- overflow:auto;
+ position:absolute;top:0;right:0;width:320px;height:100%;
+ background:#fff;transform:translateX(100%);
+ transition:.3s;overflow:auto;
 }
-#panel.show{ transform:translateX(0); }
+#panel.show{transform:translateX(0);}
 
-/* 패널 내용 */
 #panelHeader{
- padding:10px;
- background:#111;
- color:#fff;
+ padding:10px;background:#111;color:#fff;
 }
-#panelContent{
- padding:10px;
-}
+
+#panelContent{padding:10px;}
+
 .card{
  background:#f5f5f5;
  padding:10px;
  margin-bottom:8px;
  border-radius:8px;
+ cursor:pointer;
 }
 </style>
 </head>
@@ -86,20 +64,14 @@ html,body{margin:0;height:100%;}
 <button id="menuBtn">☰</button>
 
 <div id="menu">
-  <button id="btn1">추천명소</button>
-  <button id="btn2">내 촬영지</button>
-  <button id="btn3">내 위치</button>
-  <button id="btn4">🌅 일출</button>
+  <button id="btnPOI">추천명소</button>
 </div>
 
-<!-- 🔥 패널 -->
 <div id="panel">
   <div id="panelHeader">
     <button id="closeBtn">닫기</button>
   </div>
-  <div id="panelContent" id="content">
-    <div class="card">패널 테스트 내용</div>
-  </div>
+  <div id="panelContent"></div>
 </div>
 
 </div>
@@ -112,13 +84,23 @@ window.onload=function(){
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
 const panel=document.getElementById("panel");
+const content=document.getElementById("panelContent");
 
-const btn1=document.getElementById("btn1");
+const btnPOI=document.getElementById("btnPOI");
 const closeBtn=document.getElementById("closeBtn");
 
 /* 지도 */
 const map=L.map("map").setView([37.56,126.97],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+let markers=L.layerGroup().addTo(map);
+
+/* 🔥 데이터 (테스트용) */
+const POI=[
+ {name:"남산타워",lat:37.5512,lng:126.9882},
+ {name:"한강공원",lat:37.52,lng:126.98},
+ {name:"해운대",lat:35.1587,lng:129.1604}
+];
 
 /* 메뉴 */
 menuBtn.onclick=(e)=>{
@@ -126,15 +108,34 @@ menuBtn.onclick=(e)=>{
  menu.style.display = (menu.style.display==="flex") ? "none" : "flex";
 };
 
-/* 🔥 패널 열기 */
-btn1.onclick=()=>{
+/* 패널 열기 + 데이터 표시 */
+btnPOI.onclick=()=>{
  panel.classList.add("show");
+ renderList(POI);
 };
 
-/* 🔥 패널 닫기 */
-closeBtn.onclick=()=>{
- panel.classList.remove("show");
-};
+/* 패널 닫기 */
+closeBtn.onclick=()=>panel.classList.remove("show");
+
+/* 🔥 리스트 렌더 */
+function renderList(list){
+ content.innerHTML="";
+ markers.clearLayers();
+
+ list.forEach(p=>{
+  const div=document.createElement("div");
+  div.className="card";
+  div.textContent=p.name;
+
+  div.onclick=()=>{
+   map.setView([p.lat,p.lng],15);
+   markers.clearLayers();
+   L.marker([p.lat,p.lng]).addTo(markers);
+  };
+
+  content.appendChild(div);
+ });
+}
 
 };
 </script>
