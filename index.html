@@ -177,7 +177,27 @@ button.add{
   } catch (e) {
     document.getElementById('error-message').textContent = "지도를 불러오는 중 오류가 발생했습니다.";
     console.error(e);
+      }
+     }
+   });
+  // 메뉴 버튼 토글 기능
+document.getElementById('menuBtn').addEventListener('click', function() {
+  var menu = document.getElementById('menu');
+  if (menu.style.display === "none" || menu.style.display === "") {
+    menu.style.display = "block";
+  } else {
+    menu.style.display = "none";
   }
+});
+
+// 패널 닫기 버튼
+document.getElementById('closeBtn').addEventListener('click', function() {
+  document.getElementById('panel').style.display = "none";
+});
+ } catch (e) {
+    document.getElementById('error-message').textContent = "지도를 불러오는 중 오류가 발생했습니다.";
+    console.error(e);
+  } 
 </script>
 
 window.onload=function(){
