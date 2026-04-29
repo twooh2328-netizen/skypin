@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+<style>
+  #map { height: 500px; width: 100%; }
+  #error-message { color: red; margin: 10px; }
 <style>
 html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
 #map{height:100vh;}
@@ -79,7 +81,7 @@ button.add{
 <body>
 
 <div id="map"></div>
-
+<div id="error-message" role="status" aria-live="polite"></div>
 <div id="ui">
 
 <button id="menuBtn">☰</button>
@@ -124,9 +126,24 @@ button.add{
 
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<!-- Leaflet JS 불러오기 -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+  try {
+    // 지도 초기화 (서울 좌표 예시)
+    var map = L.map('map').setView([37.5665, 126.9780], 13);
+
+    // 타일 레이어 추가 (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+  } catch (e) {
+    document.getElementById('error-message').textContent =
+      "지도를 불러오는 중 오류가 발생했습니다.";
+    console.error(e);
+  }
+</script>
 window.onload=function(){
 
 /* DOM */
