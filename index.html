@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin FINAL LOCKED</title>
+<title>SkyPin Panel Improved</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,7 +12,7 @@
 html,body{margin:0;height:100%;font-family:sans-serif;}
 #map{height:100vh;width:100%;}
 
-/* MENU */
+/* ================= MENU ================= */
 #menuBtn{
   position:fixed;
   bottom:80px;
@@ -45,15 +45,15 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   color:#fff;
 }
 
-/* PANEL (단일 고정) */
+/* ================= PANEL ================= */
 #panel{
   position:fixed;
   top:0;
   right:0;
-  width:320px;
+  width:340px;
   height:100%;
   background:#fff;
-  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
+  box-shadow:-2px 0 15px rgba(0,0,0,0.2);
   transform:translateX(100%);
   transition:0.3s;
   z-index:99998;
@@ -64,30 +64,72 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
 
 #close{
   width:100%;
-  padding:10px;
+  padding:12px;
   background:#111;
   color:#fff;
   border:none;
 }
 
-.box{padding:10px;}
+/* ===== PANEL HEADER ===== */
+.header{
+  padding:12px;
+  border-bottom:1px solid #eee;
+}
 
+#panelTitle{
+  font-size:16px;
+  font-weight:bold;
+}
+
+#modeLabel{
+  font-size:12px;
+  color:#888;
+  margin-top:4px;
+}
+
+/* ===== CONTENT ===== */
+.content{
+  padding:10px;
+}
+
+/* ===== CARD STYLE (핵심 개선) ===== */
+.card{
+  background:#f7f7f7;
+  border-radius:10px;
+  padding:10px;
+  margin:8px 0;
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card b{
+  display:block;
+  margin-bottom:4px;
+}
+
+.card small{
+  color:#666;
+}
+
+.card button{
+  width:100%;
+  margin-top:6px;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  background:#007aff;
+  color:#fff;
+}
+
+/* ===== INPUT ===== */
 input,textarea{
   width:100%;
   margin:5px 0;
   padding:8px;
+  border:1px solid #ddd;
+  border-radius:6px;
 }
 
-.item{
-  padding:8px;
-  border-bottom:1px solid #eee;
-}
-
-.btn{
-  width:100%;
-  padding:8px;
-  margin:4px 0;
-}
+hr{border:none;border-top:1px solid #eee;margin:10px 0;}
 </style>
 </head>
 
@@ -109,16 +151,19 @@ input,textarea{
 
   <button id="close">닫기</button>
 
-  <div class="box">
+  <div class="header">
+    <div id="panelTitle">SkyPin</div>
+    <div id="modeLabel">대기</div>
+  </div>
 
-    <h3>SkyPin</h3>
+  <div class="content">
 
     <div id="info">지도 클릭</div>
 
     <input id="name" placeholder="이름">
     <textarea id="memo" placeholder="메모"></textarea>
 
-    <button class="btn" onclick="save()">저장</button>
+    <button onclick="save()">📌 촬영지 저장</button>
 
     <hr>
 
@@ -158,7 +203,6 @@ const DB=[
   {n:"남산",lat:37.5512,lng:126.9882,m:"rec",t:"서울"},
   {n:"한강",lat:37.5086,lng:126.9968,m:"rec",t:"서울"},
   {n:"해운대",lat:35.1587,lng:129.1604,m:"rec",t:"부산"},
-  {n:"광안리",lat:35.1532,lng:129.1187,m:"rec",t:"부산"},
   {n:"송도",lat:37.3940,lng:126.6406,m:"region",t:"인천"},
   {n:"속초",lat:38.2070,lng:128.5918,m:"region",t:"강원"},
   {n:"설악산",lat:38.1194,lng:128.4655,m:"cat",t:"산"},
@@ -171,16 +215,27 @@ document.getElementById("menuBtn").onclick=()=>{
   m.style.display=m.style.display==="flex"?"none":"flex";
 };
 
-/* ================= CORE FLOW (고정) ================= */
+/* ================= PANEL ================= */
 function openPanel(){
   document.getElementById("panel").classList.add("show");
   document.getElementById("menu").style.display="none";
-  render("shot");
 }
 
+/* ================= VIEW ================= */
 function openView(type){
-  document.getElementById("panel").classList.add("show");
-  document.getElementById("menu").style.display="none";
+
+  openPanel();
+
+  const title = {
+    rec:"📍 추천명소",
+    region:"🌍 지역 탐색",
+    cat:"🗂 카테고리",
+    shot:"📸 내 촬영지"
+  };
+
+  document.getElementById("panelTitle").innerText = title[type];
+  document.getElementById("modeLabel").innerText = "ACTIVE: " + type;
+
   render(type);
 }
 
@@ -202,9 +257,10 @@ function render(type){
   const list=DB.filter(d=>d.m===type);
 
   el.innerHTML=list.map(d=>
-    `<div class="item">
-      📍 ${d.n} (${d.t})
-      <button class="btn" onclick="go(${d.lat},${d.lng},'${d.n}')">이동</button>
+    `<div class="card">
+      <b>${d.n}</b>
+      <small>${d.t}</small>
+      <button onclick="go(${d.lat},${d.lng},'${d.n}')">지도 이동</button>
     </div>`
   ).join("");
 }
@@ -219,7 +275,7 @@ function go(lat,lng,name){
 function save(){
 
   if(!selected){
-    alert("지도 클릭");
+    alert("지도 클릭 필요");
     return;
   }
 
@@ -246,9 +302,10 @@ function renderShots(){
   shots.forEach((s,i)=>{
 
     el.innerHTML+=`
-      <div class="item">
-        📸 ${s.name}
-        <button class="btn" onclick="del(${i})">삭제</button>
+      <div class="card">
+        <b>📸 ${s.name}</b>
+        <small>${s.memo||""}</small>
+        <button onclick="del(${i})">삭제</button>
       </div>
     `;
 
