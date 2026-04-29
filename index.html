@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin STEP 3</title>
+<title>SkyPin STEP 4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -52,6 +52,19 @@ html,body{margin:0;height:100%;}
  border-radius:8px;
  cursor:pointer;
 }
+
+input{
+ width:100%;
+ padding:8px;
+ margin-bottom:5px;
+}
+button.add{
+ width:100%;
+ padding:8px;
+ background:#007aff;
+ color:#fff;
+ border:none;
+}
 </style>
 </head>
 
@@ -71,7 +84,16 @@ html,body{margin:0;height:100%;}
   <div id="panelHeader">
     <button id="closeBtn">닫기</button>
   </div>
-  <div id="panelContent"></div>
+
+  <div id="panelContent">
+
+    <!-- 🔥 추가 폼 -->
+    <input id="poiName" placeholder="명소 이름">
+    <button class="add" id="addBtn">명소 추가 (지도 클릭 후)</button>
+
+    <div id="list"></div>
+
+  </div>
 </div>
 
 </div>
@@ -84,23 +106,28 @@ window.onload=function(){
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
 const panel=document.getElementById("panel");
-const content=document.getElementById("panelContent");
 
 const btnPOI=document.getElementById("btnPOI");
 const closeBtn=document.getElementById("closeBtn");
+
+const listEl=document.getElementById("list");
+const poiName=document.getElementById("poiName");
+const addBtn=document.getElementById("addBtn");
 
 /* 지도 */
 const map=L.map("map").setView([37.56,126.97],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
 let markers=L.layerGroup().addTo(map);
+let selected=null;
 
-/* 🔥 데이터 (테스트용) */
-const POI=[
+/* 🔥 데이터 */
+let defaultPOI=[
  {name:"남산타워",lat:37.5512,lng:126.9882},
- {name:"한강공원",lat:37.52,lng:126.98},
- {name:"해운대",lat:35.1587,lng:129.1604}
+ {name:"한강공원",lat:37.52,lng:126.98}
 ];
+
+let userPOI=[];
 
 /* 메뉴 */
 menuBtn.onclick=(e)=>{
@@ -108,21 +135,26 @@ menuBtn.onclick=(e)=>{
  menu.style.display = (menu.style.display==="flex") ? "none" : "flex";
 };
 
-/* 패널 열기 + 데이터 표시 */
+/* 패널 */
 btnPOI.onclick=()=>{
  panel.classList.add("show");
- renderList(POI);
+ render();
 };
 
-/* 패널 닫기 */
 closeBtn.onclick=()=>panel.classList.remove("show");
 
-/* 🔥 리스트 렌더 */
-function renderList(list){
- content.innerHTML="";
+/* 지도 클릭 */
+map.on("click",e=>{
+ selected=e.latlng;
+});
+
+/* 🔥 렌더 */
+function render(){
+ const list=[...defaultPOI,...userPOI];
+ listEl.innerHTML="";
  markers.clearLayers();
 
- list.forEach(p=>{
+ list.forEach((p,i)=>{
   const div=document.createElement("div");
   div.className="card";
   div.textContent=p.name;
@@ -133,9 +165,35 @@ function renderList(list){
    L.marker([p.lat,p.lng]).addTo(markers);
   };
 
-  content.appendChild(div);
+  /* 사용자 데이터만 삭제 */
+  if(i>=defaultPOI.length){
+   const del=document.createElement("button");
+   del.textContent="삭제";
+   del.onclick=(e)=>{
+    e.stopPropagation();
+    userPOI.splice(i-defaultPOI.length,1);
+    render();
+   };
+   div.appendChild(del);
+  }
+
+  listEl.appendChild(div);
  });
 }
+
+/* 🔥 추가 */
+addBtn.onclick=()=>{
+ if(!selected) return alert("지도 클릭 후 추가");
+
+ userPOI.push({
+  name:poiName.value,
+  lat:selected.lat,
+  lng:selected.lng
+ });
+
+ poiName.value="";
+ render();
+};
 
 };
 </script>
