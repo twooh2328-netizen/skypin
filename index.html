@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Stable Recovery</title>
-
+<title>SkyPin v2 Stable</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -12,7 +11,6 @@
 html,body{margin:0;height:100%;font-family:sans-serif;}
 #map{height:100vh;width:100%;}
 
-/* MENU */
 #menuBtn{
   position:fixed;
   bottom:80px;
@@ -31,11 +29,15 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   position:fixed;
   bottom:150px;
   right:15px;
-  display:none;
+  display:flex;
   flex-direction:column;
   gap:6px;
   z-index:99999;
+  transform:scale(0);
+  transform-origin:bottom right;
+  transition:0.2s;
 }
+#menu.open{transform:scale(1);}
 
 #menu button{
   padding:8px;
@@ -45,7 +47,6 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   color:#fff;
 }
 
-/* PANEL */
 #panel{
   position:fixed;
   top:0;
@@ -59,56 +60,20 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   z-index:99998;
   overflow:auto;
 }
-
 #panel.show{transform:translateX(0);}
 
-#close{
-  width:100%;
-  padding:12px;
-  background:#111;
-  color:#fff;
-  border:none;
-}
-
-.header{
-  padding:12px;
-  border-bottom:1px solid #eee;
-}
-
-#panelTitle{font-size:16px;font-weight:bold;}
+#close{width:100%;padding:12px;background:#111;color:#fff;border:none;}
+.header{padding:12px;border-bottom:1px solid #eee;}
 #info{font-size:12px;color:#666;margin-top:5px;}
-
 .content{padding:10px;}
-
-.card{
-  background:#f5f5f5;
-  padding:10px;
-  border-radius:10px;
-  margin:8px 0;
-}
-
-.card button{
-  width:100%;
-  margin-top:5px;
-  padding:6px;
-  border:none;
-  border-radius:6px;
-  background:#007aff;
-  color:#fff;
-}
-
-input,textarea{
-  width:100%;
-  margin:5px 0;
-  padding:8px;
-}
+.card{background:#f5f5f5;padding:10px;border-radius:10px;margin:8px 0;}
+.card button{width:100%;margin-top:5px;padding:6px;border:none;border-radius:6px;background:#007aff;color:#fff;}
+input,textarea{width:100%;margin:5px 0;padding:8px;}
 </style>
 </head>
 
 <body>
-
 <div id="map"></div>
-
 <button id="menuBtn">☰</button>
 
 <div id="menu">
@@ -120,224 +85,182 @@ input,textarea{
 </div>
 
 <div id="panel">
-
-  <button id="close">닫기</button>
-
-  <div class="header">
-    <div id="panelTitle">SkyPin</div>
-    <div id="info">지도 클릭</div>
-  </div>
-
-  <div class="content">
-
-    <div id="shotForm">
-      <input id="name" placeholder="이름">
-      <textarea id="memo" placeholder="메모"></textarea>
-      <button onclick="save()">저장</button>
-      <hr>
-    </div>
-
-    <div id="list"></div>
-
-  </div>
+<button id="close">닫기</button>
+<div class="header">
+<div id="panelTitle">SkyPin v2</div>
+<div id="info">지도 클릭</div>
+</div>
+<div class="content">
+<div id="shotForm">
+<input id="name" placeholder="이름">
+<textarea id="memo" placeholder="메모"></textarea>
+<button onclick="save()">저장</button>
+<hr>
+</div>
+<div id="list"></div>
+</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
 
-/* ================= SAFE INIT ================= */
 let selected=null;
 let shots=JSON.parse(localStorage.getItem("shots")||"[]");
+
+let gpsMarker=null;
 let activeMarker=null;
 
-/* ================= MAP ================= */
 const map=L.map("map").setView([37.5665,126.9780],10);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-  attribution:"© OSM"
-}).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-/* ================= POI ================= */
+const layerGroup=L.layerGroup().addTo(map);
+
 const POI=[
- {name:"남산",lat:37.5512,lng:126.9882,type:"rec"},
- {name:"한강",lat:37.5086,lng:126.9968,type:"rec"},
- {name:"해운대",lat:35.1587,lng:129.1604,type:"rec"},
- {name:"부산",lat:35.1532,lng:129.1187,type:"region"},
- {name:"인천",lat:37.3940,lng:126.6406,type:"region"},
- {name:"설악산",lat:38.1194,lng:128.4655,type:"cat"},
- {name:"바다",lat:35.1587,lng:129.1604,type:"cat"}
+{name:"남산",lat:37.5512,lng:126.9882,type:"rec"},
+{name:"한강",lat:37.5086,lng:126.9968,type:"rec"},
+{name:"해운대",lat:35.1587,lng:129.1604,type:"rec"},
+{name:"부산",lat:35.1532,lng:129.1187,type:"region"},
+{name:"인천",lat:37.3940,lng:126.6406,type:"region"},
+{name:"설악산",lat:38.1194,lng:128.4655,type:"cat"},
+{name:"바다",lat:35.1587,lng:129.1604,type:"cat"}
 ];
 
-/* ================= SAFE DOM READY ================= */
 window.onload=function(){
 
-  document.getElementById("shotForm").style.display="none";
+document.getElementById("menuBtn").onclick=()=>{
+  document.getElementById("menu").classList.toggle("open");
+};
 
-  /* MENU */
-  document.getElementById("menuBtn").onclick=function(){
-    const m=document.getElementById("menu");
-    m.style.display=(m.style.display==="flex")?"none":"flex";
-  };
+document.getElementById("close").onclick=closePanel;
 
-  /* CLOSE */
-  document.getElementById("close").onclick=closePanel;
-
-  /* OUTSIDE CLICK CLOSE */
-  document.addEventListener("click",function(e){
-    const panel=document.getElementById("panel");
-    const menu=document.getElementById("menuBtn");
-
-    if(panel.contains(e.target) || menu.contains(e.target)) return;
-
-    if(panel.classList.contains("show")){
-      closePanel();
-    }
-  });
-
-  /* SWIPE CLOSE */
-  let startX=0;
-  document.getElementById("panel").addEventListener("touchstart",e=>{
-    startX=e.touches[0].clientX;
-  });
-
-  document.getElementById("panel").addEventListener("touchmove",e=>{
-    let diff=e.touches[0].clientX-startX;
-    if(diff>80) closePanel();
-  });
-
-  /* MAP CLICK */
-  map.on("click",function(e){
-    selected={lat:e.latlng.lat,lng:e.latlng.lng};
-    document.getElementById("info").innerText=
-      `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
-    openPanel();
-  });
+map.on("click",e=>{
+  selected={lat:e.latlng.lat,lng:e.latlng.lng};
+  document.getElementById("info").innerText=
+  `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
+  openPanel();
+});
 
 };
 
-/* ================= PANEL ================= */
 function openPanel(){
   document.getElementById("panel").classList.add("show");
-  document.getElementById("menu").style.display="none";
 }
 
 function closePanel(){
   document.getElementById("panel").classList.remove("show");
 }
 
-/* ================= VIEW ================= */
 function openView(type){
 
-  openPanel();
+openPanel();
 
-  const title={
-    rec:"추천명소",
-    region:"지역",
-    cat:"카테고리",
-    shot:"내 촬영지"
-  };
+const title={rec:"추천명소",region:"지역",cat:"카테고리",shot:"내 촬영지"};
+document.getElementById("panelTitle").innerText=title[type];
 
-  document.getElementById("panelTitle").innerText=title[type];
+document.getElementById("shotForm").style.display=(type==="shot")?"block":"none";
 
-  document.getElementById("shotForm").style.display=
-    (type==="shot")?"block":"none";
-
-  render(type);
+render(type);
 }
 
-/* ================= RENDER ================= */
 function render(type){
 
-  const el=document.getElementById("list");
+const el=document.getElementById("list");
+layerGroup.clearLayers();
 
-  if(type==="shot"){
-    renderShots();
-    return;
-  }
+if(type==="shot") return renderShots();
 
-  const list=POI.filter(p=>p.type===type);
+const list=POI.filter(p=>p.type===type);
 
-  el.innerHTML=list.map(p=>`
-    <div class="card">
-      <b>${p.name}</b>
-      <button onclick="go(${p.lat},${p.lng},'${p.name}')">이동</button>
-    </div>
-  `).join("");
+el.innerHTML="";
+
+list.forEach(p=>{
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML=`<b>${escapeHtml(p.name)}</b>`;
+
+const btn=document.createElement("button");
+btn.textContent="이동";
+btn.onclick=()=>go(p);
+
+div.appendChild(btn);
+el.appendChild(div);
+});
 }
 
-/* ================= MOVE ================= */
-function go(lat,lng,name){
+function go(p){
+map.setView([p.lat,p.lng],15);
 
-  map.setView([lat,lng],15);
+if(activeMarker) layerGroup.removeLayer(activeMarker);
 
-  if(activeMarker){
-    map.removeLayer(activeMarker);
-  }
-
-  activeMarker=L.circleMarker([lat,lng],{
-    radius:10,
-    color:"#ff3b30",
-    fillColor:"#ff3b30",
-    fillOpacity:0.7
-  }).addTo(map).bindPopup(name).openPopup();
+activeMarker=L.circleMarker([p.lat,p.lng],{
+radius:10,color:"#ff3b30",fillOpacity:0.7
+}).addTo(layerGroup).bindPopup(p.name).openPopup();
 }
 
-/* ================= SAVE ================= */
 function save(){
+if(!selected) return alert("지도 클릭 필요");
 
-  if(!selected) return alert("지도 클릭 필요");
+shots.push({
+name:document.getElementById("name").value,
+memo:document.getElementById("memo").value,
+lat:selected.lat,
+lng:selected.lng
+});
 
-  shots.push({
-    name:document.getElementById("name").value,
-    memo:document.getElementById("memo").value,
-    lat:selected.lat,
-    lng:selected.lng
-  });
-
-  localStorage.setItem("shots",JSON.stringify(shots));
-  renderShots();
+localStorage.setItem("shots",JSON.stringify(shots));
+renderShots();
 }
 
-/* ================= SHOTS ================= */
 function renderShots(){
+const el=document.getElementById("list");
+el.innerHTML="";
 
-  const el=document.getElementById("list");
-  el.innerHTML="";
+shots.forEach((s,i)=>{
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML=`<b>${escapeHtml(s.name)}</b><br><small>${escapeHtml(s.memo||"")}</small>`;
 
-  shots.forEach((s,i)=>{
-    el.innerHTML+=`
-      <div class="card" onclick="go(${s.lat},${s.lng},'${s.name}')">
-        <b>${s.name}</b>
-        <small>${s.memo||""}</small>
-        <button onclick="event.stopPropagation(); del(${i})">삭제</button>
-      </div>
-    `;
-  });
+div.onclick=()=>map.setView([s.lat,s.lng],15);
+
+const btn=document.createElement("button");
+btn.textContent="삭제";
+btn.onclick=(e)=>{e.stopPropagation();del(i);};
+
+div.appendChild(btn);
+el.appendChild(div);
+});
 }
 
-/* ================= DELETE ================= */
 function del(i){
-  shots.splice(i,1);
-  localStorage.setItem("shots",JSON.stringify(shots));
-  renderShots();
+shots.splice(i,1);
+localStorage.setItem("shots",JSON.stringify(shots));
+renderShots();
 }
 
-/* ================= GPS ================= */
 function gps(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    map.setView([pos.coords.latitude,pos.coords.longitude],15);
+navigator.geolocation.getCurrentPosition(pos=>{
+const lat=pos.coords.latitude;
+const lng=pos.coords.longitude;
+map.setView([lat,lng],15);
 
-    L.circleMarker([pos.coords.latitude,pos.coords.longitude],{
-      radius:10,
-      color:"#007aff",
-      fillColor:"#007aff",
-      fillOpacity:0.8
-    }).addTo(map).bindPopup("내 위치").openPopup();
-  });
+if(gpsMarker) layerGroup.removeLayer(gpsMarker);
+
+gpsMarker=L.circleMarker([lat,lng],{
+radius:10,color:"#007aff",fillOpacity:0.8
+}).addTo(layerGroup).bindPopup("내 위치").openPopup();
+});
+}
+
+function escapeHtml(text){
+return String(text)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll("\"","&quot;")
+.replaceAll("'","&#039;");
 }
 
 </script>
-
 </body>
 </html>
