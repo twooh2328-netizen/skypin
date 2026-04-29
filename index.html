@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin 2.0</title>
+<title>SkyPin 2.0 UX Final</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -70,6 +70,7 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   border:none;
 }
 
+/* HEADER */
 .header{
   padding:12px;
   border-bottom:1px solid #eee;
@@ -169,15 +170,15 @@ let activeMarker=null;
 /* ================= INIT ================= */
 document.getElementById("shotForm").style.display="none";
 
-/* ================= POI (2.0 CORE) ================= */
+/* ================= POI ================= */
 const POI = [
-  {id:1,name:"남산",lat:37.5512,lng:126.9882,type:"rec"},
-  {id:2,name:"한강",lat:37.5086,lng:126.9968,type:"rec"},
-  {id:3,name:"해운대",lat:35.1587,lng:129.1604,type:"rec"},
-  {id:4,name:"부산",lat:35.1532,lng:129.1187,type:"region"},
-  {id:5,name:"인천",lat:37.3940,lng:126.6406,type:"region"},
-  {id:6,name:"설악산",lat:38.1194,lng:128.4655,type:"cat"},
-  {id:7,name:"바다",lat:35.1587,lng:129.1604,type:"cat"}
+  {name:"남산",lat:37.5512,lng:126.9882,type:"rec"},
+  {name:"한강",lat:37.5086,lng:126.9968,type:"rec"},
+  {name:"해운대",lat:35.1587,lng:129.1604,type:"rec"},
+  {name:"부산",lat:35.1532,lng:129.1187,type:"region"},
+  {name:"인천",lat:37.3940,lng:126.6406,type:"region"},
+  {name:"설악산",lat:38.1194,lng:128.4655,type:"cat"},
+  {name:"바다",lat:35.1587,lng:129.1604,type:"cat"}
 ];
 
 /* ================= MENU ================= */
@@ -186,11 +187,45 @@ document.getElementById("menuBtn").onclick=()=>{
   m.style.display=m.style.display==="flex"?"none":"flex";
 };
 
-/* ================= PANEL ================= */
+/* ================= PANEL CONTROL ================= */
 function openPanel(){
   document.getElementById("panel").classList.add("show");
   document.getElementById("menu").style.display="none";
 }
+
+function closePanel(){
+  document.getElementById("panel").classList.remove("show");
+}
+
+/* ================= 3종 닫기 UX ================= */
+
+// 1️⃣ 버튼
+document.getElementById("close").onclick = closePanel;
+
+// 2️⃣ 바깥 클릭
+document.addEventListener("click",function(e){
+
+  const panel=document.getElementById("panel");
+  const menuBtn=document.getElementById("menuBtn");
+
+  if(panel.contains(e.target) || menuBtn.contains(e.target)) return;
+
+  if(panel.classList.contains("show")){
+    closePanel();
+  }
+});
+
+// 3️⃣ 스와이프 닫기
+let startX=0;
+
+document.getElementById("panel").addEventListener("touchstart",e=>{
+  startX=e.touches[0].clientX;
+});
+
+document.getElementById("panel").addEventListener("touchmove",e=>{
+  let diff=e.touches[0].clientX-startX;
+  if(diff>80) closePanel();
+});
 
 /* ================= VIEW ================= */
 function openView(type){
@@ -205,7 +240,6 @@ function openView(type){
   };
 
   document.getElementById("panelTitle").innerText=title[type];
-  document.getElementById("modeLabel").innerText="MODE: "+type;
 
   document.getElementById("shotForm").style.display =
     type==="shot" ? "block" : "none";
@@ -213,7 +247,7 @@ function openView(type){
   render(type);
 }
 
-/* ================= RENDER (2.0 핵심) ================= */
+/* ================= RENDER ================= */
 function render(type){
 
   const el=document.getElementById("list");
@@ -225,7 +259,7 @@ function render(type){
 
   const list = POI.filter(p=>p.type===type);
 
-  el.innerHTML = list.map(p=>`
+  el.innerHTML=list.map(p=>`
     <div class="card">
       <b>${p.name}</b>
       <button onclick="go(${p.lat},${p.lng},'${p.name}')">이동</button>
@@ -233,7 +267,7 @@ function render(type){
   `).join("");
 }
 
-/* ================= MOVE + HIGHLIGHT ================= */
+/* ================= MOVE ================= */
 function go(lat,lng,name){
 
   map.setView([lat,lng],15);
@@ -242,18 +276,17 @@ function go(lat,lng,name){
     map.removeLayer(activeMarker);
   }
 
-  activeMarker = L.circleMarker([lat,lng],{
+  activeMarker=L.circleMarker([lat,lng],{
     radius:10,
     color:"#ff3b30",
     fillColor:"#ff3b30",
     fillOpacity:0.7
   }).addTo(map).bindPopup(name).openPopup();
 
-  document.getElementById("panel").classList.add("show");
   document.getElementById("info").innerText="📍 "+name;
 }
 
-/* ================= SAVE SHOT ================= */
+/* ================= SAVE ================= */
 function save(){
 
   if(!selected){
@@ -300,10 +333,8 @@ function del(i){
 /* ================= MAP CLICK ================= */
 map.on("click",e=>{
   selected={lat:e.latlng.lat,lng:e.latlng.lng};
-
   document.getElementById("info").innerText=
     `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
-
   openPanel();
 });
 
