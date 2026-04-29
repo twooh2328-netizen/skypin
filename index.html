@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin STEP 1</title>
+<title>SkyPin STEP 2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -19,21 +19,17 @@ html,body{margin:0;height:100%;}
  z-index:10000;
 }
 
-/* 클릭 가능 요소 */
-#menuBtn,#menu{ pointer-events:auto; }
+/* 클릭 가능 */
+#menuBtn,#menu,#panel{ pointer-events:auto; }
 
 /* 메뉴 버튼 */
 #menuBtn{
  position:absolute;
  bottom:80px;
  right:15px;
- width:55px;
- height:55px;
+ width:55px;height:55px;
  border-radius:50%;
- background:#ff3b30;
- color:#fff;
- border:none;
- font-size:20px;
+ background:#ff3b30;color:#fff;border:none;
 }
 
 /* 메뉴 */
@@ -46,10 +42,37 @@ html,body{margin:0;height:100%;}
  gap:6px;
 }
 #menu button{
- padding:8px;
- background:#333;
+ padding:8px;background:#333;color:#fff;border:none;
+}
+
+/* 🔥 패널 */
+#panel{
+ position:absolute;
+ top:0;
+ right:0;
+ width:320px;
+ height:100%;
+ background:#fff;
+ transform:translateX(100%);
+ transition:.3s;
+ overflow:auto;
+}
+#panel.show{ transform:translateX(0); }
+
+/* 패널 내용 */
+#panelHeader{
+ padding:10px;
+ background:#111;
  color:#fff;
- border:none;
+}
+#panelContent{
+ padding:10px;
+}
+.card{
+ background:#f5f5f5;
+ padding:10px;
+ margin-bottom:8px;
+ border-radius:8px;
 }
 </style>
 </head>
@@ -63,10 +86,20 @@ html,body{margin:0;height:100%;}
 <button id="menuBtn">☰</button>
 
 <div id="menu">
-  <button>추천명소</button>
-  <button>내 촬영지</button>
-  <button>내 위치</button>
-  <button>🌅 일출</button>
+  <button id="btn1">추천명소</button>
+  <button id="btn2">내 촬영지</button>
+  <button id="btn3">내 위치</button>
+  <button id="btn4">🌅 일출</button>
+</div>
+
+<!-- 🔥 패널 -->
+<div id="panel">
+  <div id="panelHeader">
+    <button id="closeBtn">닫기</button>
+  </div>
+  <div id="panelContent" id="content">
+    <div class="card">패널 테스트 내용</div>
+  </div>
 </div>
 
 </div>
@@ -78,15 +111,29 @@ window.onload=function(){
 
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
+const panel=document.getElementById("panel");
+
+const btn1=document.getElementById("btn1");
+const closeBtn=document.getElementById("closeBtn");
 
 /* 지도 */
 const map=L.map("map").setView([37.56,126.97],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-/* 🔥 메뉴 토글 (핵심) */
+/* 메뉴 */
 menuBtn.onclick=(e)=>{
  e.stopPropagation();
  menu.style.display = (menu.style.display==="flex") ? "none" : "flex";
+};
+
+/* 🔥 패널 열기 */
+btn1.onclick=()=>{
+ panel.classList.add("show");
+};
+
+/* 🔥 패널 닫기 */
+closeBtn.onclick=()=>{
+ panel.classList.remove("show");
 };
 
 };
