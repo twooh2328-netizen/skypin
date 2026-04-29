@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin v3</title>
+<title>SkyPin v3 Stable</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -73,28 +73,18 @@ input,textarea{width:100%;margin:5px 0;padding:8px;}
 /* ================= DB ================= */
 const DB = {
   defaultPOI: [
-    {name:"남산타워",lat:37.5512,lng:126.9882,region:"서울",category:"야경"},
-    {name:"한강공원",lat:37.52,lng:126.98,region:"서울",category:"강"},
-    {name:"해운대",lat:35.1587,lng:129.1604,region:"부산",category:"바다"},
-    {name:"광안리",lat:35.1532,lng:129.1187,region:"부산",category:"야경"},
-    {name:"설악산",lat:38.1194,lng:128.4655,region:"강원",category:"산"},
-    {name:"속초해변",lat:38.207,lng:128.5918,region:"강원",category:"바다"},
-    {name:"경복궁",lat:37.5796,lng:126.977,region:"서울",category:"문화"},
-    {name:"불국사",lat:35.79,lng:129.332,region:"경주",category:"문화"},
-    {name:"성산일출봉",lat:33.4588,lng:126.941,region:"제주",category:"일출"},
-    {name:"협재해변",lat:33.3945,lng:126.2393,region:"제주",category:"바다"}
+    {name:"남산타워",lat:37.5512,lng:126.9882,region:"서울"},
+    {name:"한강공원",lat:37.52,lng:126.98,region:"서울"},
+    {name:"해운대",lat:35.1587,lng:129.1604,region:"부산"},
+    {name:"광안리",lat:35.1532,lng:129.1187,region:"부산"},
+    {name:"설악산",lat:38.1194,lng:128.4655,region:"강원"},
+    {name:"성산일출봉",lat:33.4588,lng:126.941,region:"제주"}
   ],
-  userPOI: JSON.parse(localStorage.getItem("userPOI")||"[]"),
   shots: JSON.parse(localStorage.getItem("shots")||"[]")
 };
 
 function saveDB(){
-  localStorage.setItem("userPOI",JSON.stringify(DB.userPOI));
   localStorage.setItem("shots",JSON.stringify(DB.shots));
-}
-
-function getPOI(){
-  return [...DB.defaultPOI,...DB.userPOI];
 }
 
 /* ================= MAP ================= */
@@ -102,17 +92,15 @@ const map=L.map("map").setView([37.5665,126.978],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
 let selected=null;
-let layer=L.layerGroup().addTo(map);
+let markers=L.layerGroup().addTo(map);
 
 /* ================= UI ================= */
-document.getElementById("menuBtn").onclick=()=>{
-  document.getElementById("menu").classList.toggle("open");
-};
+menuBtn.onclick=()=>menu.classList.toggle("open");
 
 map.on("click",e=>{
   selected=e.latlng;
   openPanel();
-  document.getElementById("form").style.display="block";
+  form.style.display="block";
 });
 
 /* ================= ACTION ================= */
@@ -120,55 +108,74 @@ const ACTION={
 
 showPOI(){
   openPanel();
-  render(getPOI(),false);
+  form.style.display="none";
+  render(DB.defaultPOI);
+  showAllMarkers(DB.defaultPOI);
 },
 
 showShots(){
   openPanel();
+  form.style.display="none";
   render(DB.shots,true);
+  showAllMarkers(DB.shots);
 },
 
 search(q){
-  const list=[...getPOI(),...DB.shots];
-  const r=list.filter(p=>
-    p.name.includes(q) ||
-    p.region?.includes(q) ||
-    p.category?.includes(q)
+  const list=[...DB.defaultPOI,...DB.shots];
+
+  const result=list.filter(p =>
+    (p.name && p.name.includes(q)) ||
+    (p.region && p.region.includes(q))
   );
-  render(r, !!p?.photo);
+
+  render(result);
+  showAllMarkers(result);
 },
 
 gps(){
   navigator.geolocation.getCurrentPosition(pos=>{
-    map.setView([pos.coords.latitude,pos.coords.longitude],15);
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+
+    map.setView([lat,lng],15);
+    markers.clearLayers();
+
+    L.circleMarker([lat,lng],{
+      radius:10,color:"#007aff",fillOpacity:0.8
+    }).addTo(markers).bindPopup("내 위치").openPopup();
   });
 },
 
 sun(){
   const c=map.getCenter();
-  layer.clearLayers();
+  markers.clearLayers();
+
   L.polyline([
     [c.lat,c.lng],
     [c.lat+0.1,c.lng+0.1]
-  ],{color:"orange"}).addTo(layer);
+  ],{color:"orange"}).addTo(markers);
 },
 
 async saveShot(){
+
   if(!selected) return alert("지도 클릭");
 
-  const file=document.getElementById("photo").files[0];
-  let photo="";
+  const nameVal=name.value.trim();
+  if(!nameVal) return alert("이름 입력");
+
+  const file=photo.files[0];
+  let imgData="";
 
   if(file){
-    photo=await toBase64(file);
+    imgData = await compressImage(file);
   }
 
   DB.shots.push({
-    name:name.value,
+    name:nameVal,
     memo:memo.value,
     lat:selected.lat,
     lng:selected.lng,
-    photo
+    photo:imgData
   });
 
   saveDB();
@@ -178,10 +185,9 @@ async saveShot(){
 };
 
 /* ================= RENDER ================= */
-function render(list,isShot){
+function render(list,isShot=false){
 
-  const el=document.getElementById("list");
-  el.innerHTML="";
+  listEl.innerHTML="";
 
   list.forEach((p,i)=>{
 
@@ -198,12 +204,7 @@ function render(list,isShot){
 
     div.onclick=()=>{
       map.setView([p.lat,p.lng],15);
-      layer.clearLayers();
-
-      let html=`<b>${p.name}</b><br>${p.memo||""}`;
-      if(p.photo) html+=`<br><img src="${p.photo}" width="120">`;
-
-      L.marker([p.lat,p.lng]).addTo(layer).bindPopup(html).openPopup();
+      highlightMarker(p);
     };
 
     if(isShot){
@@ -218,23 +219,60 @@ function render(list,isShot){
       div.appendChild(del);
     }
 
-    el.appendChild(div);
+    listEl.appendChild(div);
   });
 }
 
-/* ================= UTIL ================= */
-function openPanel(){
-  document.getElementById("panel").classList.add("show");
-}
-function closePanel(){
-  document.getElementById("panel").classList.remove("show");
+/* ================= MARKER ================= */
+function showAllMarkers(list){
+  markers.clearLayers();
+  list.forEach(p=>{
+    L.marker([p.lat,p.lng]).addTo(markers);
+  });
 }
 
-function toBase64(file){
+function highlightMarker(p){
+  markers.clearLayers();
+
+  let html=`<b>${p.name}</b><br>${p.memo||""}`;
+  if(p.photo) html+=`<br><img src="${p.photo}" width="120">`;
+
+  L.marker([p.lat,p.lng])
+    .addTo(markers)
+    .bindPopup(html)
+    .openPopup();
+}
+
+/* ================= UTIL ================= */
+function openPanel(){ panel.classList.add("show"); }
+function closePanel(){ panel.classList.remove("show"); }
+
+/* 이미지 압축 */
+function compressImage(file){
   return new Promise(res=>{
-    const r=new FileReader();
-    r.onload=()=>res(r.result);
-    r.readAsDataURL(file);
+    const img=new Image();
+    const reader=new FileReader();
+
+    reader.onload=e=>img.src=e.target.result;
+
+    img.onload=()=>{
+      const canvas=document.createElement("canvas");
+      const ctx=canvas.getContext("2d");
+
+      const max=800;
+      let w=img.width;
+      let h=img.height;
+
+      if(w>max){ h*=max/w; w=max; }
+
+      canvas.width=w;
+      canvas.height=h;
+
+      ctx.drawImage(img,0,0,w,h);
+      res(canvas.toDataURL("image/jpeg",0.7));
+    };
+
+    reader.readAsDataURL(file);
   });
 }
 
