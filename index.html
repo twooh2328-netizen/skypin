@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin v2 Stable</title>
+<title>SkyPin v2 Stable FIX</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -87,7 +87,7 @@ input,textarea{width:100%;margin:5px 0;padding:8px;}
 <div id="panel">
 <button id="close">닫기</button>
 <div class="header">
-<div id="panelTitle">SkyPin v2</div>
+<div id="panelTitle">SkyPin v2 FIX</div>
 <div id="info">지도 클릭</div>
 </div>
 <div class="content">
@@ -109,6 +109,7 @@ let shots=JSON.parse(localStorage.getItem("shots")||"[]");
 
 let gpsMarker=null;
 let activeMarker=null;
+let shotMarker=null;
 
 const map=L.map("map").setView([37.5665,126.9780],10);
 
@@ -152,7 +153,6 @@ function closePanel(){
 }
 
 function openView(type){
-
 openPanel();
 
 const title={rec:"추천명소",region:"지역",cat:"카테고리",shot:"내 촬영지"};
@@ -164,14 +164,12 @@ render(type);
 }
 
 function render(type){
-
 const el=document.getElementById("list");
 layerGroup.clearLayers();
 
 if(type==="shot") return renderShots();
 
 const list=POI.filter(p=>p.type===type);
-
 el.innerHTML="";
 
 list.forEach(p=>{
@@ -201,15 +199,17 @@ radius:10,color:"#ff3b30",fillOpacity:0.7
 function save(){
 if(!selected) return alert("지도 클릭 필요");
 
-shots.push({
+const shot={
 name:document.getElementById("name").value,
 memo:document.getElementById("memo").value,
 lat:selected.lat,
 lng:selected.lng
-});
+};
 
+shots.push(shot);
 localStorage.setItem("shots",JSON.stringify(shots));
 renderShots();
+showShotMarker(shot);
 }
 
 function renderShots(){
@@ -221,7 +221,10 @@ const div=document.createElement("div");
 div.className="card";
 div.innerHTML=`<b>${escapeHtml(s.name)}</b><br><small>${escapeHtml(s.memo||"")}</small>`;
 
-div.onclick=()=>map.setView([s.lat,s.lng],15);
+div.onclick=()=>{
+map.setView([s.lat,s.lng],15);
+showShotMarker(s);
+};
 
 const btn=document.createElement("button");
 btn.textContent="삭제";
@@ -230,6 +233,14 @@ btn.onclick=(e)=>{e.stopPropagation();del(i);};
 div.appendChild(btn);
 el.appendChild(div);
 });
+}
+
+function showShotMarker(s){
+if(shotMarker) layerGroup.removeLayer(shotMarker);
+
+shotMarker=L.circleMarker([s.lat,s.lng],{
+radius:9,color:"#00c853",fillOpacity:0.8
+}).addTo(layerGroup).bindPopup(s.name).openPopup();
 }
 
 function del(i){
