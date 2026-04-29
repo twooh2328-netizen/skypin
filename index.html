@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin Panel Improved</title>
+<title>SkyPin UX Final</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,7 +12,7 @@
 html,body{margin:0;height:100%;font-family:sans-serif;}
 #map{height:100vh;width:100%;}
 
-/* ================= MENU ================= */
+/* MENU */
 #menuBtn{
   position:fixed;
   bottom:80px;
@@ -45,7 +45,7 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   color:#fff;
 }
 
-/* ================= PANEL ================= */
+/* PANEL */
 #panel{
   position:fixed;
   top:0;
@@ -70,44 +70,24 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   border:none;
 }
 
-/* ===== PANEL HEADER ===== */
+/* HEADER */
 .header{
   padding:12px;
   border-bottom:1px solid #eee;
 }
 
-#panelTitle{
-  font-size:16px;
-  font-weight:bold;
-}
+#panelTitle{font-size:16px;font-weight:bold;}
+#modeLabel{font-size:12px;color:#888;}
 
-#modeLabel{
-  font-size:12px;
-  color:#888;
-  margin-top:4px;
-}
+/* CONTENT */
+.content{padding:10px;}
 
-/* ===== CONTENT ===== */
-.content{
-  padding:10px;
-}
-
-/* ===== CARD STYLE (핵심 개선) ===== */
 .card{
   background:#f7f7f7;
   border-radius:10px;
   padding:10px;
   margin:8px 0;
   box-shadow:0 1px 3px rgba(0,0,0,0.1);
-}
-
-.card b{
-  display:block;
-  margin-bottom:4px;
-}
-
-.card small{
-  color:#666;
 }
 
 .card button{
@@ -120,7 +100,6 @@ html,body{margin:0;height:100%;font-family:sans-serif;}
   color:#fff;
 }
 
-/* ===== INPUT ===== */
 input,textarea{
   width:100%;
   margin:5px 0;
@@ -153,7 +132,7 @@ hr{border:none;border-top:1px solid #eee;margin:10px 0;}
 
   <div class="header">
     <div id="panelTitle">SkyPin</div>
-    <div id="modeLabel">대기</div>
+    <div id="modeLabel">READY</div>
   </div>
 
   <div class="content">
@@ -163,7 +142,7 @@ hr{border:none;border-top:1px solid #eee;margin:10px 0;}
     <input id="name" placeholder="이름">
     <textarea id="memo" placeholder="메모"></textarea>
 
-    <button onclick="save()">📌 촬영지 저장</button>
+    <button onclick="save()">📌 저장</button>
 
     <hr>
 
@@ -187,6 +166,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 let selected=null;
 let shots=JSON.parse(localStorage.getItem("shots")||"[]");
 let markers=[];
+let activeMarker=null;
 
 /* ================= CLICK ================= */
 map.on("click",e=>{
@@ -195,7 +175,7 @@ map.on("click",e=>{
   document.getElementById("info").innerText=
     `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
 
-  openPanel();
+  openPanel(); // 자동 열기
 });
 
 /* ================= DB ================= */
@@ -215,7 +195,7 @@ document.getElementById("menuBtn").onclick=()=>{
   m.style.display=m.style.display==="flex"?"none":"flex";
 };
 
-/* ================= PANEL ================= */
+/* ================= PANEL OPEN ================= */
 function openPanel(){
   document.getElementById("panel").classList.add("show");
   document.getElementById("menu").style.display="none";
@@ -226,15 +206,15 @@ function openView(type){
 
   openPanel();
 
-  const title = {
+  const title={
     rec:"📍 추천명소",
-    region:"🌍 지역 탐색",
+    region:"🌍 지역",
     cat:"🗂 카테고리",
     shot:"📸 내 촬영지"
   };
 
-  document.getElementById("panelTitle").innerText = title[type];
-  document.getElementById("modeLabel").innerText = "ACTIVE: " + type;
+  document.getElementById("panelTitle").innerText=title[type];
+  document.getElementById("modeLabel").innerText="MODE: "+type;
 
   render(type);
 }
@@ -265,10 +245,30 @@ function render(type){
   ).join("");
 }
 
-/* ================= MOVE ================= */
+/* ================= UX CORE (핵심) ================= */
 function go(lat,lng,name){
-  map.setView([lat,lng],13);
-  L.marker([lat,lng]).addTo(map).bindPopup(name).openPopup();
+
+  // 1. 지도 이동 + 자동 줌
+  map.setView([lat,lng],15);
+
+  // 2. 기존 강조 제거
+  if(activeMarker){
+    map.removeLayer(activeMarker);
+  }
+
+  // 3. 강조 마커
+  activeMarker = L.circleMarker([lat,lng],{
+    radius:10,
+    color:"#ff3b30",
+    fillColor:"#ff3b30",
+    fillOpacity:0.7
+  }).addTo(map).bindPopup(name).openPopup();
+
+  // 4. 패널 자동 유지 (UX 연결)
+  document.getElementById("panel").classList.add("show");
+
+  // 5. 정보 업데이트
+  document.getElementById("info").innerText="📍 "+name;
 }
 
 /* ================= SAVE ================= */
