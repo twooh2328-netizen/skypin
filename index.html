@@ -13,8 +13,6 @@
   body { margin:0; padding:0; font-family:sans-serif; }
   .controls { margin:10px; }
   .controls input, .controls select { margin-right:5px; }
-</style>
-
 html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
 #map{height:100vh;}
 
@@ -115,12 +113,14 @@ button.add{
         </select>
         <button class="add" id="addPOI">명소 추가</button>   
     </div>
+    
     <div id="formShot" style="display:none;">
       <input id="shotName" placeholder="촬영지">
       <textarea id="shotMemo" placeholder="메모"></textarea>
       <input type="file" id="photo">
       <button class="add" id="saveShot">저장</button>
     </div>
+    
     <div id="list"></div>
   </div>
 </div>
@@ -139,24 +139,26 @@ button.add{
     }).addTo(map);
 
     // 명소 추가 이벤트 처리
-    document.getElementById('addPOI').addEventListener('click', async function) });
+    document.getElementById('addPOI').addEventListener('click', async function() {
       var name = document.getElementById('poiName').value;
       var region = document.getElementById('poiRegion').value;
       var mode = document.getElementById('modeSelect').value;
 
-      if(!name) {
+      if (!name) {
         document.getElementById('error-message').textContent = "명소 이름을 입력하세요.";
         return;
       }
 
-      if(mode === "move") {
+      if (mode === "move") {
         map.setView([37.5665, 126.9780], 13);
-      } else if(mode === "register") {
+      } else if (mode === "register") {
         try {
-          let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name + " " + region)}`);
+          let response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name + " " + region)}`
+          );
           let data = await response.json();
 
-          if(data.length > 0) {
+          if (data.length > 0) {
             let lat = data[0].lat;
             let lon = data[0].lon;
             map.setView([lat, lon], 15);
@@ -170,7 +172,8 @@ button.add{
           console.error(e);
         }
       }
-    });
+    }); // ← 이벤트 리스너 닫힘
+
   } catch (e) {
     document.getElementById('error-message').textContent = "지도를 불러오는 중 오류가 발생했습니다.";
     console.error(e);
