@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin v3 Stable</title>
+<title>SkyPin v3 FINAL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -70,6 +70,16 @@ input,textarea{width:100%;margin:5px 0;padding:8px;}
 
 <script>
 
+/* ================= DOM 연결 (핵심 수정) ================= */
+const panel = document.getElementById("panel");
+const listEl = document.getElementById("list");
+const form = document.getElementById("form");
+const nameInput = document.getElementById("name");
+const memoInput = document.getElementById("memo");
+const photoInput = document.getElementById("photo");
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menu");
+
 /* ================= DB ================= */
 const DB = {
   defaultPOI: [
@@ -109,7 +119,7 @@ const ACTION={
 showPOI(){
   openPanel();
   form.style.display="none";
-  render(DB.defaultPOI);
+  render(DB.defaultPOI,false);
   showAllMarkers(DB.defaultPOI);
 },
 
@@ -128,7 +138,7 @@ search(q){
     (p.region && p.region.includes(q))
   );
 
-  render(result);
+  render(result,false);
   showAllMarkers(result);
 },
 
@@ -158,24 +168,24 @@ sun(){
 
 async saveShot(){
 
-  if(!selected) return alert("지도 클릭");
+  if(!selected) return alert("지도 클릭 필요");
 
-  const nameVal=name.value.trim();
+  const nameVal=nameInput.value.trim();
   if(!nameVal) return alert("이름 입력");
 
-  const file=photo.files[0];
-  let imgData="";
+  let photoData="";
+  const file=photoInput.files[0];
 
   if(file){
-    imgData = await compressImage(file);
+    photoData=await compressImage(file);
   }
 
   DB.shots.push({
     name:nameVal,
-    memo:memo.value,
+    memo:memoInput.value,
     lat:selected.lat,
     lng:selected.lng,
-    photo:imgData
+    photo:photoData
   });
 
   saveDB();
@@ -185,7 +195,7 @@ async saveShot(){
 };
 
 /* ================= RENDER ================= */
-function render(list,isShot=false){
+function render(list,isShot){
 
   listEl.innerHTML="";
 
