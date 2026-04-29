@@ -6,13 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
 <style>
-  #map { height: 500px; width: 100%; }
-  #error-message { color: red; margin: 10px; }
-  /* 추가 스타일은 여기 이어서 작성 */
-  body { margin:0; padding:0; font-family:sans-serif; }
-  .controls { margin:10px; }
-  .controls input, .controls select { margin-right:5px; }
 html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
 #map{height:100vh;}
 
@@ -80,23 +75,28 @@ button.add{
 }
 </style>
 </head>
+
 <body>
 
 <div id="map"></div>
-<div id="error-message" role="status" aria-live="polite"></div>
+
 <div id="ui">
+
 <button id="menuBtn">☰</button>
+
 <div id="menu">
   <button id="btnPOI">추천명소</button>
   <button id="btnShots">내 촬영지</button>
   <button id="btnGPS">내 위치</button>
   <button id="btnSun">🌅 일출</button>
 </div>
+
 <div id="panel">
   <div id="panelHeader">
     <span>SkyPin</span>
     <button id="closeBtn">닫기</button>
   </div>
+
   <div id="panelContent">
     <input id="search" placeholder="검색">
     <select id="filter">
@@ -104,102 +104,29 @@ button.add{
       <option value="서울">서울</option>
       <option value="부산">부산</option>
     </select>
+
     <div id="formPOI">
       <input id="poiName" placeholder="이름">
       <input id="poiRegion" placeholder="지역">
-    <select id="modeSelect">
-          <option value="move">지도 이동</option>
-          <option value="register">명소 등록</option>
-        </select>
-        <button class="add" id="addPOI">명소 추가</button>   
+      <button class="add" id="addPOI">명소 추가</button>
     </div>
-    
+
     <div id="formShot" style="display:none;">
       <input id="shotName" placeholder="촬영지">
       <textarea id="shotMemo" placeholder="메모"></textarea>
       <input type="file" id="photo">
       <button class="add" id="saveShot">저장</button>
     </div>
-    
+
     <div id="list"></div>
   </div>
 </div>
+
 </div>
 
-<!-- Leaflet JS 불러오기 -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-  try {
-    // 지도 초기화 (서울 좌표 예시)
-    var map = L.map('map').setView([37.5665, 126.9780], 13);
-
-    // 타일 레이어 추가 (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // 명소 추가 이벤트 처리
-    document.getElementById('addPOI').addEventListener('click', async function() {
-      var name = document.getElementById('poiName').value;
-      var region = document.getElementById('poiRegion').value;
-      var mode = document.getElementById('modeSelect').value;
-
-      if (!name) {
-        document.getElementById('error-message').textContent = "명소 이름을 입력하세요.";
-        return;
-      }
-
-      if (mode === "move") {
-        map.setView([37.5665, 126.9780], 13);
-      } else if (mode === "register") {
-        try {
-          let response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name + " " + region)}`
-          );
-          let data = await response.json();
-
-          if (data.length > 0) {
-            let lat = data[0].lat;
-            let lon = data[0].lon;
-            map.setView([lat, lon], 15);
-            L.marker([lat, lon]).addTo(map)
-              .bindPopup("명소: " + name + " (" + region + ")").openPopup();
-          } else {
-            document.getElementById('error-message').textContent = "검색 결과가 없습니다.";
-          }
-        } catch (e) {
-          document.getElementById('error-message').textContent = "검색 중 오류가 발생했습니다.";
-          console.error(e);
-        }
-      }
-    }); // ← 이벤트 리스너 닫힘
-
-  } catch (e) {
-    document.getElementById('error-message').textContent = "지도를 불러오는 중 오류가 발생했습니다.";
-    console.error(e);
-      }
-     }
-   });
-  // 메뉴 버튼 토글 기능
-document.getElementById('menuBtn').addEventListener('click', function() {
-  var menu = document.getElementById('menu');
-  if (menu.style.display === "none" || menu.style.display === "") {
-    menu.style.display = "block";
-  } else {
-    menu.style.display = "none";
-  }
-});
-
-// 패널 닫기 버튼
-document.getElementById('closeBtn').addEventListener('click', function() {
-document.getElementById('panel').style.display = "none";
-});
- } catch (e) {
-    document.getElementById('error-message').textContent = "지도를 불러오는 중 오류가 발생했습니다.";
-    console.error(e);
-  } 
-</script>
-
 window.onload=function(){
 
 /* DOM */
