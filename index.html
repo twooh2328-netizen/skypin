@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin UX Final</title>
+<title>SkyPin NEXT STABLE</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -139,12 +139,16 @@ hr{border:none;border-top:1px solid #eee;margin:10px 0;}
 
     <div id="info">지도 클릭</div>
 
-    <input id="name" placeholder="이름">
-    <textarea id="memo" placeholder="메모"></textarea>
+    <!-- 📸 촬영지 전용 입력 영역 -->
+    <div id="shotForm">
 
-    <button onclick="save()">📌 저장</button>
+      <input id="name" placeholder="이름">
+      <textarea id="memo" placeholder="메모"></textarea>
 
-    <hr>
+      <button onclick="save()">📌 저장</button>
+
+      <hr>
+    </div>
 
     <div id="list"></div>
 
@@ -168,6 +172,9 @@ let shots=JSON.parse(localStorage.getItem("shots")||"[]");
 let markers=[];
 let activeMarker=null;
 
+/* ================= INIT UI ================= */
+document.getElementById("shotForm").style.display="none";
+
 /* ================= CLICK ================= */
 map.on("click",e=>{
   selected={lat:e.latlng.lat,lng:e.latlng.lng};
@@ -175,7 +182,8 @@ map.on("click",e=>{
   document.getElementById("info").innerText=
     `📍 ${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`;
 
-  openPanel(); // 자동 열기
+  openPanel();
+  showShotForm(true);
 });
 
 /* ================= DB ================= */
@@ -195,7 +203,7 @@ document.getElementById("menuBtn").onclick=()=>{
   m.style.display=m.style.display==="flex"?"none":"flex";
 };
 
-/* ================= PANEL OPEN ================= */
+/* ================= PANEL ================= */
 function openPanel(){
   document.getElementById("panel").classList.add("show");
   document.getElementById("menu").style.display="none";
@@ -216,7 +224,15 @@ function openView(type){
   document.getElementById("panelTitle").innerText=title[type];
   document.getElementById("modeLabel").innerText="MODE: "+type;
 
+  // ⭐ 촬영지에서만 입력창 표시
+  showShotForm(type==="shot");
+
   render(type);
+}
+
+/* ================= INPUT CONTROL ================= */
+function showShotForm(show){
+  document.getElementById("shotForm").style.display = show ? "block" : "none";
 }
 
 /* ================= CLOSE ================= */
@@ -240,23 +256,20 @@ function render(type){
     `<div class="card">
       <b>${d.n}</b>
       <small>${d.t}</small>
-      <button onclick="go(${d.lat},${d.lng},'${d.n}')">지도 이동</button>
+      <button onclick="go(${d.lat},${d.lng},'${d.n}')">이동</button>
     </div>`
   ).join("");
 }
 
-/* ================= UX CORE (핵심) ================= */
+/* ================= UX CORE ================= */
 function go(lat,lng,name){
 
-  // 1. 지도 이동 + 자동 줌
   map.setView([lat,lng],15);
 
-  // 2. 기존 강조 제거
   if(activeMarker){
     map.removeLayer(activeMarker);
   }
 
-  // 3. 강조 마커
   activeMarker = L.circleMarker([lat,lng],{
     radius:10,
     color:"#ff3b30",
@@ -264,10 +277,7 @@ function go(lat,lng,name){
     fillOpacity:0.7
   }).addTo(map).bindPopup(name).openPopup();
 
-  // 4. 패널 자동 유지 (UX 연결)
   document.getElementById("panel").classList.add("show");
-
-  // 5. 정보 업데이트
   document.getElementById("info").innerText="📍 "+name;
 }
 
