@@ -11,8 +11,19 @@ href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 html,body{margin:0;height:100%;}
 #map{height:100vh;}
 
- /* 기존 버튼 */
-#menuBtn{ ... }
+/* 기존 버튼 스타일 */
+#menuBtn{
+ position:fixed;
+ bottom:80px;
+ right:15px;
+ width:60px;
+ height:60px;
+ border-radius:50%;
+ background:#ff3b30;
+ color:#fff;
+ border:none;
+ z-index:99999;
+}
 
 /* 🔥 여기 아래에 추가 */
 #panel{
@@ -95,10 +106,6 @@ closeBtn.onclick = function(){
   panel.classList.remove("show");
 };
  
-document.getElementById("menuBtn").onclick = function(){
- alert("버튼 정상 작동");
-};
-
 </script>
 
 </body>
