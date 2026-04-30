@@ -79,9 +79,10 @@ html,body{margin:0;height:100%;}
     <span>SkyPin</span>
     <button id="closeBtn">닫기</button>
   </div>
-  <div id="panelContent">
-    패널 정상 작동
-  </div>
+<div id="panelContent">
+  <h3>추천 명소</h3>
+  <div id="list"></div>
+ </div> 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -98,14 +99,55 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 const panel = document.getElementById("panel");
 const closeBtn = document.getElementById("closeBtn");
 
-document.getElementById("menuBtn").onclick = function(){
-  panel.classList.add("show");
-};
-
 closeBtn.onclick = function(){
   panel.classList.remove("show");
 };
- 
+
+/* 추천명소 데이터 */
+const POI = [
+  {name:"남산타워", lat:37.5512, lng:126.9882},
+  {name:"한강공원", lat:37.52, lng:126.98},
+  {name:"해운대", lat:35.1587, lng:129.1604},
+  {name:"설악산", lat:38.1194, lng:128.4655}
+];
+
+const listEl = document.getElementById("list");
+let marker = null;
+
+/* 리스트 렌더 */
+function renderPOI(){
+  listEl.innerHTML = "";
+
+  POI.forEach(p=>{
+    const div = document.createElement("div");
+    div.style.padding = "8px";
+    div.style.borderBottom = "1px solid #eee";
+    div.style.cursor = "pointer";
+
+    div.innerHTML = p.name;
+
+    div.onclick = function(){
+      map.setView([p.lat, p.lng], 15);
+
+      if(marker){
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([p.lat, p.lng])
+        .addTo(map)
+        .bindPopup(p.name)
+        .openPopup();
+    };
+
+    listEl.appendChild(div);
+  });
+}
+
+/* 패널 열 때 자동 렌더 */
+document.getElementById("menuBtn").onclick = function(){
+  panel.classList.add("show");
+  renderPOI();
+}; 
 </script>
 
 </body>
