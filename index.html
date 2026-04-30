@@ -1,287 +1,55 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>SkyPin v5.1 STABLE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyPin TEST</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html,body{margin:0;height:100%;font-family:-apple-system;}
+html,body{margin:0;height:100%;}
 #map{height:100vh;}
 
-#ui{position:fixed;width:100%;height:100%;pointer-events:none;z-index:9999;}
-#menuBtn,#menu,#panel{pointer-events:auto;}
-
 #menuBtn{
- position:absolute;bottom:80px;right:15px;
- width:60px;height:60px;border-radius:50%;
- background:#ff3b30;color:#fff;border:none;font-size:22px;
-}
-
-#menu{
- position:absolute;bottom:150px;right:15px;
- display:none;flex-direction:column;gap:6px;
-}
-#menu button{
- padding:10px;background:#333;color:#fff;border:none;border-radius:8px;
-}
-
-#panel{
- position:absolute;top:0;right:0;width:320px;height:100%;
- background:#fff;transform:translateX(100%);
- transition:.3s;overflow:auto;
-}
-#panel.show{transform:translateX(0);}
-
-#panelHeader{
- padding:12px;background:#111;color:#fff;
- display:flex;justify-content:space-between;
-}
-
-#panelContent{padding:12px;}
-
-.card{background:#f5f5f5;padding:10px;margin-bottom:8px;border-radius:8px;cursor:pointer;}
-.card img{width:100%;border-radius:6px;margin-top:5px;}
-
-input,select{width:100%;padding:8px;margin-bottom:5px;}
-button.add{width:100%;padding:8px;background:#007aff;color:#fff;border:none;border-radius:6px;}
-
-#errorBox{
- position:fixed;top:0;left:0;width:100%;
- background:#ff3b30;color:#fff;padding:6px;
- font-size:12px;display:none;z-index:20000;
+ position:fixed;
+ bottom:80px;
+ right:15px;
+ width:60px;
+ height:60px;
+ border-radius:50%;
+ background:#ff3b30;
+ color:#fff;
+ border:none;
+ z-index:99999;
 }
 </style>
 </head>
 
 <body>
 
-<div id="errorBox"></div>
-<div id="map"></div>
+<h2 style="position:fixed;top:0;left:0;z-index:99999;background:#fff;">
+🔥 SkyPin 실행됨
+</h2>
 
-<div id="ui">
+<div id="map"></div>
 <button id="menuBtn">☰</button>
 
-<div id="menu">
-  <button id="btnExplore">📍 탐색</button>
-  <button id="btnShots">📸 촬영지</button>
-  <button id="btnSun">🌅 태양</button>
-</div>
-
-<div id="panel">
-  <div id="panelHeader">
-    <span>SkyPin</span>
-    <button id="closeBtn">닫기</button>
-  </div>
-
-  <div id="panelContent">
-
-    <!-- 태양 -->
-    <div id="sunUI" style="display:none;">
-      <input type="date" id="sunDate">
-      <div id="sunInfo"></div>
-    </div>
-
-    <!-- 탐색 -->
-    <div id="exploreUI">
-      <input id="search" placeholder="검색">
-      <button class="add" id="btnGPS">📍 내 위치</button>
-
-      <input id="poiName" placeholder="명소 이름">
-      <input id="poiRegion" placeholder="지역">
-      <button class="add" id="addPOI">명소 추가</button>
-    </div>
-
-    <!-- 촬영지 -->
-    <div id="shotUI" style="display:none;">
-      <input id="shotName" placeholder="촬영지">
-      <textarea id="shotMemo" placeholder="메모"></textarea>
-      <input type="file" id="photo">
-      <button class="add" id="saveShot">저장</button>
-    </div>
-
-    <div id="list"></div>
-
-  </div>
-</div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/* 🔥 전역 에러 방지 */
-window.onerror = function(msg, url, line){
-  const box = document.getElementById("errorBox");
-  box.style.display="block";
-  box.innerText = `ERROR: ${msg} (${line})`;
-};
 
-window.onload = function(){
+console.log("JS 실행됨");
 
-/* DOM 안전 가져오기 */
-function $(id){
-  const el = document.getElementById(id);
-  if(!el) throw new Error(id+" not found");
-  return el;
-}
-
-const menuBtn = $("menuBtn");
-const menu = $("menu");
-const panel = $("panel");
-const closeBtn = $("closeBtn");
-
-const btnExplore = $("btnExplore");
-const btnShots = $("btnShots");
-const btnSun = $("btnSun");
-
-const exploreUI = $("exploreUI");
-const shotUI = $("shotUI");
-const sunUI = $("sunUI");
-
-const listEl = $("list");
-
-const search = $("search");
-const sunDate = $("sunDate");
-const sunInfo = $("sunInfo");
-
-const poiName = $("poiName");
-const poiRegion = $("poiRegion");
-
-const shotName = $("shotName");
-const shotMemo = $("shotMemo");
-const photo = $("photo");
-
-/* MAP */
 const map = L.map("map").setView([37.56,126.97],10);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-let markers = L.layerGroup().addTo(map);
-let selected = null;
-let myPos = null;
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
 
-/* DATA */
-let defaultPOI=[
- {name:"남산타워",lat:37.55,lng:126.98,region:"서울"}
-];
-
-let userPOI = JSON.parse(localStorage.getItem("userPOI")||"[]");
-let shots = JSON.parse(localStorage.getItem("shots")||"[]");
-
-function save(){
- localStorage.setItem("userPOI",JSON.stringify(userPOI));
- localStorage.setItem("shots",JSON.stringify(shots));
-}
-
-/* 메뉴 */
-menuBtn.onclick = (e)=>{
- e.stopPropagation();
- menu.style.display = (menu.style.display==="flex")?"none":"flex";
+document.getElementById("menuBtn").onclick = function(){
+ alert("버튼 정상 작동");
 };
 
-closeBtn.onclick = ()=> panel.classList.remove("show");
-
-/* 지도 클릭 */
-map.on("click",e=> selected=e.latlng);
-
-/* 렌더 */
-function render(list){
- listEl.innerHTML="";
- markers.clearLayers();
-
- list.forEach(p=>{
-  const div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=p.name;
-
-  div.onclick=()=>{
-    map.setView([p.lat,p.lng],15);
-    L.marker([p.lat,p.lng]).addTo(markers);
-  };
-
-  listEl.appendChild(div);
- });
-}
-
-/* 탐색 */
-btnExplore.onclick=()=>{
- panel.classList.add("show");
- exploreUI.style.display="block";
- shotUI.style.display="none";
- sunUI.style.display="none";
- render([...defaultPOI,...userPOI]);
-};
-
-/* 촬영지 */
-btnShots.onclick=()=>{
- panel.classList.add("show");
- exploreUI.style.display="none";
- shotUI.style.display="block";
- sunUI.style.display="none";
- render(shots);
-};
-
-/* GPS */
-btnGPS.onclick=()=>{
- navigator.geolocation.getCurrentPosition(pos=>{
-  myPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
-  map.setView([myPos.lat,myPos.lng],15);
-  L.marker([myPos.lat,myPos.lng]).addTo(markers);
- });
-};
-
-/* 태양 */
-btnSun.onclick=()=>{
- panel.classList.add("show");
- exploreUI.style.display="none";
- shotUI.style.display="none";
- sunUI.style.display="block";
-
- sunDate.value=new Date().toISOString().split("T")[0];
- drawSun();
-};
-
-function drawSun(){
- if(!myPos) return alert("내 위치 먼저");
-
- const date=new Date(sunDate.value);
- const times=SunCalc.getTimes(date,myPos.lat,myPos.lng);
-
- sunInfo.innerHTML=`
- 🌅 ${times.sunrise.toLocaleTimeString()}<br>
- 🌇 ${times.sunset.toLocaleTimeString()}
- `;
-}
-
-sunDate.onchange=drawSun;
-
-/* 추가 */
-addPOI.onclick=()=>{
- if(!selected) return alert("지도 클릭");
- userPOI.push({
-  name:poiName.value,
-  region:poiRegion.value,
-  lat:selected.lat,
-  lng:selected.lng
- });
- save();
-};
-
-/* 촬영지 */
-saveShot.onclick=()=>{
- if(!selected) return alert("지도 클릭");
-
- shots.push({
-  name:shotName.value,
-  memo:shotMemo.value,
-  lat:selected.lat,
-  lng:selected.lng
- });
-
- save();
-};
-
-};
 </script>
 
 </body>
