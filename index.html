@@ -79,8 +79,14 @@ html,body{margin:0;height:100%;}
     <span>SkyPin</span>
     <button id="closeBtn">닫기</button>
   </div>
-<div id="panelContent">
-  <h3>추천 명소</h3>
+
+ <div id="panelContent">
+ 
+ <h3>내 촬영지 추가</h3>
+  <input id="shotName" placeholder="촬영지 이름">
+  <button id="saveShot">저장</button>
+  <hr>
+ <h3>추천 명소</h3>
   <div id="list"></div>
  </div> 
 </div>
@@ -95,7 +101,13 @@ const map = L.map("map").setView([37.56,126.97],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
-/* 🔥 여기부터 추가 */
+ /* 🔥 여기 추가 */
+map.on("click", function(e){
+  selected = e.latlng;
+  console.log("선택 위치:", selected);
+});
+
+ /* 🔥 여기부터 추가 */
 const panel = document.getElementById("panel");
 const closeBtn = document.getElementById("closeBtn");
 
@@ -114,10 +126,13 @@ const POI = [
 const listEl = document.getElementById("list");
 let marker = null;
 
-/* 리스트 렌더 */
-function renderPOI(){
-  listEl.innerHTML = "";
+ /* 🔥 여기 추가 */
+let selected = null;
+let shots = JSON.parse(localStorage.getItem("shots") || "[]");
 
+ /* 리스트 렌더 */
+function renderPOI(){
+ 
   POI.forEach(p=>{
     const div = document.createElement("div");
     div.style.padding = "8px";
@@ -132,7 +147,58 @@ function renderPOI(){
       if(marker){
         map.removeLayer(marker);
       }
+function renderShots(){
 
+  listEl.innerHTML = "";
+
+  shots.forEach(s=>{
+    const div = document.createElement("div");
+
+    div.style.padding = "8px";
+    div.style.borderBottom = "1px solid #ddd";
+    div.style.cursor = "pointer";
+
+    div.innerHTML = "📸 " + s.name;
+
+    div.onclick = function(){
+      map.setView([s.lat, s.lng], 15);
+
+      if(marker){
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([s.lat, s.lng])
+        .addTo(map)
+        .bindPopup(s.name)
+        .openPopup();
+    };
+
+    listEl.appendChild(div);
+  });
+}
+    
+     /* 🔥 여기 추가 */
+document.getElementById("saveShot").onclick = function(){
+
+  if(!selected){
+    alert("지도 클릭 후 저장하세요");
+    return;
+  }
+
+  const name = document.getElementById("shotName").value;
+
+  shots.push({
+    name: name,
+    lat: selected.lat,
+    lng: selected.lng
+  });
+
+  localStorage.setItem("shots", JSON.stringify(shots));
+
+  alert("저장 완료");
+
+  renderShots();
+};
       marker = L.marker([p.lat, p.lng])
         .addTo(map)
         .bindPopup(p.name)
@@ -143,11 +209,12 @@ function renderPOI(){
   });
 }
 
-/* 패널 열 때 자동 렌더 */
 document.getElementById("menuBtn").onclick = function(){
   panel.classList.add("show");
   renderPOI();
-}; 
+  renderShots();   // 🔥 추가
+};
+
 </script>
 
 </body>
