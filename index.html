@@ -162,17 +162,21 @@ function renderShots(){
     // 텍스트
     div.innerHTML = "📸 " + s.name;
 
-    // 🔥🔥 핵심 (이미지 표시)
-    if(s.photo && s.photo.startsWith("data:image")){
-      const img = document.createElement("img");
-      img.src = s.photo;
-      img.style.width = "100%";
-      img.style.marginTop = "6px";
-      img.style.borderRadius = "8px";
-      img.style.display = "block";
-      div.appendChild(img);
-    }
+   // 🔥🔥 핵심 (이미지 표시)
+if(s.photo && s.photo.startsWith("data:image")){
+  const img = document.createElement("img");
+  img.src = s.photo;
 
+  img.style.width = "100%";
+  img.style.maxHeight = "100px";   // 🔥 추가 (핵심)
+  img.style.objectFit = "cover";   // 🔥 추가
+
+  img.style.marginTop = "6px";
+  img.style.borderRadius = "8px";
+  img.style.display = "block";
+
+  div.appendChild(img);
+} 
     // 지도 이동
     div.onclick = function(){
       map.setView([s.lat, s.lng], 15);
