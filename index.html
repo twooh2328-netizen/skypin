@@ -154,30 +154,17 @@ function renderShots(){
   listEl.innerHTML = "";
 
   shots.forEach((s, i)=>{
+
+    const container = document.createElement("div");
+    container.style.borderBottom = "1px solid #ddd";
+    container.style.padding = "8px";
+
     const div = document.createElement("div");
 
-    div.style.padding = "8px";
-    div.style.borderBottom = "1px solid #ddd";
-
-    // 텍스트
+    // 📌 텍스트
     div.innerHTML = "📸 " + s.name;
 
-   // 🔥🔥 핵심 (이미지 표시)
-if(s.photo && s.photo.startsWith("data:image")){
-  const img = document.createElement("img");
-  img.src = s.photo;
-
-  img.style.width = "100%";
-  img.style.maxHeight = "100px";   // 🔥 추가 (핵심)
-  img.style.objectFit = "cover";   // 🔥 추가
-
-  img.style.marginTop = "6px";
-  img.style.borderRadius = "8px";
-  img.style.display = "block";
-
-  div.appendChild(img);
-} 
-    // 지도 이동
+    // 📌 지도 이동
     div.onclick = function(){
       map.setView([s.lat, s.lng], 15);
 
@@ -190,25 +177,45 @@ if(s.photo && s.photo.startsWith("data:image")){
         .bindPopup(s.name)
         .openPopup();
     };
-const delBtn = document.createElement("button");
-delBtn.textContent = "삭제";
 
-delBtn.style.display = "block";
-delBtn.style.marginTop = "5px";
-delBtn.style.background = "red";
-delBtn.style.color = "white";
+    // 📸 이미지
+    if(s.photo && s.photo.startsWith("data:image")){
+      const img = document.createElement("img");
+      img.src = s.photo;
+      img.style.width = "100%";
+      img.style.maxHeight = "100px";
+      img.style.objectFit = "cover";
+      img.style.marginTop = "6px";
+      img.style.borderRadius = "8px";
+      div.appendChild(img);
+    }
 
-delBtn.onclick = function(e){
-  e.stopPropagation(); // 지도 이동 막기
+    // ❌ 삭제 버튼 (div 안이 아니라 바깥)
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "삭제";
 
-  shots.splice(i, 1); // 데이터 삭제
-  localStorage.setItem("shots", JSON.stringify(shots));
-  renderShots(); // 다시 그리기
-};
+    delBtn.style.marginTop = "6px";
+    delBtn.style.background = "#ff3b30";
+    delBtn.style.color = "#fff";
+    delBtn.style.border = "none";
+    delBtn.style.padding = "5px 8px";
+    delBtn.style.borderRadius = "5px";
 
-div.appendChild(delBtn);
+    delBtn.onclick = function(e){
+      e.stopPropagation();
 
-   listEl.appendChild(div);
+      if(confirm("삭제하시겠습니까?")){
+        shots.splice(i, 1);
+        localStorage.setItem("shots", JSON.stringify(shots));
+        renderShots();
+      }
+    };
+
+    // 🔥 구조 핵심
+    container.appendChild(div);
+    container.appendChild(delBtn);
+
+    listEl.appendChild(container);
   });
 }
     
