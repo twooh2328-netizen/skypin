@@ -83,10 +83,12 @@ html,body{margin:0;height:100%;}
  <div id="panelContent">
  
  <h3>내 촬영지 추가</h3>
-  <input id="shotName" placeholder="촬영지 이름">
-  <button id="saveShot">저장</button>
+ <input id="shotName" placeholder="촬영지 이름">
+<input type="file" id="photo">
+<button id="saveShot">저장</button>
   <hr>
- <h3>추천 명소</h3>
+
+  <h3>추천 명소</h3>
   <div id="list"></div>
  </div> 
 </div>
@@ -177,26 +179,38 @@ function renderShots(){
   });
 }
     
-     /* 🔥 여기 추가 */
-document.getElementById("saveShot").onclick = function(){
+document.getElementById("saveShot").onclick = async function(){
 
+  // 1️⃣ 지도 클릭 안 했으면 막기
   if(!selected){
     alert("지도 클릭 후 저장하세요");
     return;
   }
 
+  // 2️⃣ 입력값 가져오기
   const name = document.getElementById("shotName").value;
+  const file = document.getElementById("photo").files[0];
 
+  let imgData = "";
+
+  // 3️⃣ 사진 있으면 압축 처리
+  if(file){
+    imgData = await resizeImage(file); // 🔥 핵심
+  }
+
+  // 4️⃣ 데이터 저장
   shots.push({
     name: name,
     lat: selected.lat,
-    lng: selected.lng
+    lng: selected.lng,
+    photo: imgData
   });
 
+  // 5️⃣ localStorage 저장
   localStorage.setItem("shots", JSON.stringify(shots));
 
+  // 6️⃣ UI 갱신
   alert("저장 완료");
-
   renderShots();
 };
       marker = L.marker([p.lat, p.lng])
@@ -214,7 +228,37 @@ document.getElementById("menuBtn").onclick = function(){
   renderPOI();
   renderShots();   // 🔥 추가
 };
+function resizeImage(file){
+  return new Promise(resolve=>{
+    const img = new Image();
+    const reader = new FileReader();
 
+    reader.onload = e => img.src = e.target.result;
+
+    img.onload = function(){
+      const canvas = document.createElement("canvas");
+
+      const max = 400; // 🔥 핵심
+      let w = img.width;
+      let h = img.height;
+
+      if(w > max){
+        h *= max / w;
+        w = max;
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
 </script>
 
 </body>
