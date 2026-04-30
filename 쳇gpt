@@ -2,23 +2,26 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SkyPin v5 UX FINAL</title>
+<title>SkyPin v4 FINAL PHOTO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
 <style>
-html,body{margin:0;height:100%;font-family:-apple-system;}
+html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
 #map{height:100vh;}
 
-#ui{position:fixed;width:100%;height:100%;pointer-events:none;z-index:9999;}
-#menuBtn,#menu,#panel{pointer-events:auto;}
+#ui{
+ position:fixed;top:0;left:0;width:100%;height:100%;
+ pointer-events:none;z-index:10000;
+}
+#menuBtn,#menu,#panel{ pointer-events:auto; }
 
 #menuBtn{
  position:absolute;bottom:80px;right:15px;
  width:60px;height:60px;border-radius:50%;
- background:#ff3b30;color:#fff;border:none;font-size:22px;
+ background:#ff3b30;color:#fff;border:none;
+ font-size:22px;
 }
 
 #menu{
@@ -43,14 +46,33 @@ html,body{margin:0;height:100%;font-family:-apple-system;}
 
 #panelContent{padding:12px;}
 
-.card{background:#f5f5f5;padding:10px;margin-bottom:8px;border-radius:8px;cursor:pointer;}
-.card img{width:100%;border-radius:6px;margin-top:5px;}
+.card{
+ background:#f5f5f5;
+ padding:10px;margin-bottom:8px;border-radius:8px;
+ cursor:pointer;
+}
 
-input,select{width:100%;padding:8px;margin-bottom:5px;}
-button.add{width:100%;padding:8px;background:#007aff;color:#fff;border:none;border-radius:6px;}
-.card button{margin-top:5px;background:#ff3b30;color:#fff;border:none;padding:5px;border-radius:5px;}
+.card img{
+ width:100%;
+ height:auto;
+ border-radius:8px;
+ margin-top:6px;
+ display:block;
+}
 
-.sunBox{background:#ffe8a3;padding:8px;border-radius:8px;margin-bottom:8px;}
+input,select{
+ width:100%;padding:8px;margin-bottom:5px;
+}
+
+button.add{
+ width:100%;padding:8px;background:#007aff;
+ color:#fff;border:none;border-radius:6px;
+}
+
+.card button{
+ margin-top:5px;background:#ff3b30;color:#fff;
+ border:none;padding:5px;border-radius:5px;
+}
 </style>
 </head>
 
@@ -59,50 +81,37 @@ button.add{width:100%;padding:8px;background:#007aff;color:#fff;border:none;bord
 <div id="map"></div>
 
 <div id="ui">
+
 <button id="menuBtn">☰</button>
 
 <div id="menu">
-  <button id="btnExplore">📍 탐색</button>
-  <button id="btnShots">📸 촬영지</button>
-  <button id="btnSun">🌅 태양</button>
+  <button id="btnPOI">추천명소</button>
+  <button id="btnShots">내 촬영지</button>
+  <button id="btnGPS">내 위치</button>
+  <button id="btnSun">🌅 일출</button>
 </div>
 
 <div id="panel">
   <div id="panelHeader">
-    <span id="panelTitle">SkyPin</span>
+    <span>SkyPin</span>
     <button id="closeBtn">닫기</button>
   </div>
 
   <div id="panelContent">
+    <input id="search" placeholder="검색">
+    <select id="filter">
+      <option value="all">전체</option>
+      <option value="서울">서울</option>
+      <option value="부산">부산</option>
+    </select>
 
-    <!-- 🌅 태양 -->
-    <div id="sunUI" style="display:none;">
-      <div class="sunBox">
-        <input type="date" id="sunDate">
-        <div id="sunInfo"></div>
-      </div>
+    <div id="formPOI">
+      <input id="poiName" placeholder="이름">
+      <input id="poiRegion" placeholder="지역">
+      <button class="add" id="addPOI">명소 추가</button>
     </div>
 
-    <!-- 탐색 -->
-    <div id="exploreUI">
-      <input id="search" placeholder="검색">
-      <select id="filter">
-        <option value="all">전체</option>
-        <option value="서울">서울</option>
-        <option value="부산">부산</option>
-      </select>
-
-      <button class="add" id="btnGPS">📍 내 위치</button>
-
-      <div>
-        <input id="poiName" placeholder="명소 이름">
-        <input id="poiRegion" placeholder="지역">
-        <button class="add" id="addPOI">명소 추가</button>
-      </div>
-    </div>
-
-    <!-- 촬영지 -->
-    <div id="shotUI" style="display:none;">
+    <div id="formShot" style="display:none;">
       <input id="shotName" placeholder="촬영지">
       <textarea id="shotMemo" placeholder="메모"></textarea>
       <input type="file" id="photo">
@@ -110,34 +119,34 @@ button.add{width:100%;padding:8px;background:#007aff;color:#fff;border:none;bord
     </div>
 
     <div id="list"></div>
-
   </div>
 </div>
+
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 window.onload=function(){
 
 /* DOM */
-const menuBtn=menu=document.getElementById("menuBtn");
+const menuBtn=document.getElementById("menuBtn");
+const menu=document.getElementById("menu");
 const panel=document.getElementById("panel");
-const menuBox=document.getElementById("menu");
 
-const btnExplore=document.getElementById("btnExplore");
+const btnPOI=document.getElementById("btnPOI");
 const btnShots=document.getElementById("btnShots");
+const btnGPS=document.getElementById("btnGPS");
 const btnSun=document.getElementById("btnSun");
 
-const exploreUI=document.getElementById("exploreUI");
-const shotUI=document.getElementById("shotUI");
-const sunUI=document.getElementById("sunUI");
-
+const closeBtn=document.getElementById("closeBtn");
 const listEl=document.getElementById("list");
 
 const search=document.getElementById("search");
 const filter=document.getElementById("filter");
 
-const sunDate=document.getElementById("sunDate");
-const sunInfo=document.getElementById("sunInfo");
+const formPOI=document.getElementById("formPOI");
+const formShot=document.getElementById("formShot");
 
 const poiName=document.getElementById("poiName");
 const poiRegion=document.getElementById("poiRegion");
@@ -168,35 +177,75 @@ function save(){
  localStorage.setItem("shots",JSON.stringify(shots));
 }
 
-/* 이미지 리사이즈 */
+/* 🔥 이미지 리사이즈 */
 function resizeImage(file){
  return new Promise(res=>{
   const img=new Image();
   const reader=new FileReader();
-  reader.onload=e=>img.src=e.target.result;
+
+  reader.onload=e=> img.src=e.target.result;
+
   img.onload=()=>{
    const canvas=document.createElement("canvas");
    const max=400;
-   let w=img.width,h=img.height;
-   if(w>max){h*=max/w;w=max;}
-   canvas.width=w;canvas.height=h;
-   canvas.getContext("2d").drawImage(img,0,0,w,h);
+
+   let w=img.width;
+   let h=img.height;
+
+   if(w>max){
+    h*=max/w;
+    w=max;
+   }
+
+   canvas.width=w;
+   canvas.height=h;
+
+   const ctx=canvas.getContext("2d");
+   ctx.drawImage(img,0,0,w,h);
+
    res(canvas.toDataURL("image/jpeg",0.7));
   };
+
   reader.readAsDataURL(file);
  });
 }
 
-/* 메뉴 */
+/* MENU */
 menuBtn.onclick=(e)=>{
  e.stopPropagation();
- menuBox.style.display=(menuBox.style.display==="flex")?"none":"flex";
+ menu.style.display=(menu.style.display==="flex")?"none":"flex";
 };
 
-/* 지도 클릭 */
-map.on("click",e=>selected=e.latlng);
+closeBtn.onclick=()=>panel.classList.remove("show");
 
-/* 렌더 */
+/* MAP CLICK */
+map.on("click",e=>{
+ selected=e.latlng;
+});
+
+/* RENDER */
+let current="poi";
+
+function refresh(){
+ let list=[];
+
+ if(current==="poi"){
+  list=[...defaultPOI,...userPOI.map(p=>({...p,type:"user"}))];
+ }else{
+  list=shots.map(s=>({...s,type:"shot"}));
+ }
+
+ const q=search.value.toLowerCase();
+ const f=filter.value;
+
+ list=list.filter(p=>{
+  return p.name.toLowerCase().includes(q) &&
+   (f==="all" || p.region===f || !p.region);
+ });
+
+ render(list);
+}
+
 function render(list){
  listEl.innerHTML="";
  markers.clearLayers();
@@ -207,107 +256,87 @@ function render(list){
   div.innerHTML=`<b>${p.name}</b><br>${p.region||""}`;
 
   if(p.photo){
-    const img=document.createElement("img");
-    img.src=p.photo;
-    div.appendChild(img);
+   const img=document.createElement("img");
+   img.src=p.photo;
+   div.appendChild(img);
   }
 
   div.onclick=()=>{
-    map.setView([p.lat,p.lng],15);
-    markers.clearLayers();
-    L.marker([p.lat,p.lng]).addTo(markers);
+   map.setView([p.lat,p.lng],15);
+   markers.clearLayers();
+   L.marker([p.lat,p.lng]).addTo(markers);
   };
+
+  if(p.type==="user" || p.type==="shot"){
+   const del=document.createElement("button");
+   del.textContent="삭제";
+   del.onclick=(e)=>{
+    e.stopPropagation();
+    if(p.type==="user") userPOI.splice(i,1);
+    else shots.splice(i,1);
+    save(); refresh();
+   };
+   div.appendChild(del);
+  }
 
   listEl.appendChild(div);
  });
 }
 
-/* 탐색 */
-btnExplore.onclick=()=>{
+/* BUTTONS */
+btnPOI.onclick=()=>{
+ current="poi";
  panel.classList.add("show");
- exploreUI.style.display="block";
- shotUI.style.display="none";
- sunUI.style.display="none";
-
- render([...defaultPOI,...userPOI]);
+ formPOI.style.display="block";
+ formShot.style.display="none";
+ refresh();
 };
 
-/* 촬영지 */
 btnShots.onclick=()=>{
+ current="shots";
  panel.classList.add("show");
- exploreUI.style.display="none";
- shotUI.style.display="block";
- sunUI.style.display="none";
-
- render(shots);
+ formPOI.style.display="none";
+ formShot.style.display="block";
+ refresh();
 };
 
-/* GPS */
 btnGPS.onclick=()=>{
  navigator.geolocation.getCurrentPosition(pos=>{
-  myPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
-  map.setView([myPos.lat,myPos.lng],15);
-  L.marker([myPos.lat,myPos.lng]).addTo(markers);
+  const lat=pos.coords.latitude;
+  const lng=pos.coords.longitude;
+  map.setView([lat,lng],15);
+  markers.clearLayers();
+  L.marker([lat,lng]).addTo(markers).bindPopup("내 위치").openPopup();
+  myPos={lat,lng};
  });
 };
 
-/* 태양 */
 btnSun.onclick=()=>{
- panel.classList.add("show");
- exploreUI.style.display="none";
- shotUI.style.display="none";
- sunUI.style.display="block";
-
- sunDate.value=new Date().toISOString().split("T")[0];
-
- drawSun();
+ if(!myPos) return alert("내 위치 먼저");
+ markers.clearLayers();
+ L.polyline([[myPos.lat,myPos.lng],[myPos.lat,myPos.lng+0.2]],{color:"orange"}).addTo(markers);
 };
 
-function drawSun(){
- if(!myPos) return alert("내 위치 먼저");
-
- const date=new Date(sunDate.value);
- const times=SunCalc.getTimes(date,myPos.lat,myPos.lng);
-
- const sunrise=times.sunrise;
- const sunset=times.sunset;
-
- const riseAz=SunCalc.getPosition(sunrise,myPos.lat,myPos.lng).azimuth*180/Math.PI+180;
- const setAz=SunCalc.getPosition(sunset,myPos.lat,myPos.lng).azimuth*180/Math.PI+180;
-
- sunInfo.innerHTML=`
- 🌅 일출: ${sunrise.toLocaleTimeString()}<br>
- 🌇 일몰: ${sunset.toLocaleTimeString()}
- `;
-
- markers.clearLayers();
- L.marker([myPos.lat,myPos.lng]).addTo(markers);
-
- drawLine(riseAz,"orange");
- drawLine(setAz,"purple");
-}
-
-function drawLine(angle,color){
- const dist=0.2;
- const lat2=myPos.lat+dist*Math.cos(angle*Math.PI/180);
- const lng2=myPos.lng+dist*Math.sin(angle*Math.PI/180);
-
- L.polyline([[myPos.lat,myPos.lng],[lat2,lng2]],{color}).addTo(markers);
-}
-
-/* 추가 */
+/* ADD */
 addPOI.onclick=()=>{
  if(!selected) return alert("지도 클릭");
- userPOI.push({name:poiName.value,region:poiRegion.value,lat:selected.lat,lng:selected.lng});
- save();
+ userPOI.push({
+  name:poiName.value,
+  region:poiRegion.value,
+  lat:selected.lat,
+  lng:selected.lng
+ });
+ save(); refresh();
 };
 
-/* 촬영지 저장 */
+/* 📸 SAVE SHOT (최적화 적용) */
 saveShot.onclick=async()=>{
  if(!selected) return alert("지도 클릭");
 
  let img="";
- if(photo.files[0]) img=await resizeImage(photo.files[0]);
+ if(photo.files[0]){
+  img = await resizeImage(photo.files[0]); // 🔥 핵심
+ }
 
  shots.push({
   name:shotName.value,
@@ -317,11 +346,12 @@ saveShot.onclick=async()=>{
   photo:img
  });
 
- save();
+ save(); refresh();
 };
 
-/* 날짜 변경 */
-sunDate.onchange=drawSun;
+/* SEARCH */
+search.oninput=refresh;
+filter.onchange=refresh;
 
 };
 </script>
