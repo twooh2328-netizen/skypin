@@ -149,6 +149,23 @@ const formShot=document.getElementById("formShot");
 const poiName=document.getElementById("poiName");
 const poiRegion=document.getElementById("poiRegion");
 
+ // 버튼 이벤트 연결
+  btnPOI.onclick = () => {
+    panel.classList.add("show");   // 패널 열기
+    formPOI.style.display = "block";
+    formShot.style.display = "none";
+  };
+
+  btnShots.onclick = () => {
+    panel.classList.add("show");   // 패널 열기
+    formPOI.style.display = "none";
+    formShot.style.display = "block";
+  };
+
+  closeBtn.onclick = () => {
+    panel.classList.remove("show"); // 닫기 버튼
+  };
+
  // ✅ 현재 위치 자동 입력 버튼 추가
 const autoPosBtn = document.createElement("button");
 autoPosBtn.textContent = "현재 위치 사용";
