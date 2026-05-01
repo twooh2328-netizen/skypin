@@ -126,7 +126,7 @@ button.add{
 
 <script>
 window.onload=function(){
-
+ //
 /* DOM */
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
@@ -164,9 +164,9 @@ const poiRegion=document.getElementById("poiRegion");
 
   closeBtn.onclick = () => {
     panel.classList.remove("show"); // 닫기 버튼
-  };
-
- // ✅ 현재 위치 자동 입력 버튼 추가
+   };
+  };//
+  ✅ 현재 위치 자동 입력 버튼 추가
 const autoPosBtn = document.createElement("button");
 autoPosBtn.textContent = "현재 위치 사용";
 autoPosBtn.className = "add";
