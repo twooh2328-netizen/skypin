@@ -87,8 +87,20 @@ button.add{
   <button id="btnShots">내 촬영지</button>
   <button id="btnGPS">내 위치</button>
   <button id="btnSun">🌅 일출</button>
-</div>
+ btnGPS.onclick=()=>{
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    map.setView([lat,lng],15);
+    markers.clearLayers();
+    L.marker([lat,lng]).addTo(markers).bindPopup("내 위치").openPopup();
+    myPos={lat,lng};
+  }, err=>{
+    alert("위치 확인 실패");
+  }, {enableHighAccuracy:true}); // 정확도 옵션 추가
+};
 
+</div>
 <div id="panel">
   <div id="panelHeader">
     <span>SkyPin</span>
@@ -129,28 +141,31 @@ window.onload=function(){
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
 const panel=document.getElementById("panel");
-
 const btnPOI=document.getElementById("btnPOI");
 const btnShots=document.getElementById("btnShots");
 const btnGPS=document.getElementById("btnGPS");
 const btnSun=document.getElementById("btnSun");
-
-const closeBtn=document.getElementById("closeBtn");
 const listEl=document.getElementById("list");
-
 const search=document.getElementById("search");
 const filter=document.getElementById("filter");
-
 const formPOI=document.getElementById("formPOI");
 const formShot=document.getElementById("formShot");
-
 const poiName=document.getElementById("poiName");
 const poiRegion=document.getElementById("poiRegion");
-
 const shotName=document.getElementById("shotName");
 const shotMemo=document.getElementById("shotMemo");
 const photo=document.getElementById("photo");
+const closeBtn=document.getElementById("closeBtn");
 
+ // 닫기 버튼
+closeBtn.onclick=()=>panel.classList.remove("show");
+
+// 패널 외부 클릭 시 닫기
+document.addEventListener("click", e=>{
+  if(panel.classList.contains("show") && !panel.contains(e.target) && e.target!==menuBtn){
+    panel.classList.remove("show");
+  }
+});
 /* MAP */
 const map=L.map("map").setView([37.56,126.97],10);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
@@ -161,9 +176,28 @@ let myPos=null;
 
 /* DATA */
 let defaultPOI=[
- {name:"남산타워",lat:37.5512,lng:126.9882,region:"서울"},
- {name:"해운대",lat:35.1587,lng:129.1604,region:"부산"}
+  {name:"남산타워",lat:37.5512,lng:126.9882,region:"서울"},
+  {name:"해운대",lat:35.1587,lng:129.1604,region:"부산"},
+  {name:"경복궁",lat:37.5796,lng:126.9770,region:"서울"},
+  {name:"제주 성산일출봉",lat:33.4589,lng:126.9425,region:"제주"},
+  {name:"속초 설악산",lat:38.1194,lng:128.4656,region:"강원"},
+  {name:"안동 하회마을",lat:36.5385,lng:128.5183,region:"경북"},
+  {name:"전주 한옥마을",lat:35.8156,lng:127.1527,region:"전북"},
+  {name:"광안리 해수욕장",lat:35.1531,lng:129.1185,region:"부산"},
+  {name:"수원 화성",lat:37.2850,lng:127.0116,region:"경기"},
+  {name:"청계천",lat:37.5690,lng:126.9784,region:"서울"},
+  {name:"DMZ 파주 도라산 전망대",lat:37.9164,lng:126.7150,region:"경기"},
+  {name:"울산 대왕암",lat:35.4986,lng:129.4297,region:"울산"},
+  {name:"여수 돌산대교",lat:34.7394,lng:127.7450,region:"전남"},
+  {name:"보성 녹차밭",lat:34.7191,lng:127.0856,region:"전남"},
+  {name:"춘천 남이섬",lat:37.7900,lng:127.5250,region:"강원"},
+  {name:"인천 차이나타운",lat:37.4750,lng:126.6170,region:"인천"},
+  {name:"포항 호미곶",lat:36.0750,lng:129.5690,region:"경북"},
+  {name:"군산 근대거리",lat:35.9950,lng:126.7080,region:"전북"},
+  {name:"제주 한라산",lat:33.3617,lng:126.5292,region:"제주"},
+  {name:"강릉 경포대",lat:37.7950,lng:128.8960,region:"강원"}
 ];
+
 
 let userPOI=JSON.parse(localStorage.getItem("userPOI")||"[]");
 let shots=JSON.parse(localStorage.getItem("shots")||"[]");
@@ -222,61 +256,65 @@ map.on("click",e=>{
 /* RENDER */
 let current="poi";
 
-function refresh(){
- let list=[];
+function render(list){
+  listEl.innerHTML="";
+  markers.clearLayers();
 
- if(current==="poi"){
-  list=[...defaultPOI,...userPOI.map(p=>({...p,type:"user"}))];
- }else{
-  list=shots.map(s=>({...s,type:"shot"}));
- }
+  list.forEach((p,i)=>{
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`<b>${p.name}</b><br>${p.region||""}`;
 
- const q=search.value.toLowerCase();
- const f=filter.value;
+    if(p.photo){
+      const img=document.createElement("img");
+      img.src=p.photo;
+      div.appendChild(img);
+    }
 
- list=list.filter(p=>{
-  return p.name.toLowerCase().includes(q) &&
-   (f==="all" || p.region===f || !p.region);
- });
+    div.onclick=()=>{
+      map.setView([p.lat,p.lng],15);
+      markers.clearLayers();
+      L.marker([p.lat,p.lng]).addTo(markers);
+    };
 
- render(list);
+    if(p.type==="user" || p.type==="shot"){
+      const del=document.createElement("button");
+      del.textContent="삭제";
+      del.onclick=(e)=>{
+        e.stopPropagation();
+        if(p.type==="user") {
+          userPOI=userPOI.filter((_,idx)=>idx!==i);
+        } else {
+          shots=shots.filter((_,idx)=>idx!==i);
+        }
+        save(); 
+        refresh(); // 삭제 후 리스트 갱신
+      };
+      div.appendChild(del);
+    }
+
+    listEl.appendChild(div);
+  });
 }
 
-function render(list){
- listEl.innerHTML="";
- markers.clearLayers();
+function refresh(){
+  let list=[];
 
- list.forEach((p,i)=>{
-  const div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=`<b>${p.name}</b><br>${p.region||""}`;
-
-  if(p.photo){
-   const img=document.createElement("img");
-   img.src=p.photo;
-   div.appendChild(img);
+  if(current==="poi"){
+    list=[...defaultPOI,...userPOI.map(p=>({...p,type:"user"}))];
+  }else{
+    list=shots.map(s=>({...s,type:"shot"}));
   }
 
-  div.onclick=()=>{
-   map.setView([p.lat,p.lng],15);
-   markers.clearLayers();
-   L.marker([p.lat,p.lng]).addTo(markers);
-  };
+  const q=search.value.toLowerCase();
+  const f=filter.value;
 
-  if(p.type==="user" || p.type==="shot"){
-   const del=document.createElement("button");
-   del.textContent="삭제";
-   del.onclick=(e)=>{
-    e.stopPropagation();
-    if(p.type==="user") userPOI.splice(i,1);
-    else shots.splice(i,1);
-    save(); refresh();
-   };
-   div.appendChild(del);
-  }
+  list=list.filter(p=>{
+    return p.name.toLowerCase().includes(q) &&
+     (f==="all" || p.region===f || !p.region);
+  });
 
-  listEl.appendChild(div);
- });
+  render(list);
 }
 
 /* BUTTONS */
