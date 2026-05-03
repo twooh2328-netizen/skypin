@@ -31,12 +31,31 @@ html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
  padding:10px;background:#333;color:#fff;border:none;border-radius:8px;
 }
 
-#panel{
- position:absolute;top:0;right:0;width:320px;height:100%;
- background:#fff;transform:translateX(100%);
- transition:.3s;overflow:auto;
+/* 패널 스타일 */
+#panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100%;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow: hidden; /* 패널 전체는 스크롤 숨김 */
 }
-#panel.show{transform:translateX(0);}
+
+#panel.show {
+  transform: translateX(0);
+}
+
+/* 리스트 영역 스타일 */
+#list {
+  max-height: 70vh;   /* 화면 높이의 70%까지만 표시 */
+  overflow-y: auto;   /* 내용이 넘치면 세로 스크롤 표시 */
+  padding: 10px;
+  box-sizing: border-box;
+}
 
 #panelHeader{
  padding:12px;background:#111;color:#fff;
