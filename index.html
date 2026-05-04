@@ -64,33 +64,53 @@ html,body{margin:0;height:100%;font-family:-apple-system,sans-serif;}
 
 #panelContent{padding:12px;}
 
-.card{
- background:#f5f5f5;
- padding:10px;margin-bottom:8px;border-radius:8px;
- cursor:pointer;
+.card {
+  background:#f5f5f5;
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:8px;
+  cursor:pointer;
+
+  /* 추가된 부분 */
+  display: block;          /* 블록 요소로 고정 */
+  width: 100%;             /* 패널 너비에 맞춤 */
+  word-wrap: break-word;   /* 긴 텍스트 줄바꿈 */
+  box-sizing: border-box;  /* 패딩 포함 폭 계산 */
+  overflow: hidden;        /* 넘치는 내용 숨김 */
 }
 
-.card img{
- width:100%;
- height:auto;
- border-radius:8px;
- margin-top:6px;
- display:block;
+.card img {
+  width:100%;              /* 패널 폭에 맞게 축소 */
+  height:auto;
+  border-radius:8px;
+  margin-top:6px;
+  display:block;
 }
 
-input,select{
- width:100%;padding:8px;margin-bottom:5px;
+input,select {
+  width:100%;
+  padding:8px;
+  margin-bottom:5px;
 }
 
-button.add{
- width:100%;padding:8px;background:#007aff;
- color:#fff;border:none;border-radius:6px;
+button.add {
+  width:100%;
+  padding:8px;
+  background:#007aff;
+  color:#fff;
+  border:none;
+  border-radius:6px;
 }
 
-.card button{
- margin-top:5px;background:#ff3b30;color:#fff;
- border:none;padding:5px;border-radius:5px;
+.card button {
+  margin-top:5px;
+  background:#ff3b30;
+  color:#fff;
+  border:none;
+  padding:5px;
+  border-radius:5px;
 }
+
 </style>
 </head>
 <body>
