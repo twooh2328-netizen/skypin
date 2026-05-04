@@ -201,8 +201,24 @@ document.addEventListener("click", e=>{
   }
 });
 /* MAP */
-const map=L.map("map").setView([37.56,126.97],10);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+ // 지도 초기화
+  const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 좌표 예시
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // GPS 버튼 이벤트
+  const btnGPS = document.getElementById("btnGPS");
+  btnGPS.onclick = () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      map.setView([lat, lng], 15);
+      L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
+    }, err => {
+      alert("위치 확인 실패");
+    }, { enableHighAccuracy: true });
+  };
 
 let markers=L.layerGroup().addTo(map);
 let selected=null;
@@ -367,19 +383,6 @@ btnShots.onclick=()=>{
  formShot.style.display="block";
  refresh();
 };
- const btnGPS = document.getElementById("btnGPS");
-  btnGPS.onclick = () => {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      map.setView([lat, lng], 15);
-      markers.clearLayers();
-      L.marker([lat, lng]).addTo(markers).bindPopup("내 위치").openPopup();
-      myPos = { lat, lng };
-    }, err => {
-      alert("위치 확인 실패");
-    }, { enableHighAccuracy: true });
-  };
 
 btnSun.onclick=()=>{
  if(!myPos) return alert("내 위치 먼저");
