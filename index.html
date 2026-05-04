@@ -3,9 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <title>SkyPin 지도 앱</title>
-  <link rel="stylesheet" href="style.css">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    /* 기본 레이아웃 */
+    body, html { margin:0; padding:0; height:100%; }
+    #map { height:100%; }
+
+    /* 메뉴 버튼 */
+    #menu-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    /* 사이드 패널 */
+    #side-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: #f9f9f9;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #side-panel.hidden { display: none; }
+
+    /* 명소 카드 */
+    .place-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px;
+      margin: 5px 0;
+      background: #e0e0e0;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .place-card span { flex: 1; }
+    .delete-btn {
+      background: #ff6666;
+      border: none;
+      color: white;
+      padding: 3px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <!-- 지도 영역 -->
@@ -18,14 +71,93 @@
   <div id="side-panel" class="hidden">
     <button id="close-panel">닫기 ✖</button>
     <div id="panel-content">
-      <!-- 여기서 명소/촬영지/검색 등 UI가 추가될 예정 -->
+      <!-- 명소 관리 UI가 여기에 추가됨 -->
     </div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- 앱 스크립트 -->
-  <script src="map.js"></script>
-  <script src="ui.js"></script>
+
+  <script>
+    // 1단계: 지도 초기화
+    let map;
+    function initMap() {
+      const seoul = [37.5665, 126.9780]; // 서울 좌표
+      map = L.map('map').setView(seoul, 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    window.onload = initMap;
+
+    // 1단계: UI 패널 열기/닫기
+    document.addEventListener("DOMContentLoaded", () => {
+      const menuBtn = document.getElementById("menu-btn");
+      const sidePanel = document.getElementById("side-panel");
+      const closeBtn = document.getElementById("close-panel");
+
+      menuBtn.addEventListener("click", () => {
+        sidePanel.classList.remove("hidden");
+      });
+      closeBtn.addEventListener("click", () => {
+        sidePanel.classList.add("hidden");
+      });
+      document.addEventListener("click", (e) => {
+        if (!sidePanel.contains(e.target) && e.target !== menuBtn) {
+          sidePanel.classList.add("hidden");
+        }
+      });
+    });
+
+    // 2단계: 추천 명소 관리
+    document.addEventListener("DOMContentLoaded", () => {
+      const panelContent = document.getElementById("panel-content");
+
+      // 명소 추가 폼
+      const form = document.createElement("form");
+      form.innerHTML = `
+        <input type="text" id="place-name" placeholder="명소 이름 입력" required>
+        <button type="submit">추가</button>
+      `;
+      panelContent.appendChild(form);
+
+      // 명소 리스트 영역
+      const list = document.createElement("div");
+      list.id = "place-list";
+      panelContent.appendChild(list);
+
+      // 명소 추가 이벤트
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("place-name").value.trim();
+        if (name) {
+          addPlace(name);
+          form.reset();
+        }
+      });
+
+      // 명소 추가 함수
+      function addPlace(name) {
+        const card = document.createElement("div");
+        card.className = "place-card";
+        card.innerHTML = `
+          <span>${name}</span>
+          <button class="delete-btn">삭제</button>
+        `;
+        list.appendChild(card);
+
+        // 카드 클릭 시 지도에 마커 표시
+        card.addEventListener("click", () => {
+          L.marker(map.getCenter()).addTo(map).bindPopup(name).openPopup();
+        });
+
+        // 삭제 버튼 이벤트
+        card.querySelector(".delete-btn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          list.removeChild(card);
+        });
+      }
+    });
+  </script>
 </body>
 </html>
