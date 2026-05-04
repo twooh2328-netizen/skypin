@@ -2,26 +2,30 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>SkyPin v1 - 기본 지도</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <style>
-    html, body { margin:0; height:100%; }
-    #map { height:100vh; }
-  </style>
+  <title>SkyPin 지도 앱</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
+  <!-- 지도 영역 -->
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // 지도 초기화 (서울 좌표 예시)
-    const map = L.map('map').setView([37.5665, 126.9780], 13);
+  <!-- 메뉴 버튼 -->
+  <button id="menu-btn">☰</button>
 
-    // 기본 타일 레이어 추가
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-  </script>
+  <!-- 사이드 패널 -->
+  <div id="side-panel" class="hidden">
+    <button id="close-panel">닫기 ✖</button>
+    <div id="panel-content">
+      <!-- 여기서 명소/촬영지/검색 등 UI가 추가될 예정 -->
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- 앱 스크립트 -->
+  <script src="map.js"></script>
+  <script src="ui.js"></script>
 </body>
 </html>
