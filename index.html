@@ -93,6 +93,11 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       initMap(); // 지도 먼저 초기화
+      // 기본 추천 명소 데이터
+      const defaultPlaces = [
+         { name: "남산타워", lat: 37.5512, lng: 126.9882 },
+         { name: "해운대", lat: 35.1587, lng: 129.1604 }
+    ];
 
       const menuBtn = document.getElementById("menu-btn");
       const sidePanel = document.getElementById("side-panel");
@@ -128,6 +133,11 @@
       const list = document.createElement("div");
       list.id = "place-list";
       panelContent.appendChild(list);
+   
+      // 기본 명소를 리스트에 추가
+      defaultPlaces.forEach(p => {
+      addPlace(p.name, p.lat, p.lng);
+     });
 
       // 명소 추가 이벤트
       form.addEventListener("submit", (e) => {
@@ -140,27 +150,28 @@
       });
 
       // 명소 추가 함수
-      function addPlace(name) {
-        const card = document.createElement("div");
-        card.className = "place-card";
-        card.innerHTML = `
-          <span>${name}</span>
-          <button class="delete-btn">삭제</button>
-        `;
-        list.appendChild(card);
+    function addPlace(name, lat = null, lng = null) {
+  const card = document.createElement("div");
+  card.className = "place-card";
+  card.innerHTML = `
+    <span>${name}</span>
+    <button class="delete-btn">삭제</button>
+  `;
+  list.appendChild(card);
 
-        // 카드 클릭 시 지도에 마커 표시
-        card.addEventListener("click", () => {
-          L.marker(map.getCenter()).addTo(map).bindPopup(name).openPopup();
-        });
+  // 카드 클릭 시 지도에 마커 표시
+  card.addEventListener("click", () => {
+    const markerLat = lat || map.getCenter().lat;
+    const markerLng = lng || map.getCenter().lng;
+    L.marker([markerLat, markerLng]).addTo(map).bindPopup(name).openPopup();
+  });
 
-        // 삭제 버튼 이벤트
-        card.querySelector(".delete-btn").addEventListener("click", (e) => {
-          e.stopPropagation();
-          list.removeChild(card);
-        });
-      }
-    });
+  // 삭제 버튼 이벤트
+  card.querySelector(".delete-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    list.removeChild(card);
+  });
+}
   </script>
 </body>
 </html>
