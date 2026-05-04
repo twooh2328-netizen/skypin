@@ -22,6 +22,7 @@
       background: #fff;
       border: 1px solid #ccc;
       cursor: pointer;
+      z-index: 1000; /* 지도 위에 표시되도록 */
     }
 
     /* 사이드 패널 */
@@ -35,6 +36,7 @@
       box-shadow: -2px 0 5px rgba(0,0,0,0.2);
       padding: 10px;
       overflow-y: auto;
+      z-index: 999; /* 지도 위에 표시 */
     }
     #side-panel.hidden { display: none; }
 
@@ -79,7 +81,7 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script>
-    // 1단계: 지도 초기화
+    // 지도 초기화
     let map;
     function initMap() {
       const seoul = [37.5665, 126.9780]; // 서울 좌표
@@ -88,29 +90,32 @@
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
     }
-    window.onload = initMap;
 
-    // 1단계: UI 패널 열기/닫기
     document.addEventListener("DOMContentLoaded", () => {
+      initMap(); // 지도 먼저 초기화
+
       const menuBtn = document.getElementById("menu-btn");
       const sidePanel = document.getElementById("side-panel");
       const closeBtn = document.getElementById("close-panel");
 
+      // 메뉴 버튼 클릭 → 패널 열기
       menuBtn.addEventListener("click", () => {
         sidePanel.classList.remove("hidden");
       });
+
+      // 닫기 버튼 클릭 → 패널 닫기
       closeBtn.addEventListener("click", () => {
         sidePanel.classList.add("hidden");
       });
+
+      // 패널 외부 클릭 시 닫기
       document.addEventListener("click", (e) => {
         if (!sidePanel.contains(e.target) && e.target !== menuBtn) {
           sidePanel.classList.add("hidden");
         }
       });
-    });
 
-    // 2단계: 추천 명소 관리
-    document.addEventListener("DOMContentLoaded", () => {
+      // 명소 관리 UI
       const panelContent = document.getElementById("panel-content");
 
       // 명소 추가 폼
