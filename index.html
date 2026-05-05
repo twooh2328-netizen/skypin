@@ -16,6 +16,7 @@ body,html{margin:0;height:100%;}
  right:20px;
  bottom:20px;
  width:80px;height:80px;
+ font-size:32px;
  border-radius:50%;
  background:#fff;
  border:1px solid #ccc;
@@ -26,7 +27,7 @@ body,html{margin:0;height:100%;}
 #menu-list{
  display:none;
  position:absolute;
- bottom:80px;right:20px;
+ bottom:120px;right:20px;
  background:#fff;
  border:1px solid #ccc;
  z-index:1000;
@@ -34,7 +35,7 @@ body,html{margin:0;height:100%;}
 #menu-list button{
  display:block;
  width:100%;
- padding:8px;
+ padding:10px;
  border:none;
  background:#f9f9f9;
  cursor:pointer;
@@ -59,6 +60,19 @@ body,html{margin:0;height:100%;}
 #tabs{display:flex;gap:5px;margin-bottom:10px;}
 #tabs button{flex:1;padding:8px;border:none;background:#ddd;}
 #tabs .active{background:#333;color:#fff;}
+
+/* 패널 내부 메뉴 */
+#panel-menu{margin:10px 0;}
+#panel-menu button{
+ display:block;
+ width:100%;
+ margin:5px 0;
+ padding:8px;
+ border:1px solid #ccc;
+ background:#f9f9f9;
+ cursor:pointer;
+}
+#panel-menu button:hover{background:#ddd;}
 
 /* 카드 */
 .place-card{
@@ -99,6 +113,12 @@ body,html{margin:0;height:100%;}
     <button id="tab-my">내 촬영지</button>
   </div>
 
+  <!-- 패널 내부 메뉴 -->
+  <div id="panel-menu">
+    <button id="panel-poi">추천명소로 이동</button>
+    <button id="panel-my">내 촬영지로 이동</button>
+  </div>
+
   <input id="search" placeholder="검색...">
 
   <form id="form">
@@ -111,9 +131,7 @@ body,html{margin:0;height:100%;}
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-
 /* 지도 */
 const map = L.map("map").setView([37.56,126.97],13);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
@@ -146,6 +164,9 @@ const closeBtn=document.getElementById("close-panel");
 const tabPoi=document.getElementById("tab-poi");
 const tabMy=document.getElementById("tab-my");
 const form=document.getElementById("form");
+
+const panelPoi=document.getElementById("panel-poi");
+const panelMy=document.getElementById("panel-my");
 
 /* 메뉴 버튼 토글 */
 menuBtn.onclick=()=>{
@@ -202,6 +223,17 @@ menuMy.onclick=()=>{
  menuList.style.display="none";
 };
 
+/* 패널 내부 메뉴 동작 */
+panelPoi.onclick=()=>{
+ current="poi";
+ setActive(tabPoi);
+ render();
+};
+panelMy.onclick=()=>{
+ current="my";
+ setActive(tabMy);
+ render();
+};
 /* 마커 관리 */
 let markers=[];
 function clearMarkers(){
@@ -260,7 +292,7 @@ function createCard(p,isMy,i){
  list.appendChild(div);
 }
 
-/* 추가 */
+ /* 추가 */
 form.onsubmit=async(e)=>{
  e.preventDefault();
  if(current!=="my"){alert("내 촬영지에서만 추가");return;}
