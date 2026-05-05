@@ -250,7 +250,7 @@ form.onsubmit=async(e)=>{
   });
  }
 
- const pos = selectedPos || map.getCenter(); // 클릭 좌표 없으면 지도 중심 사용
+ const pos = selectedPos || myPos || map.getCenter();
 
  myPlaces.push({
   name:name,
