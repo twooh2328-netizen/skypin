@@ -99,7 +99,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
 /* 상태 */
 let current="poi";
-
+let marker = null;
 /* 추천명소 20개 */
 const defaultPlaces = [
  {name:"남산타워",lat:37.5512,lng:126.9882},
@@ -152,14 +152,17 @@ closeBtn.onclick=()=>{
   panel.classList.remove("show");
 };
 
-/* 탭 */
 tabPoi.onclick=()=>{
   current="poi";
+  tabPoi.classList.add("active");
+  tabMy.classList.remove("active");
   render();
 };
 
 tabMy.onclick=()=>{
   current="my";
+  tabMy.classList.add("active");
+  tabPoi.classList.remove("active");
   render();
 };
 
@@ -252,14 +255,18 @@ function createCard(p,isMy,i){
   div.appendChild(img);
  }
 
- div.onclick=()=>{
+div.onclick=()=>{
   map.setView([p.lat,p.lng],15);
 
-  L.marker([p.lat,p.lng])
+  if(marker){
+    map.removeLayer(marker);
+  }
+
+  marker = L.marker([p.lat,p.lng])
    .addTo(map)
    .bindPopup(p.name)
    .openPopup();
- };
+};
 
  if(isMy){
   const del=document.createElement("button");
@@ -292,6 +299,10 @@ form.onsubmit=async(e)=>{
  const name=document.getElementById("name").value;
  const file=document.getElementById("photo").files[0];
 
+ if(!name){
+  alert("이름 입력하세요");
+  return;
+}
  let img="";
 
  if(file){
