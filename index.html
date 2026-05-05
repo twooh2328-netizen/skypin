@@ -1,178 +1,225 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>SkyPin 지도 앱</title>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    /* 기본 레이아웃 */
-    body, html { margin:0; padding:0; height:100%; }
-    #map { height:100%; }
+<meta charset="UTF-8">
+<title>SkyPin v2</title>
 
-    /* 메뉴 버튼 */
-    #menu-btn {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-      background: #fff;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      z-index: 1000; /* 지도 위에 표시되도록 */
-    }
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-    /* 사이드 패널 */
-    #side-panel {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 300px;
-      height: 100%;
-      background: #f9f9f9;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-      padding: 10px;
-      overflow-y: auto;
-      z-index: 999; /* 지도 위에 표시 */
-    }
-    #side-panel.hidden { display: none; }
+<style>
+body,html{margin:0;height:100%;}
+#map{height:100%;}
 
-    /* 명소 카드 */
-    .place-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px;
-      margin: 5px 0;
-      background: #e0e0e0;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .place-card span { flex: 1; }
-    .delete-btn {
-      background: #ff6666;
-      border: none;
-      color: white;
-      padding: 3px 6px;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-  </style>
+/* 메뉴 버튼 */
+#menu-btn{
+ position:absolute;
+ bottom:20px;
+ right:20px;
+ width:50px;height:50px;
+ border-radius:50%;
+ background:#fff;
+ border:1px solid #ccc;
+ z-index:1000;
+}
+
+/* 패널 */
+#side-panel{
+ position:absolute;
+ top:0;right:0;
+ width:320px;height:100%;
+ background:#fff;
+ transform:translateX(100%);
+ transition:.3s;
+ z-index:999;
+ padding:10px;
+ overflow:auto;
+}
+#side-panel.show{transform:translateX(0);}
+
+/* 탭 */
+#tabs{
+ display:flex;
+ gap:5px;
+ margin-bottom:10px;
+}
+#tabs button{
+ flex:1;
+ padding:8px;
+ border:none;
+ background:#ddd;
+ cursor:pointer;
+}
+#tabs button.active{
+ background:#333;
+ color:#fff;
+}
+
+/* 카드 */
+.place-card{
+ display:flex;
+ justify-content:space-between;
+ padding:8px;
+ margin-bottom:5px;
+ background:#eee;
+ border-radius:5px;
+ cursor:pointer;
+}
+
+.delete-btn{
+ background:red;
+ color:#fff;
+ border:none;
+}
+</style>
 </head>
+
 <body>
-  <!-- 지도 영역 -->
-  <div id="map"></div>
 
-  <!-- 메뉴 버튼 -->
-  <button id="menu-btn">☰</button>
+<div id="map"></div>
+<button id="menu-btn">☰</button>
 
-  <!-- 사이드 패널 -->
-  <div id="side-panel" class="hidden">
-    <button id="close-panel">닫기 ✖</button>
-    <div id="panel-content">
-      <!-- 명소 관리 UI가 여기에 추가됨 -->
-    </div>
+<div id="side-panel">
+  <button id="close-panel">닫기</button>
+
+  <div id="tabs">
+    <button id="tab-poi" class="active">추천명소</button>
+    <button id="tab-my">내 촬영지</button>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <form id="form">
+    <input id="name" placeholder="이름 입력">
+    <button type="submit">추가</button>
+  </form>
 
-  <script>
-    // 지도 초기화
-    let map;
-    function initMap() {
-      const seoul = [37.5665, 126.9780]; // 서울 좌표
-      map = L.map('map').setView(seoul, 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    }
+  <div id="list"></div>
+</div>
 
-    document.addEventListener("DOMContentLoaded", () => {
-      initMap(); // 지도 먼저 초기화
-      // 기본 추천 명소 데이터
-      const defaultPlaces = [
-         { name: "남산타워", lat: 37.5512, lng: 126.9882 },
-         { name: "해운대", lat: 35.1587, lng: 129.1604 }
-    ];
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-      const menuBtn = document.getElementById("menu-btn");
-      const sidePanel = document.getElementById("side-panel");
-      const closeBtn = document.getElementById("close-panel");
+<script>
 
-      // 메뉴 버튼 클릭 → 패널 열기
-      menuBtn.addEventListener("click", () => {
-        sidePanel.classList.remove("hidden");
-      });
+/* 지도 */
+const map = L.map("map").setView([37.56,126.97],13);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
 
-      // 닫기 버튼 클릭 → 패널 닫기
-      closeBtn.addEventListener("click", () => {
-        sidePanel.classList.add("hidden");
-      });
+/* 상태 */
+let current = "poi";
 
-      // 패널 외부 클릭 시 닫기
-      document.addEventListener("click", (e) => {
-        if (!sidePanel.contains(e.target) && e.target !== menuBtn) {
-          sidePanel.classList.add("hidden");
-        }
-      });
+/* 데이터 */
+const defaultPlaces = [
+ {name:"남산타워",lat:37.5512,lng:126.9882},
+ {name:"해운대",lat:35.1587,lng:129.1604}
+];
 
-      // 명소 관리 UI
-      const panelContent = document.getElementById("panel-content");
-      const form = document.createElement("form");
-      form.innerHTML = `
-        <input type="text" id="place-name" placeholder="명소 이름 입력" required>
-        <button type="submit">추가</button>
-      `;
-      panelContent.appendChild(form);
+let myPlaces = JSON.parse(localStorage.getItem("myPlaces")||"[]");
 
-      // 명소 리스트 영역
-      const list = document.createElement("div");
-      list.id = "place-list";
-      panelContent.appendChild(list);
-   
-      // 기본 명소를 리스트에 추가
-      defaultPlaces.forEach(p => {
-      addPlace(p.name, p.lat, p.lng);
-     });
+/* DOM */
+const panel = document.getElementById("side-panel");
+const list = document.getElementById("list");
 
-      // 명소 추가 이벤트
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const name = document.getElementById("place-name").value.trim();
-        if (name) {
-          addPlace(name);
-          form.reset();
-        }
-      });
+/* 메뉴 */
+menuBtn.onclick = ()=>{
+ panel.classList.add("show");
+ render();
+};
 
-      // 명소 추가 함수
-    function addPlace(name, lat = null, lng = null) {
-  const card = document.createElement("div");
-  card.className = "place-card";
-  card.innerHTML = `
-    <span>${name}</span>
-    <button class="delete-btn">삭제</button>
-  `;
-  list.appendChild(card);
+closeBtn.onclick = ()=>{
+ panel.classList.remove("show");
+};
 
-  // 카드 클릭 시 지도에 마커 표시
-  card.addEventListener("click", () => {
-    const markerLat = lat || map.getCenter().lat;
-    const markerLng = lng || map.getCenter().lng;
-    L.marker([markerLat, markerLng]).addTo(map).bindPopup(name).openPopup();
-  });
+/* 탭 */
+tabPoi.onclick = ()=>{
+ current="poi";
+ setActive(tabPoi);
+ render();
+};
 
-  // 삭제 버튼 이벤트
-  card.querySelector(".delete-btn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    list.removeChild(card);
-  });
+tabMy.onclick = ()=>{
+ current="my";
+ setActive(tabMy);
+ render();
+};
+
+function setActive(btn){
+ document.querySelectorAll("#tabs button")
+ .forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
 }
-  </script>
+
+/* 렌더 */
+function render(){
+ list.innerHTML="";
+
+ if(current==="poi"){
+  defaultPlaces.forEach(p=>createCard(p,false));
+ }else{
+  myPlaces.forEach((p,i)=>createCard(p,true,i));
+ }
+}
+
+/* 카드 */
+function createCard(p,isMy,index){
+
+ const div=document.createElement("div");
+ div.className="place-card";
+
+ div.innerHTML=`<span>${p.name}</span>`;
+
+ div.onclick=()=>{
+  map.setView([p.lat,p.lng],15);
+  L.marker([p.lat,p.lng]).addTo(map)
+  .bindPopup(p.name).openPopup();
+ };
+
+ if(isMy){
+  const del=document.createElement("button");
+  del.textContent="삭제";
+  del.className="delete-btn";
+
+  del.onclick=(e)=>{
+   e.stopPropagation();
+   myPlaces.splice(index,1);
+   localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+   render();
+  };
+
+  div.appendChild(del);
+ }
+
+ list.appendChild(div);
+}
+
+/* 추가 */
+form.onsubmit=(e)=>{
+ e.preventDefault();
+
+ if(current!=="my"){
+  alert("내 촬영지 탭에서만 추가 가능");
+  return;
+ }
+
+ const name=document.getElementById("name").value;
+ if(!name) return;
+
+ const center=map.getCenter();
+
+ myPlaces.push({
+  name:name,
+  lat:center.lat,
+  lng:center.lng
+ });
+
+ localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+
+ form.reset();
+ render();
+};
+
+/* 최초 실행 */
+render();
+
+</script>
+
 </body>
 </html>
-
