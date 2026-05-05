@@ -100,6 +100,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 /* 상태 */
 let current="poi";
 let myPos=null;
+let selectedPos=null; // 사용자가 클릭한 좌표
 
 /* 데이터 */
 const defaultPlaces=[
@@ -114,7 +115,7 @@ const panel=document.getElementById("side-panel");
 const list=document.getElementById("list");
 const search=document.getElementById("search");
 
- const menuBtn = document.getElementById("menu-btn");
+const menuBtn = document.getElementById("menu-btn");
 const closeBtn = document.getElementById("close-panel");
 const gpsBtn = document.getElementById("gps-btn");
 const sunBtn = document.getElementById("sun-btn");
@@ -122,7 +123,7 @@ const sunBtn = document.getElementById("sun-btn");
 const tabPoi = document.getElementById("tab-poi");
 const tabMy = document.getElementById("tab-my");
 const form = document.getElementById("form");
- 
+
 /* 버튼 */
 menuBtn.onclick=()=>{panel.classList.add("show");render();}
 closeBtn.onclick=()=>panel.classList.remove("show");
@@ -160,9 +161,20 @@ sunBtn.onclick=()=>{
  L.polyline([[lat,lng],[lat,newLng]],{color:"orange"}).addTo(map);
 };
 
+/* 마커 관리 */
+let markers = [];
+function clearMarkers(){
+ markers.forEach(m => map.removeLayer(m));
+ markers = [];
+}
+
+/* 지도 클릭 시 위치 선택 */
+map.on("click", e=>{
+ selectedPos = e.latlng;
+});
+
 /* 렌더 */
 function render(){
-
  list.innerHTML="";
  const keyword=search.value.toLowerCase();
 
@@ -179,10 +191,8 @@ function render(){
 
 /* 카드 */
 function createCard(p,isMy,i){
-
  const div=document.createElement("div");
  div.className="place-card";
-
  div.innerHTML=`<b>${p.name}</b>`;
 
  if(p.photo){
@@ -192,23 +202,24 @@ function createCard(p,isMy,i){
  }
 
  div.onclick=()=>{
+  clearMarkers();
+  const marker = L.marker([p.lat,p.lng]).addTo(map)
+    .bindPopup(p.name).openPopup();
+  markers.push(marker);
   map.setView([p.lat,p.lng],15);
-  L.marker([p.lat,p.lng]).addTo(map)
-  .bindPopup(p.name).openPopup();
  };
 
  if(isMy){
   const del=document.createElement("button");
   del.textContent="삭제";
   del.className="delete-btn";
-
   del.onclick=(e)=>{
    e.stopPropagation();
    myPlaces.splice(i,1);
    localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+   clearMarkers(); // 삭제 시 마커도 제거
    render();
   };
-
   div.appendChild(del);
  }
 
@@ -218,15 +229,10 @@ function createCard(p,isMy,i){
 /* 추가 */
 form.onsubmit=async(e)=>{
  e.preventDefault();
-
- if(current!=="my"){
-  alert("내 촬영지에서만 추가");
-  return;
- }
+ if(current!=="my"){ alert("내 촬영지에서만 추가"); return; }
 
  const name=document.getElementById("name").value;
  const file=document.getElementById("photo").files[0];
-
  let img="";
 
  if(file){
@@ -237,17 +243,16 @@ form.onsubmit=async(e)=>{
   });
  }
 
- const center=map.getCenter();
+ const pos = selectedPos || map.getCenter(); // 클릭 좌표 없으면 지도 중심 사용
 
  myPlaces.push({
   name:name,
-  lat:center.lat,
-  lng:center.lng,
+  lat:pos.lat,
+  lng:pos.lng,
   photo:img
  });
 
  localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
-
  form.reset();
  render();
 };
