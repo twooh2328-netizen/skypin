@@ -124,8 +124,11 @@ const tabPoi = document.getElementById("tab-poi");
 const tabMy = document.getElementById("tab-my");
 
 const form = document.getElementById("form");
-/* 메뉴 */
-menuBtn.onclick = ()=>{
+
+const menuBtn = document.getElementById("menu-btn");
+const panel = document.getElementById("side-panel");
+
+ menuBtn.onclick = ()=>{
  panel.classList.add("show");
  render();
 };
