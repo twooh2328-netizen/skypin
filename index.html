@@ -117,7 +117,13 @@ let myPlaces = JSON.parse(localStorage.getItem("myPlaces")||"[]");
 /* DOM */
 const panel = document.getElementById("side-panel");
 const list = document.getElementById("list");
+const menuBtn = document.getElementById("menu-btn");
+const closeBtn = document.getElementById("close-panel");
 
+const tabPoi = document.getElementById("tab-poi");
+const tabMy = document.getElementById("tab-my");
+
+const form = document.getElementById("form");
 /* 메뉴 */
 menuBtn.onclick = ()=>{
  panel.classList.add("show");
