@@ -114,6 +114,15 @@ const panel=document.getElementById("side-panel");
 const list=document.getElementById("list");
 const search=document.getElementById("search");
 
+ const menuBtn = document.getElementById("menu-btn");
+const closeBtn = document.getElementById("close-panel");
+const gpsBtn = document.getElementById("gps-btn");
+const sunBtn = document.getElementById("sun-btn");
+
+const tabPoi = document.getElementById("tab-poi");
+const tabMy = document.getElementById("tab-my");
+const form = document.getElementById("form");
+ 
 /* 버튼 */
 menuBtn.onclick=()=>{panel.classList.add("show");render();}
 closeBtn.onclick=()=>panel.classList.remove("show");
