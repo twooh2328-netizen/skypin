@@ -90,20 +90,17 @@ html,body{margin:0;height:100%;}
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="app.js"></script>
-
-</body>
-</html>
-
-STEP 2
-/* 지도 */
+<script>
+ /* 지도 초기화 */
 const map = L.map("map").setView([37.56,126.97],11);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
 
 /* 상태 */
 let current="poi";
 
-/* 🔥 추천명소 20개 */
+/* 추천명소 20개 */
 const defaultPlaces = [
  {name:"남산타워",lat:37.5512,lng:126.9882},
  {name:"한강공원",lat:37.52,lng:126.98},
@@ -127,10 +124,72 @@ const defaultPlaces = [
  {name:"순천만",lat:34.9,lng:127.5}
 ];
 
+/* 저장 데이터 */
 let myPlaces = JSON.parse(localStorage.getItem("myPlaces")||"[]");
 
-STEP3
-/* 🔥 이미지 최적화 */
+/* DOM 연결 */
+const panel = document.getElementById("panel");
+const list = document.getElementById("list");
+
+const menuBtn = document.getElementById("menu-btn");
+const closeBtn = document.getElementById("closeBtn");
+const gpsBtn = document.getElementById("gps-btn");
+const sunBtn = document.getElementById("sun-btn");
+
+const tabPoi = document.getElementById("tab-poi");
+const tabMy = document.getElementById("tab-my");
+
+const form = document.getElementById("form");
+const search = document.getElementById("search");
+
+/* 메뉴 */
+menuBtn.onclick=()=>{
+  panel.classList.add("show");
+  render();
+};
+
+closeBtn.onclick=()=>{
+  panel.classList.remove("show");
+};
+
+/* 탭 */
+tabPoi.onclick=()=>{
+  current="poi";
+  render();
+};
+
+tabMy.onclick=()=>{
+  current="my";
+  render();
+};
+
+/* GPS */
+gpsBtn.onclick=()=>{
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+
+    map.setView([lat,lng],15);
+    L.marker([lat,lng]).addTo(map)
+    .bindPopup("내 위치").openPopup();
+  });
+};
+
+/* 일출 (간단 버전) */
+sunBtn.onclick=()=>{
+  const center = map.getCenter();
+
+  const lat=center.lat;
+  const lng=center.lng;
+
+  const eastLng = lng + 0.2;
+
+  L.polyline([[lat,lng],[lat,eastLng]],{
+    color:"orange"
+  }).addTo(map);
+};
+
+/* 이미지 압축 */
 function resizeImage(file){
  return new Promise(res=>{
   const img=new Image();
@@ -163,60 +222,20 @@ function resizeImage(file){
  });
 }
 
-STEP4
-/* DOM */
-const panel=document.getElementById("panel");
-const list=document.getElementById("list");
-/* 🔥 DOM 연결 (반드시 필요) */
-const menuBtn = document.getElementById("menu-btn");
-const closeBtn = document.getElementById("closeBtn");
-const gpsBtn = document.getElementById("gps-btn");
-const sunBtn = document.getElementById("sun-btn");
-
-const tabPoi = document.getElementById("tab-poi");
-const tabMy = document.getElementById("tab-my");
-
-const form = document.getElementById("form");
-const search = document.getElementById("search");
-
-const menuBtn=document.getElementById("menu-btn");
-const closeBtn=document.getElementById("closeBtn");
-const gpsBtn=document.getElementById("gps-btn");
-
-const tabPoi=document.getElementById("tab-poi");
-const tabMy=document.getElementById("tab-my");
-
-const form=document.getElementById("form");
-const search=document.getElementById("search");
-
-/* 메뉴 */
-menuBtn.onclick=()=>{panel.classList.add("show");render();}
-closeBtn.onclick=()=>panel.classList.remove("show");
-
-/* 탭 */
-tabPoi.onclick=()=>{current="poi";render();}
-tabMy.onclick=()=>{current="my";render();}
-
-/* GPS (모바일 대응) */
-gpsBtn.onclick=()=>{
- navigator.geolocation.getCurrentPosition(pos=>{
-  map.setView([pos.coords.latitude,pos.coords.longitude],15);
- });
-};
-
 /* 렌더 */
 function render(){
  list.innerHTML="";
- const q=search.value.toLowerCase();
+
+ const keyword = search.value.toLowerCase();
 
  if(current==="poi"){
   defaultPlaces
-  .filter(p=>p.name.toLowerCase().includes(q))
-  .forEach(p=>createCard(p,false));
+   .filter(p=>p.name.toLowerCase().includes(keyword))
+   .forEach(p=>createCard(p,false));
  }else{
   myPlaces
-  .filter(p=>p.name.toLowerCase().includes(q))
-  .forEach((p,i)=>createCard(p,true,i));
+   .filter(p=>p.name.toLowerCase().includes(keyword))
+   .forEach((p,i)=>createCard(p,true,i));
  }
 }
 
@@ -225,7 +244,7 @@ function createCard(p,isMy,i){
  const div=document.createElement("div");
  div.className="card";
 
- div.innerHTML=p.name;
+ div.innerHTML="<b>"+p.name+"</b>";
 
  if(p.photo){
   const img=document.createElement("img");
@@ -235,18 +254,26 @@ function createCard(p,isMy,i){
 
  div.onclick=()=>{
   map.setView([p.lat,p.lng],15);
-  L.marker([p.lat,p.lng]).addTo(map);
+
+  L.marker([p.lat,p.lng])
+   .addTo(map)
+   .bindPopup(p.name)
+   .openPopup();
  };
 
  if(isMy){
   const del=document.createElement("button");
   del.textContent="삭제";
+
   del.onclick=(e)=>{
-   e.stopPropagation();
-   myPlaces.splice(i,1);
-   localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
-   render();
+    e.stopPropagation();
+
+    myPlaces.splice(i,1);
+    localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+
+    render();
   };
+
   div.appendChild(del);
  }
 
@@ -257,22 +284,35 @@ function createCard(p,isMy,i){
 form.onsubmit=async(e)=>{
  e.preventDefault();
 
- if(current!=="my") return alert("내 촬영지에서만 추가");
+ if(current!=="my"){
+  alert("내 촬영지 탭에서 추가하세요");
+  return;
+ }
 
  const name=document.getElementById("name").value;
  const file=document.getElementById("photo").files[0];
 
  let img="";
- if(file) img = await resizeImage(file);
 
- const c=map.getCenter();
+ if(file){
+  img = await resizeImage(file);
+ }
 
- myPlaces.push({name,lat:c.lat,lng:c.lng,photo:img});
+ const c = map.getCenter();
+
+ myPlaces.push({
+  name:name,
+  lat:c.lat,
+  lng:c.lng,
+  photo:img
+ });
+
  localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
 
  form.reset();
  render();
 };
+
 
 /* 검색 */
 search.oninput=render;
