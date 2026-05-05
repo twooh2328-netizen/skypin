@@ -178,6 +178,7 @@ function clearMarkers(){
 /* 지도 클릭 시 위치 선택 */
 map.on("click", e=>{
  selectedPos = e.latlng;
+ panel.classList.remove("show"); // 지도 클릭 시 패널 닫기
 });
 
 /* 렌더 */
