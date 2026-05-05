@@ -91,16 +91,23 @@ html,body{margin:0;height:100%;}
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
- /* 지도 초기화 */
-const map = L.map("map").setView([37.56,126.97],11);
 
+ const map = L.map("map", {
+  doubleClickZoom: false
+}).setView([37.56,126.97],11);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
+ map.on("dblclick", ()=>{
+  panel.classList.remove("show");
+});
+ 
 /* 상태 */
 let current="poi";
 let marker = null;
-/* 추천명소 20개 */
+let sunLine = null;  // 일출선 토글용 
+
+ /* 추천명소 20개 */
 const defaultPlaces = [
  {name:"남산타워",lat:37.5512,lng:126.9882},
  {name:"한강공원",lat:37.52,lng:126.98},
@@ -148,6 +155,10 @@ menuBtn.onclick=()=>{
   render();
 };
 
+menuBtn.ondblclick=()=>{
+  panel.classList.remove("show");
+}; 
+ 
 closeBtn.onclick=()=>{
   panel.classList.remove("show");
 };
@@ -178,8 +189,14 @@ gpsBtn.onclick=()=>{
   });
 };
 
-/* 일출 (간단 버전) */
 sunBtn.onclick=()=>{
+
+  if(sunLine){
+    map.removeLayer(sunLine);
+    sunLine = null;
+    return;
+  }
+
   const center = map.getCenter();
 
   const lat=center.lat;
@@ -187,7 +204,7 @@ sunBtn.onclick=()=>{
 
   const eastLng = lng + 0.2;
 
-  L.polyline([[lat,lng],[lat,eastLng]],{
+  sunLine = L.polyline([[lat,lng],[lat,eastLng]],{
     color:"orange"
   }).addTo(map);
 };
