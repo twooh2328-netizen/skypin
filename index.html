@@ -137,13 +137,22 @@ function setActive(btn){
  btn.classList.add("active");
 }
 
-/* GPS */
+/* GPS 마커 관리 */
+let gpsMarker = null;
+
 gpsBtn.onclick=()=>{
  navigator.geolocation.getCurrentPosition(pos=>{
   const lat=pos.coords.latitude;
   const lng=pos.coords.longitude;
   map.setView([lat,lng],15);
-  L.marker([lat,lng]).addTo(map).bindPopup("내 위치").openPopup();
+
+  // 기존 GPS 마커 제거
+  if(gpsMarker){
+    map.removeLayer(gpsMarker);
+  }
+
+  // 새 GPS 마커 추가
+  gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("내 위치").openPopup();
   myPos={lat,lng};
  });
 };
@@ -152,10 +161,8 @@ gpsBtn.onclick=()=>{
 sunBtn.onclick=()=>{
  if(!myPos) return alert("먼저 GPS 클릭");
 
- const angle=90; // 동쪽 (일출 기본)
  const lat=myPos.lat;
  const lng=myPos.lng;
-
  const newLng=lng+0.2;
 
  L.polyline([[lat,lng],[lat,newLng]],{color:"orange"}).addTo(map);
