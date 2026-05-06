@@ -158,6 +158,7 @@ html,body{margin:0;height:100%;}
     <input id="name" placeholder="이름">
     <input type="file" id="photo">
     <button>추가</button>
+   <input id="memo" placeholder="메모"> 
   </form>
 
   <div id="list"></div>
@@ -406,6 +407,7 @@ form.onsubmit=async(e)=>{
 
  const name=document.getElementById("name").value;
  const file=document.getElementById("photo").files[0];
+ const memo = document.getElementById("memo").value;  // ✅ 여기 추가
 
  if(!name){
   alert("이름 입력하세요");
