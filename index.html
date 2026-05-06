@@ -364,17 +364,23 @@ div.onclick=()=>{
 
   marker = L.marker([p.lat,p.lng]).addTo(map);
 
-  let html = "<b>"+p.name+"</b>";
+  // 👉 처음에는 이름만
+  marker.bindPopup(p.name);
 
-  if(p.photo){
-    html += `<br><img src="${p.photo}" style="width:100%;max-height:120px;border-radius:6px;margin-top:5px;">`;
-  }
+  // 👉 클릭하면 상세 표시
+  marker.on("click", ()=>{
+    let html = "<b>"+p.name+"</b>";
 
-  if(p.memo){
-    html += `<br><div style="font-size:12px;margin-top:4px;">📝 ${p.memo}</div>`;
-  }
+    if(p.photo){
+      html += `<br><img src="${p.photo}" style="width:100%;max-height:120px;border-radius:6px;margin-top:5px;">`;
+    }
 
-  marker.bindPopup(html).openPopup();
+    if(p.memo){
+      html += `<br><div style="font-size:12px;margin-top:4px;">📝 ${p.memo}</div>`;
+    }
+
+    marker.setPopupContent(html);
+  });
 };
 
  if(isMy){
