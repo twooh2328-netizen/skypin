@@ -177,15 +177,23 @@ tabMy.onclick=()=>{
   render();
 };
 
-/* GPS */
 gpsBtn.onclick=()=>{
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat=pos.coords.latitude;
     const lng=pos.coords.longitude;
 
     map.setView([lat,lng],15);
-    L.marker([lat,lng]).addTo(map)
-    .bindPopup("내 위치").openPopup();
+
+    // 🔥 기존 마커 제거
+    if(marker){
+      map.removeLayer(marker);
+    }
+
+    // 🔥 marker 변수 재사용
+    marker = L.marker([lat,lng])
+      .addTo(map)
+      .bindPopup("내 위치")
+      .openPopup();
   });
 };
 
