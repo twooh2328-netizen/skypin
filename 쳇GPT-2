@@ -17,12 +17,29 @@ html,body{margin:0;height:100%;}
  right:15px;
  width:55px;height:55px;
  border-radius:50%;
- background:red;
  border:none;
  font-size:18px;
  z-index:1000;
+ background:#fff; /* 🔥 추가 (기본값) */
 }
-#menu-btn{bottom:20px;}
+/* 메뉴 버튼 (주황색) */
+#menu-btn{
+ background:#ff9800 !important;
+  color:white !important;
+}
+
+/* GPS 버튼 (검은 회색) */
+#gps-btn{
+  background:#333 !important;
+  color:white !important;
+}
+
+/* 일출 버튼 (검은 회색) */
+#sun-btn{
+  background:#333 !important;
+  color:white !important;
+}
+ #menu-btn{bottom:20px;}
 #gps-btn{bottom:90px;}
 #sun-btn{bottom:160px;}
 
