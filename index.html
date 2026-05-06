@@ -344,39 +344,36 @@ function render(){
 
 /* 카드 */
 function createCard(p,isMy,i){
- const div=document.createElement("div");
- div.className="card";
+ const div = document.createElement("div");
+ div.className = "card";
 
-div.innerHTML = "<b>"+p.name+"</b>";
+ div.innerHTML = "<b>"+p.name+"</b>";
 
-// 📸 사진 표시
-if(p.photo){
+ // 📸 사진
+ if(p.photo){
   const img = document.createElement("img");
   img.src = p.photo;
 
-  // 👉 클릭 시 확대
   img.onclick = (e)=>{
     e.stopPropagation();
     showImage(p.photo);
   };
 
   div.appendChild(img);
-}
+ }
 
-// 📝 메모 표시
-if(p.memo){
+ // 📝 메모
+ if(p.memo){
   const m = document.createElement("div");
   m.textContent = "📝 " + p.memo;
   m.style.fontSize = "12px";
   m.style.color = "#555";
   m.style.marginTop = "4px";
   div.appendChild(m);
-}
-
-  div.appendChild(img);
  }
 
-div.onclick=()=>{
+ // 📍 클릭 이벤트
+ div.onclick = ()=>{
   map.setView([p.lat,p.lng],15);
 
   if(marker){
@@ -385,10 +382,8 @@ div.onclick=()=>{
 
   marker = L.marker([p.lat,p.lng]).addTo(map);
 
-  // 👉 처음에는 이름만
   marker.bindPopup(p.name);
 
-  // 👉 클릭하면 상세 표시
   marker.on("click", ()=>{
     let html = "<b>"+p.name+"</b>";
 
@@ -402,13 +397,14 @@ div.onclick=()=>{
 
     marker.setPopupContent(html);
   });
-};
+ };
 
+ // 🗑 삭제 버튼
  if(isMy){
-  const del=document.createElement("button");
-  del.textContent="삭제";
+  const del = document.createElement("button");
+  del.textContent = "삭제";
 
-  del.onclick=(e)=>{
+  del.onclick = (e)=>{
     e.stopPropagation();
 
     myPlaces.splice(i,1);
