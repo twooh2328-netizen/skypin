@@ -361,10 +361,19 @@ div.onclick=()=>{
     map.removeLayer(marker);
   }
 
-  marker = L.marker([p.lat,p.lng])
-   .addTo(map)
-   .bindPopup(p.name)
-   .openPopup();
+  marker = L.marker([p.lat,p.lng]).addTo(map);
+
+  let html = "<b>"+p.name+"</b>";
+
+  if(p.photo){
+    html += `<br><img src="${p.photo}" style="width:100%;max-height:120px;border-radius:6px;margin-top:5px;">`;
+  }
+
+  if(p.memo){
+    html += `<br><div style="font-size:12px;margin-top:4px;">📝 ${p.memo}</div>`;
+  }
+
+  marker.bindPopup(html).openPopup();
 };
 
  if(isMy){
