@@ -87,6 +87,29 @@ html,body{
  overflow:auto;
 
  box-sizing:border-box;
+}
+
+/* 💻 PC 모드 */
+@media (min-width: 768px){
+
+  #panel{
+    width:320px;
+    height:100%;
+  }
+
+}
+
+ background:#fff;
+
+ transform:translateX(100%);
+ transition:.3s ease;
+
+ z-index:9999;
+
+ padding:10px;
+ overflow:auto;
+
+ box-sizing:border-box;
 }/* 패널 */
 
 #panel.show{transform:translateX(0);}
@@ -259,12 +282,15 @@ const search = document.getElementById("search");
 menuBtn.onclick=()=>{
   panel.classList.add("show");
 
-  document.body.style.overflow = "hidden";
+  // 📱 모바일만 스크롤 차단
+  if(window.innerWidth < 768){
+    document.body.style.overflow = "hidden";
+  }
 
   render();
 };
 
-menuBtn.ondblclick=()=>{
+  menuBtn.ondblclick=()=>{
   panel.classList.remove("show");
 }; 
  
