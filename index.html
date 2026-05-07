@@ -73,25 +73,31 @@ html,body{
  top:0;
  right:0;
 
- width:100%;
+ width:85%;
+ max-width:320px;
+
  height:100vh;
 
  background:#fff;
 
- transform:translateX(100%);
+ transform:translateX(110%);
  transition:.3s ease;
 
  z-index:9999;
 
  padding:10px;
- overflow:auto;
+
+ overflow-y:auto;
+ overflow-x:hidden;
 
  box-sizing:border-box;
+
+ pointer-events:none;
 }
 
-/* ⭐ 열림 상태 */
 #panel.show{
  transform:translateX(0);
+ pointer-events:auto;
 }
 
 /* 💻 PC */
