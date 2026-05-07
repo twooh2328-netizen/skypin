@@ -209,6 +209,19 @@ const defaultPlaces = [
 /* 저장 데이터 */
 let myPlaces = JSON.parse(localStorage.getItem("myPlaces")||"[]");
 
+myPlaces = myPlaces
+  .map(p => ({
+    ...p,
+    lat: Number(p.lat),
+    lng: Number(p.lng)
+  }))
+  .filter(p =>
+    !isNaN(p.lat) &&
+    !isNaN(p.lng) &&
+    p.lat >= -90 && p.lat <= 90 &&
+    p.lng >= -180 && p.lng <= 180
+  );
+
 /* DOM 연결 */
 const panel = document.getElementById("panel");
 const list = document.getElementById("list");
