@@ -8,16 +8,22 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-html,body{margin:0;height:100%;}
-#map{height:100%;}
+html,body{
+  margin:0;
+  height:100%;
+}
+
+#map{
+  height:100vh;
+}
 
 /* 버튼 */
 .btn{
  position:absolute;
  right:15px;
 
- width:65px;
- height:65px;
+ width:55px;
+ height:55px;
 
  border-radius:50%;
  border:none;
@@ -58,21 +64,54 @@ html,body{margin:0;height:100%;}
   color:white !important;
 }
  #menu-btn{bottom:20px;}
-#gps-btn{bottom:90px;}
-#sun-btn{bottom:160px;}
+#gps-btn{bottom:85px;}
+#sun-btn{bottom:150px;}
 
-/* 패널 */
 #panel{
- position:absolute;
- top:0;right:0;
- width:320px;height:100%;
+ position:fixed;
+ top:0;
+ right:0;
+ width:65%;
+ max-width:320px;
+ height:100vh;
  background:#fff;
+ transform:translateX(110%);
+ transition:.3s ease;
+ z-index:9999;
+ padding:10px;
+ overflow-y:auto;
+ overflow-x:hidden;
+ box-sizing:border-box;
+ pointer-events:none;
+}
+
+#panel.show{
+ transform:translateX(0);
+ pointer-events:auto;
+}
+
+/* 💻 PC */
+@media (min-width:768px){
+
+ #panel{
+   width:320px;
+   height:100%;
+ }
+
+}
+ background:#fff;
+
  transform:translateX(100%);
- transition:.3s;
- z-index:999;
+ transition:.3s ease;
+
+ z-index:9999;
+
  padding:10px;
  overflow:auto;
-}
+
+ box-sizing:border-box;
+}/* 패널 */
+
 #panel.show{transform:translateX(0);}
 
 /* 탭 */
@@ -173,11 +212,13 @@ html,body{margin:0;height:100%;}
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
- map.on("dblclick", ()=>{
+map.on("dblclick", ()=>{
   panel.classList.remove("show");
+
+  document.body.style.overflow = "";
 });
- 
-/* 상태 */
+
+  /* 상태 */
 let current="poi";
 let marker = null;
 let sunLine = null;  // 일출선 토글용 
@@ -240,15 +281,23 @@ const search = document.getElementById("search");
 /* 메뉴 */
 menuBtn.onclick=()=>{
   panel.classList.add("show");
+
+  // 📱 모바일만 스크롤 차단
+  if(window.innerWidth < 768){
+    document.body.style.overflow = "hidden";
+  }
+
   render();
 };
 
-menuBtn.ondblclick=()=>{
+  menuBtn.ondblclick=()=>{
   panel.classList.remove("show");
 }; 
  
 closeBtn.onclick=()=>{
   panel.classList.remove("show");
+
+  document.body.style.overflow = "";
 };
 
 tabPoi.onclick=()=>{
