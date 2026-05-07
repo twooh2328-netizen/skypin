@@ -89,16 +89,20 @@ html,body{
  box-sizing:border-box;
 }
 
-/* 💻 PC 모드 */
-@media (min-width: 768px){
-
-  #panel{
-    width:320px;
-    height:100%;
-  }
-
+/* ⭐ 열림 상태 */
+#panel.show{
+ transform:translateX(0);
 }
 
+/* 💻 PC */
+@media (min-width:768px){
+
+ #panel{
+   width:320px;
+   height:100%;
+ }
+
+}
  background:#fff;
 
  transform:translateX(100%);
