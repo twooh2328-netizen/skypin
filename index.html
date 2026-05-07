@@ -8,16 +8,22 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-html,body{margin:0;height:100%;}
-#map{height:100%;}
+html,body{
+  margin:0;
+  height:100%;
+}
+
+#map{
+  height:100vh;
+}
 
 /* 버튼 */
 .btn{
  position:absolute;
  right:15px;
 
- width:65px;
- height:65px;
+ width:55px;
+ height:55px;
 
  border-radius:50%;
  border:none;
@@ -58,14 +64,16 @@ html,body{margin:0;height:100%;}
   color:white !important;
 }
  #menu-btn{bottom:20px;}
-#gps-btn{bottom:90px;}
-#sun-btn{bottom:160px;}
+#gps-btn{bottom:85px;}
+#sun-btn{bottom:150px;}
 
 /* 패널 */
 #panel{
  position:absolute;
  top:0;right:0;
- width:320px;height:100%;
+ width:85%;
+ max-width:320px;
+ height:100%;
  background:#fff;
  transform:translateX(100%);
  transition:.3s;
