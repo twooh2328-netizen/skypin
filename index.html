@@ -210,7 +210,13 @@ html,body{
 
   <div id="list"></div>
 </div>
-
+<input
+ type="file"
+ id="mobile-photo"
+ accept="image/*"
+ capture="environment"
+ style="display:none;"
+>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 
@@ -280,6 +286,8 @@ const closeBtn = document.getElementById("closeBtn");
 const gpsBtn = document.getElementById("gps-btn");
 const sunBtn = document.getElementById("sun-btn");
 const addBtn = document.getElementById("add-btn");
+const mobilePhoto =
+ document.getElementById("mobile-photo");
 const tabPoi = document.getElementById("tab-poi");
 const tabMy = document.getElementById("tab-my");
 
@@ -323,7 +331,7 @@ tabMy.onclick=()=>{
 };
 
 gpsBtn.onclick=()=>{
- addBtn.onclick=()=>{
+addBtn.onclick=async()=>{
 
  const name = prompt("촬영지 이름 입력");
 
@@ -331,24 +339,39 @@ gpsBtn.onclick=()=>{
 
  const memo = prompt("메모 입력");
 
- const c = map.getCenter();
+ mobilePhoto.click();
 
- myPlaces.push({
-   name:name,
-   memo:memo || "",
-   lat:c.lat,
-   lng:c.lng,
-   photo:""
- });
+ mobilePhoto.onchange = async()=>{
 
- localStorage.setItem(
-   "myPlaces",
-   JSON.stringify(myPlaces)
- );
+   const file = mobilePhoto.files[0];
 
- alert("촬영지 저장 완료");
+   let img = "";
 
- render();
+   if(file){
+     img = await resizeImage(file);
+   }
+
+   const c = map.getCenter();
+
+   myPlaces.push({
+     name:name,
+     memo:memo || "",
+     lat:c.lat,
+     lng:c.lng,
+     photo:img
+   });
+
+   localStorage.setItem(
+     "myPlaces",
+     JSON.stringify(myPlaces)
+   );
+
+   alert("촬영지 저장 완료");
+
+   render();
+
+   mobilePhoto.value = "";
+ };
 };
   
   navigator.geolocation.getCurrentPosition(
