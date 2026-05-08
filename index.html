@@ -8,189 +8,166 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-html,body{
-  margin:0;
-  height:100%;
+</head>
+  <body>
+html, body {
+  margin: 0;
+  height: 100%;
 }
 
-#map{
- position:fixed;
- inset:0;
+#map {
+  position: fixed;
+  inset: 0;
 }
 
-  /* 버튼 */
-.btn{
- position:fixed;
- right:15px;
+/* ================= 버튼 공통 ================= */
+.btn {
+  position: fixed;
+  right: 15px;
 
- width:55px;
- height:55px;
+  width: 55px;
+  height: 55px;
 
- border-radius:50%;
- border:none;
+  border-radius: 50%;
+  border: none;
 
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
- font-size:18px;
- font-weight:bold;
+  font-size: 18px;
+  font-weight: bold;
 
- z-index:1000;
+  z-index: 1000;
 
- background:#fff;
+  background: #fff;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 
- box-shadow:0 6px 15px rgba(0,0,0,0.3);
-
- transition:all 0.15s ease;
+  transition: all 0.15s ease;
 }
 
-  /* 메뉴 버튼 (주황색) */
-#menu-btn{
- background:#ff9800 !important;
-  color:white !important;
+.btn span {
+  font-size: 10px;
+  margin-top: 2px;
 }
 
-/* GPS 버튼 (검은 회색) */
-#gps-btn{
-  background:#333 !important;
-  color:white !important;
+.btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
-/* 일출 버튼 (검은 회색) */
-#sun-btn{
-  background:#333 !important;
-  color:white !important;
-}
- #menu-btn{bottom:20px;}
-#gps-btn{bottom:85px;}
-#sun-btn{bottom:150px;}
-
-#panel{
- position:fixed;
- top:0;
- right:0;
- width:65%;
- max-width:320px;
- height:100vh;
- background:#fff;
- transform:translateX(110%);
- transition:.3s ease;
- z-index:9999;
- padding:10px;
- overflow-y:auto;
- overflow-x:hidden;
- box-sizing:border-box;
- pointer-events:none;
+/* ================= 버튼 색상 ================= */
+#menu-btn {
+  background: #ff9800 !important;
+  color: white !important;
 }
 
-#panel.show{
- transform:translateX(0);
- pointer-events:auto;
+#gps-btn,
+#sun-btn {
+  background: #333 !important;
+  color: white !important;
 }
 
-/* 💻 PC */
-@media (min-width:768px){
-
- #panel{
-   width:320px;
-   height:100vh;
- }
-
+#add-btn {
+  background: #2196f3 !important;
+  color: white !important;
 }
 
-/* 탭 */
-#tabs{display:flex;gap:5px;margin-bottom:10px;}
-#tabs button{flex:1;padding:8px;border:none;background:#ddd;}
-#tabs .active{background:#333;color:#fff;}
+/* ================= 버튼 위치 (모바일 기준) ================= */
+#menu-btn { bottom: 20px; }
+#gps-btn  { bottom: 90px; }
+#sun-btn  { bottom: 160px; }
+#add-btn  { bottom: 230px; }
 
-/* 카드 */
-.card{
- background:#eee;
- padding:8px;
- margin-bottom:6px;
- border-radius:6px;
-}
-.card img{
- width:100%;
- max-height:100px;
- object-fit:cover;
- margin-top:5px;
- border-radius:5px;
-}
+/* ================= 패널 ================= */
+#panel {
+  position: fixed;
+  top: 0;
+  right: 0;
 
-#menu-btn{ bottom:20px; }
-#gps-btn{ bottom:90px; }
-#sun-btn{ bottom:160px; }
+  width: 65%;
+  max-width: 320px;
+  height: 100vh;
 
+  background: #fff;
 
-/* 🔥 여기부터 추가 (맨 아래) */
+  transform: translateX(110%);
+  transition: 0.3s ease;
 
-/* 3️⃣ 아이콘 + 텍스트 */
-.btn span{
- font-size:10px;
- margin-top:2px;
+  z-index: 9999;
+
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
-/* 4️⃣ 클릭 애니메이션 */
-.btn:active{
- transform:scale(0.9);
- box-shadow:0 3px 8px rgba(0,0,0,0.2);
+#panel.show {
+  transform: translateX(0);
+  pointer-events: auto;
 }
 
-/* 5️⃣ 색상 */
-#menu-btn{
-  background:#ff9800 !important;
-  color:white !important;
+/* ================= 탭 ================= */
+#tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
 }
 
-#gps-btn{
-  background:#333 !important;
-  color:white !important;
+#tabs button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: #ddd;
 }
 
-#sun-btn{
-  background:#333 !important;
-  color:white !important;
+#tabs .active {
+  background: #333;
+  color: #fff;
 }
 
-/* 6️⃣ 위치 간격 */
-#menu-btn{ bottom:20px; }
-#gps-btn{ bottom:100px; }
-#sun-btn{ bottom:180px; }
-
-/* ➕ 등록 버튼 */
-#add-btn{
- bottom:250px;
- background:#2196f3 !important;
- color:white !important;
+/* ================= 카드 ================= */
+.card {
+  background: #eee;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
 }
 
-#menu-btn{ bottom:20px; }
-#gps-btn{ bottom:100px; }
-#sun-btn{ bottom:180px; }
-
-/* ➕ 등록 버튼 */
-#add-btn{
- bottom:250px;
- background:#2196f3 !important;
- color:white !important;
+.card img {
+  width: 100%;
+  max-height: 100px;
+  object-fit: cover;
+  margin-top: 5px;
+  border-radius: 5px;
 }
 
-/* 📱 모바일 리스트 여백 */
-#list{
- padding-bottom:150px;
+/* ================= PC ================= */
+@media (min-width: 768px) {
+  #panel {
+    width: 320px;
+    height: 100vh;
+  }
+
+  /* PC에서는 간격 조금 넓게 */
+  #menu-btn { bottom: 20px; }
+  #gps-btn  { bottom: 100px; }
+  #sun-btn  { bottom: 180px; }
+  #add-btn  { bottom: 260px; }
+}
+
+/* ================= 모바일 안전 여백 ================= */
+#list {
+  padding-bottom: 150px;
 }
 
 #panel input,
-#panel button{
- font-size:16px;
+#panel button {
+  font-size: 16px;
 }
-  
-</style>
-</head>
-  <body>
 
 <div id="map"></div>
 <button id="menu-btn" class="btn">☰<span>☰</span></button>
