@@ -233,7 +233,8 @@ html,body{
 
   <div id="list"></div>
 </div>
-<input
+
+  <input
  type="file"
  id="mobile-photo"
  accept="image/*"
@@ -408,29 +409,45 @@ addBtn.onclick=()=>{
 
  const memo = prompt("메모 입력") || "";
 
- const c = map.getCenter();
+ mobilePhoto.click();
 
- myPlaces.push({
-   name:name,
-   memo:memo,
-   lat:c.lat,
-   lng:c.lng,
-   photo:""
- });
+ mobilePhoto.onchange = async()=>{
 
- localStorage.setItem(
-   "myPlaces",
-   JSON.stringify(myPlaces)
- );
+   const file = mobilePhoto.files[0];
 
- alert("촬영지 저장 완료");
+   let img = "";
 
- current = "my";
+   if(file){
+     img = await resizeImage(file);
+   }
 
- tabMy.classList.add("active");
- tabPoi.classList.remove("active");
+   const c = map.getCenter();
 
- render();
+   myPlaces.push({
+     name:name,
+     memo:memo,
+     lat:c.lat,
+     lng:c.lng,
+     photo:img
+   });
+
+   localStorage.setItem(
+     "myPlaces",
+     JSON.stringify(myPlaces)
+   );
+
+   alert("촬영지 저장 완료");
+
+   current = "my";
+
+   tabMy.classList.add("active");
+   tabPoi.classList.remove("active");
+
+   render();
+
+   mobilePhoto.value = "";
+ };
+
 };
   
 /* 이미지 압축 */
