@@ -7,10 +7,9 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-<style>
-</head>
-  <body>
-html, body {
+  <style>
+  
+    html, body {
   margin: 0;
   height: 100%;
 }
@@ -18,7 +17,10 @@ html, body {
 #map {
   position: fixed;
   inset: 0;
+  z-index: 1;
 }
+</style>
+
 
 /* ================= 버튼 공통 ================= */
 .btn {
@@ -168,13 +170,14 @@ html, body {
 #panel button {
   font-size: 16px;
 }
+</style>
 
 <div id="map"></div>
 <button id="menu-btn" class="btn">☰<span>☰</span></button>
 <button id="gps-btn" class="btn">📍<span>내위치</span></button>
 <button id="sun-btn" class="btn">🌅<span>일출</span></button>
 <button id="add-btn" class="btn">➕<span>등록</span></button>
-  <div id="panel">
+<div id="panel">
   <button id="closeBtn">닫기</button>
 
   <div id="tabs">
@@ -191,16 +194,16 @@ html, body {
    <input id="memo" placeholder="메모"> 
   </form>
 
-  <div id="list"></div>
-</div>
+ <div id="list"></div>
 
   <input
  type="file"
  id="mobile-photo"
  style="display:none;"
 >
-  
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
 alert("JS 실행 시작");
  
