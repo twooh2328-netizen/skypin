@@ -331,9 +331,6 @@ tabMy.onclick=()=>{
 };
 
 gpsBtn.onclick=()=>{
-addBtn.onclick=()=>{
-  alert( 등록 버튼 클릭됨);
-
   navigator.geolocation.getCurrentPosition(
     pos=>{
       const lat = pos.coords.latitude;
@@ -380,6 +377,12 @@ sunBtn.onclick=()=>{
   }).addTo(map);
 };
 
+  addBtn.onclick=()=>{
+
+  alert("등록 버튼 클릭됨");
+
+};
+  
 /* 이미지 압축 */
 function resizeImage(file){
  return new Promise(res=>{
