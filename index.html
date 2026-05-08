@@ -244,6 +244,21 @@ L.tileLayer(
  }
 ).addTo(map);
 
+const map = L.map("map", {
+  doubleClickZoom:false
+}).setView([37.56,126.97],11);
+
+L.tileLayer(
+ "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ {
+   attribution:"© OpenStreetMap"
+ }
+).addTo(map);
+
+setTimeout(()=>{
+  map.invalidateSize();
+},300);
+  
 map.on("dblclick", ()=>{
   panel.classList.remove("show");
 
