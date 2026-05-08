@@ -240,16 +240,6 @@ L.tileLayer(
  }
 ).addTo(map);
 
-const map = L.map("map", {
-  doubleClickZoom:false
-}).setView([37.56,126.97],11);
-
-L.tileLayer(
- "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
- {
-   attribution:"© OpenStreetMap"
- }
-).addTo(map);
 
 setTimeout(()=>{
   map.invalidateSize();
@@ -307,7 +297,6 @@ myPlaces = myPlaces
   );
 
 /* DOM 연결 */
-const panel = document.getElementById("panel");
 const list = document.getElementById("list");
 
 const menuBtn = document.getElementById("menu-btn");
@@ -322,9 +311,6 @@ const tabMy = document.getElementById("tab-my");
 
 const form = document.getElementById("form");
 const search = document.getElementById("search");
-
-const mobilePhoto =
- document.getElementById("mobile-photo");
 
 /* 메뉴 */
 menuBtn.onclick=()=>{
