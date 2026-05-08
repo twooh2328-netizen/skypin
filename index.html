@@ -331,49 +331,9 @@ tabMy.onclick=()=>{
 };
 
 gpsBtn.onclick=()=>{
-addBtn.onclick=async()=>{
-
- const name = prompt("촬영지 이름 입력");
-
- if(!name) return;
-
- const memo = prompt("메모 입력");
-
- mobilePhoto.click();
-
- mobilePhoto.onchange = async()=>{
-
-   const file = mobilePhoto.files[0];
-
-   let img = "";
-
-   if(file){
-     img = await resizeImage(file);
-   }
-
-   const c = map.getCenter();
-
-   myPlaces.push({
-     name:name,
-     memo:memo || "",
-     lat:c.lat,
-     lng:c.lng,
-     photo:img
-   });
-
-   localStorage.setItem(
-     "myPlaces",
-     JSON.stringify(myPlaces)
-   );
-
-   alert("촬영지 저장 완료");
-
-   render();
-
-   mobilePhoto.value = "";
- };
+addBtn.onclick=()=>{
+  alert( 등록 버튼 클릭됨);
 };
-  
   navigator.geolocation.getCurrentPosition(
     pos=>{
       const lat = pos.coords.latitude;
