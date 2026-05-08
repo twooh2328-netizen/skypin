@@ -14,10 +14,12 @@ html,body{
 }
 
 #map{
+  width:100%;
   height:100vh;
 }
+</style>
 
-/* 버튼 */
+  /* 버튼 */
 .btn{
  position:absolute;
  right:15px;
@@ -206,8 +208,7 @@ html,body{
   
 </style>
 </head>
-
-<body>
+  <body>
 
 <div id="map"></div>
 <button id="menu-btn" class="btn">☰<span>☰</span></button>
@@ -243,11 +244,15 @@ html,body{
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 
- const map = L.map("map", {
-  doubleClickZoom: false
+const panel = document.getElementById("panel");
+
+const map = L.map("map", {
+  doubleClickZoom:false
 }).setView([37.56,126.97],11);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-.addTo(map);
+
+L.tileLayer(
+ "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+).addTo(map);
 
 map.on("dblclick", ()=>{
   panel.classList.remove("show");
@@ -626,6 +631,5 @@ search.oninput=render;
 render();
 
 </script>
-
 </body>
 </html>
