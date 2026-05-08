@@ -403,17 +403,17 @@ sunBtn.onclick=()=>{
 
 addBtn.onclick=()=>{
 
- const name = prompt("촬영지 이름 입력");
-
- if(!name) return;
-
- const memo = prompt("메모 입력") || "";
-
  mobilePhoto.click();
 
  mobilePhoto.onchange = async()=>{
 
    const file = mobilePhoto.files[0];
+
+   const name = prompt("촬영지 이름 입력");
+
+   if(!name) return;
+
+   const memo = prompt("메모 입력") || "";
 
    let img = "";
 
