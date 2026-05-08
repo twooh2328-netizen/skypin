@@ -377,10 +377,37 @@ sunBtn.onclick=()=>{
   }).addTo(map);
 };
 
-  addBtn.onclick=()=>{
+addBtn.onclick=()=>{
 
-  alert("등록 버튼 클릭됨");
+ const name = prompt("촬영지 이름 입력");
 
+ if(!name) return;
+
+ const memo = prompt("메모 입력") || "";
+
+ const c = map.getCenter();
+
+ myPlaces.push({
+   name:name,
+   memo:memo,
+   lat:c.lat,
+   lng:c.lng,
+   photo:""
+ });
+
+ localStorage.setItem(
+   "myPlaces",
+   JSON.stringify(myPlaces)
+ );
+
+ alert("촬영지 저장 완료");
+
+ current = "my";
+
+ tabMy.classList.add("active");
+ tabPoi.classList.remove("active");
+
+ render();
 };
   
 /* 이미지 압축 */
