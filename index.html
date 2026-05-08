@@ -410,8 +410,6 @@ addBtn.onclick=()=>{
 
    const name = prompt("촬영지 이름 입력");
 
-   if(!name) return;
-
    const memo = prompt("메모 입력") || "";
 
    let img = "";
@@ -435,16 +433,18 @@ addBtn.onclick=()=>{
      JSON.stringify(myPlaces)
    );
 
-   alert("촬영지 저장 완료");
+ alert("촬영지 저장 완료");
 
-   current = "my";
+panel.classList.add("show");
 
-   tabMy.classList.add("active");
-   tabPoi.classList.remove("active");
+current = "my";
 
-   render();
+tabMy.classList.add("active");
+tabPoi.classList.remove("active");
 
-   mobilePhoto.value = "";
+render();
+
+  mobilePhoto.value = "";
  };
 
 };
