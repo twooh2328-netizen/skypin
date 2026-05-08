@@ -201,12 +201,16 @@
  id="mobile-photo"
  style="display:none;"
 >
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-alert("JS 실행 시작");
- 
+var map = L.map('map').setView([37.5, 127], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: ''
+}).addTo(map);
+</script>
+
 const panel = document.getElementById("panel");
 
 const map = L.map("map", {
