@@ -397,7 +397,27 @@ sunBtn.onclick=()=>{
 
 addBtn.onclick=()=>{
 
- mobilePhoto.click();
+ // 📱 모바일
+ if(window.innerWidth < 768){
+
+   mobilePhoto.click();
+
+ }else{
+
+   // 💻 PC
+   panel.classList.add("show");
+
+   current = "my";
+
+   tabMy.classList.add("active");
+   tabPoi.classList.remove("active");
+
+   render();
+
+   document.getElementById("name").focus();
+ }
+
+};
 
  mobilePhoto.onchange = async()=>{
 
