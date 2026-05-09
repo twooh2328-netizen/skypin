@@ -1,12 +1,220 @@
-VM274:1 Uncaught ReferenceError: myPlaces is not defined
-    at <anonymous>:1:13
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyPin v4 Base</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+html,body{
+  margin:0;
+  height:100%;
+}
+
+#map{
+  height:100vh;
+}
+
+/* 버튼 */
+.btn{
+ position:absolute;
+ right:15px;
+
+ width:55px;
+ height:55px;
+
+ border-radius:50%;
+ border:none;
+
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+
+ font-size:18px;
+ font-weight:bold;
+
+ z-index:1000;
+
+ background:#fff;
+
+ /* 🔥 떠있는 느낌 */
+ box-shadow:0 6px 15px rgba(0,0,0,0.3);
+
+ /* 🔥 부드러운 애니메이션 */
+ transition:all 0.15s ease;
+}
+/* 메뉴 버튼 (주황색) */
+#menu-btn{
+ background:#ff9800 !important;
+  color:white !important;
+}
+
+/* GPS 버튼 (검은 회색) */
+#gps-btn{
+  background:#333 !important;
+  color:white !important;
+}
+
+/* 일출 버튼 (검은 회색) */
+#sun-btn{
+  background:#333 !important;
+  color:white !important;
+}
+ #menu-btn{bottom:20px;}
+#gps-btn{bottom:85px;}
+#sun-btn{bottom:150px;}
+
+#panel{
+ position:fixed;
+ top:0;
+ right:0;
+ width:65%;
+ max-width:320px;
+ height:100vh;
+ background:#fff;
+ transform:translateX(110%);
+ transition:.3s ease;
+ z-index:9999;
+ padding:10px;
+ overflow-y:auto;
+ overflow-x:hidden;
+ box-sizing:border-box;
+ pointer-events:none;
+}
+
+#panel.show{
+ transform:translateX(0);
+ pointer-events:auto;
+}
+
+/* 💻 PC */
+@media (min-width:768px){
+
+ #panel{
+   width:320px;
+   height:100%;
+ }
+
+}
+ background:#fff;
+
+ transform:translateX(100%);
+ transition:.3s ease;
+
+ z-index:9999;
+
+ padding:10px;
+ overflow:auto;
+
+ box-sizing:border-box;
+}/* 패널 */
+
+#panel.show{transform:translateX(0);}
+
+/* 탭 */
+#tabs{display:flex;gap:5px;margin-bottom:10px;}
+#tabs button{flex:1;padding:8px;border:none;background:#ddd;}
+#tabs .active{background:#333;color:#fff;}
+
+/* 카드 */
+.card{
+ background:#eee;
+ padding:8px;
+ margin-bottom:6px;
+ border-radius:6px;
+}
+.card img{
+ width:100%;
+ max-height:100px;
+ object-fit:cover;
+ margin-top:5px;
+ border-radius:5px;
+}
+
+#menu-btn{ bottom:20px; }
+#gps-btn{ bottom:90px; }
+#sun-btn{ bottom:160px; }
+
+
+/* 🔥 여기부터 추가 (맨 아래) */
+
+/* 3️⃣ 아이콘 + 텍스트 */
+.btn span{
+ font-size:10px;
+ margin-top:2px;
+}
+
+/* 4️⃣ 클릭 애니메이션 */
+.btn:active{
+ transform:scale(0.9);
+ box-shadow:0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* 5️⃣ 색상 */
+#menu-btn{
+  background:#ff9800 !important;
+  color:white !important;
+}
+
+#gps-btn{
+  background:#333 !important;
+  color:white !important;
+}
+
+#sun-btn{
+  background:#333 !important;
+  color:white !important;
+}
+
+/* 6️⃣ 위치 간격 */
+#menu-btn{ bottom:20px; }
+#gps-btn{ bottom:100px; }
+#sun-btn{ bottom:180px; }
+
+/* ➕ 등록 버튼 */
+#add-btn{
+ bottom:250px;
+ background:#2196f3 !important;
+ color:white !important;
+}
+
+#menu-btn{ bottom:20px; }
+#gps-btn{ bottom:100px; }
+#sun-btn{ bottom:180px; }
+
+/* ➕ 등록 버튼 */
+#add-btn{
+ bottom:250px;
+ background:#2196f3 !important;
+ color:white !important;
+}
+
+/* 📱 모바일 리스트 여백 */
+#list{
+ padding-bottom:150px;
+}
+
+#panel input,
+#panel button{
+ font-size:16px;
+}
+  
+</style>
+  
+</style>
+</head>
+
+<body>
 
 <div id="map"></div>
 <button id="menu-btn" class="btn">☰<span>☰</span></button>
 <button id="gps-btn" class="btn">📍<span>내위치</span></button>
 <button id="sun-btn" class="btn">🌅<span>일출</span></button>
 <button id="add-btn" class="btn">➕<span>등록</span></button>
-<div id="panel">
+  <div id="panel">
   <button id="closeBtn">닫기</button>
 
   <div id="tabs">
@@ -19,44 +227,28 @@ VM274:1 Uncaught ReferenceError: myPlaces is not defined
   <form id="form">
     <input id="name" placeholder="이름">
     <input type="file" id="photo">
-  <button type="button">추가</button>
+    <button>추가</button>
    <input id="memo" placeholder="메모"> 
   </form>
 
- <div id="list"></div>
-
-  <input
+  <div id="list"></div>
+</div>
+<input
  type="file"
  id="mobile-photo"
+ accept="image/*"
+ capture="environment"
  style="display:none;"
 >
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-var map = L.map('map').setView([37.5, 127], 10);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: ''
-}).addTo(map);
-
-const panel = document.getElementById("panel");
-
-const map = L.map("map", {
-  doubleClickZoom:false
+ const map = L.map("map", {
+  doubleClickZoom: false
 }).setView([37.56,126.97],11);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
 
-L.tileLayer(
- "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
- {
-   attribution:"© OpenStreetMap"
- }
-).addTo(map);
-
-
-setTimeout(()=>{
-  map.invalidateSize();
-},300);
-  
 map.on("dblclick", ()=>{
   panel.classList.remove("show");
 
@@ -109,6 +301,7 @@ myPlaces = myPlaces
   );
 
 /* DOM 연결 */
+const panel = document.getElementById("panel");
 const list = document.getElementById("list");
 
 const menuBtn = document.getElementById("menu-btn");
@@ -209,474 +402,35 @@ sunBtn.onclick=()=>{
 
 addBtn.onclick=()=>{
 
- // 📱 모바일
- if(window.innerWidth < 768){
+ const name = prompt("촬영지 이름 입력");
 
-   mobilePhoto.click();
+ if(!name) return;
 
- }else{
-
-   // 💻 PC
-   panel.classList.add("show");
-
-   current = "my";
-
-   tabMy.classList.add("active");
-   tabPoi.classList.remove("active");
-
-   render();
-
-   document.getElementById("name").focus();
- }
-
-};
-
- mobilePhoto.onchange = async()=>{
-
-   const file = mobilePhoto.files[0];
-
-   const name = prompt("촬영지 이름 입력");
-
-   const memo = prompt("메모 입력") || "";
-
-   let img = "";
-
-   if(file){
-     img = await resizeImage(file);
-   }
-
-   const c = map.getCenter();
-
-   myPlaces.push({
-     name:name,
-     memo:memo,
-     lat:c.lat,
-     lng:c.lng,
-     photo:img
-   });
-
-   localStorage.setItem(
-     "myPlaces",
-     JSON.stringify(myPlaces)
-   );
-
- alert("촬영지 저장 완료");
-
-panel.classList.add("show");
-
-current = "my";
-
-tabMy.classList.add("active");
-tabPoi.classList.remove("active");
-
-render();
-
-  mobilePhoto.value = "";
- };
-
-};
-  
-/* 이미지 압축 */
-function resizeImage(file){
- return new Promise(res=>{
-  const img=new Image();
-  const reader=new FileReader();
-
-  reader.onload=e=>img.src=e.target.result;
-
-  img.onload=()=>{
-    const canvas=document.createElement("canvas");
-    const max=300;
-
-    let w=img.width;
-    let h=img.height;
-
-    if(w>max){
-      h*=max/w;
-      w=max;
-    }
-
-    canvas.width=w;
-    canvas.height=h;
-
-    const ctx=canvas.getContext("2d");
-    ctx.drawImage(img,0,0,w,h);
-
-    res(canvas.toDataURL("image/jpeg",0.6));
-  };
-
-  reader.readAsDataURL(file);
- });
-}
-
-/* 렌더 */
-function render(){
- list.innerHTML="";
-
- const keyword = search.value.toLowerCase();
-
- if(current==="poi"){
-  defaultPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach(p=>createCard(p,false));
- }else{
-  myPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach((p,i)=>createCard(p,true,i));
- }
-}
-
-/* 카드 */
-function createCard(p,isMy,i){
- const div = document.createElement("div");
- div.className = "card";
-
- div.innerHTML = "<b>"+p.name+"</b>";
-
- // 📸 사진
-if(p.photo && p.photo !== ""){
-  const img = document.createElement("img");
-  img.src = p.photo;
-  div.appendChild(img);
-}
-
-  img.onclick = (e)=>{
-    e.stopPropagation();
-    showImage(p.photo);
-  };
-
-  div.appendChild(img);
- }
-
- // 📝 메모
- if(p.memo){
-  const m = document.createElement("div");
-  m.textContent = "📝 " + p.memo;
-  m.style.fontSize = "12px";
-  m.style.color = "#555";
-  m.style.marginTop = "4px";
-  div.appendChild(m);
- }
-
- // 📍 클릭 이벤트
- div.onclick = ()=>{
-  map.setView([p.lat,p.lng],15);
-
-  if(marker){
-    map.removeLayer(marker);
-  }
-
-  marker = L.marker([p.lat,p.lng]).addTo(map);
-
-  marker.bindPopup(p.name);
-
-  marker.on("click", ()=>{
-    let html = "<b>"+p.name+"</b>";
-
-    if(p.photo){
-      html += `<br><img src="${p.photo}" style="width:100%;max-height:120px;border-radius:6px;margin-top:5px;">`;
-    }
-
-    if(p.memo){
-      html += `<br><div style="font-size:12px;margin-top:4px;">📝 ${p.memo}</div>`;
-    }
-
-    marker.setPopupContent(html);
-  });
- };
-
- // 🗑 삭제 버튼
- if(isMy){
-  const del = document.createElement("button");
-  del.textContent = "삭제";
-
-  del.onclick = (e)=>{
-    e.stopPropagation();
-
-    myPlaces.splice(i,1);
-    localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
-
-    render();
-  };
-
-  div.appendChild(del);
- }
-
- list.appendChild(div);
-}
-
-/* 저장 */
-form.onsubmit=async(e)=>{
- e.preventDefault();
-
- if(current!=="my"){
-  alert("내 촬영지 탭에서 추가하세요");
-  return;
- }
-
- const name=document.getElementById("name").value;
- const file=document.getElementById("photo").files[0];
- const memo = document.getElementById("memo").value;  // ✅ 여기 추가
-
- if(!name){
-  alert("이름 입력하세요");
-  return;
-}
- let img="";
-
- if(file){
-  img = await resizeImage(file);
- }
+ const memo = prompt("메모 입력") || "";
 
  const c = map.getCenter();
 
  myPlaces.push({
-  name:name,
-  lat:c.lat,
-  lng:c.lng,
-  photo:img,
-  memo:memo   // 🔥 반드시 추가
+   name:name,
+   memo:memo,
+   lat:c.lat,
+   lng:c.lng,
+   photo:""
  });
 
- localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
-
- form.reset();
- render();
-};
-
-
-/* 검색 */
-search.oninput=render;
-
-/* 최초 */
-render();
-
-</script>
-</body>
-</html>
-
-
-setTimeout(()=>{
-  map.invalidateSize();
-},300);
-  
-map.on("dblclick", ()=>{
-  panel.classList.remove("show");
-
-  document.body.style.overflow = "";
-});
-
-  /* 상태 */
-let current="poi";
-let marker = null;
-let sunLine = null;  // 일출선 토글용 
-
- /* 추천명소 20개 */
-const defaultPlaces = [
-  {name:"굴업도",lat:37.186,lng:125.95,memo:"무인도 감성 / 초원+해변+능선 / 일몰"},
-  {name:"제부도 바닷길",lat:37.166,lng:126.62,memo:"바다길 / 타임랩스 / 물때"},
-  {name:"탄도항",lat:37.21,lng:126.62,memo:"풍력발전기 / 갯벌 / 석양"},
-  {name:"송도 센트럴파크",lat:37.392,lng:126.64,memo:"도시 수로 / 야경"},
-  {name:"남한산성",lat:37.47,lng:127.18,memo:"능선 / 운해"},
-  {name:"우도",lat:33.503,lng:126.95,memo:"섬 스케일 / 바다색"},
-  {name:"성산일출봉",lat:33.458,lng:126.94,memo:"분화구 / 일출"},
-  {name:"협재해변",lat:33.393,lng:126.24,memo:"에메랄드 바다"},
-  {name:"한라산",lat:33.36,lng:126.53,memo:"운해 / 고도감"},
-  {name:"경포해변",lat:37.8,lng:128.896,memo:"동해 일출"},
-  {name:"속초해변",lat:38.207,lng:128.591,memo:"도시+바다"},
-  {name:"설악산",lat:38.119,lng:128.465,memo:"능선 / 안개"},
-  {name:"을왕리",lat:37.45,lng:126.37,memo:"석양 / 해변"},
-  {name:"대부도",lat:37.23,lng:126.59,memo:"갯벌 / 풍차"},
-  {name:"북한강",lat:37.72,lng:127.35,memo:"강 곡선 / 안개"},
-  {name:"남이섬",lat:37.79,lng:127.52,memo:"섬 구조"},
-  {name:"아침고요수목원",lat:37.74,lng:127.35,memo:"계절 색감"},
-  {name:"해운대",lat:35.16,lng:129.16,memo:"도시 해변 야경"},
-  {name:"광안리",lat:35.153,lng:129.118,memo:"광안대교 야경"},
-  {name:"제주 협재 + 금능 라인",lat:33.39,lng:126.23,memo:"해안 드론 패닝샷"}
-];
-
-/* 저장 데이터 */
-let myPlaces = JSON.parse(localStorage.getItem("myPlaces")||"[]");
-
-myPlaces = myPlaces
-  .map(p => ({
-    ...p,
-    lat: Number(p.lat),
-    lng: Number(p.lng)
-  }))
-  .filter(p =>
-    !isNaN(p.lat) &&
-    !isNaN(p.lng) &&
-    p.lat >= -90 && p.lat <= 90 &&
-    p.lng >= -180 && p.lng <= 180
-  );
-
-/* DOM 연결 */
-const list = document.getElementById("list");
-
-const menuBtn = document.getElementById("menu-btn");
-const closeBtn = document.getElementById("closeBtn");
-const gpsBtn = document.getElementById("gps-btn");
-const sunBtn = document.getElementById("sun-btn");
-const addBtn = document.getElementById("add-btn");
-const mobilePhoto =
- document.getElementById("mobile-photo");
-const tabPoi = document.getElementById("tab-poi");
-const tabMy = document.getElementById("tab-my");
-
-const form = document.getElementById("form");
-const search = document.getElementById("search");
-
-/* 메뉴 */
-menuBtn.onclick=()=>{
-  panel.classList.add("show");
-
-  // 📱 모바일만 스크롤 차단
-  if(window.innerWidth < 768){
-    document.body.style.overflow = "hidden";
-  }
-
-  render();
-};
-
-  menuBtn.ondblclick=()=>{
-  panel.classList.remove("show");
-}; 
- 
-closeBtn.onclick=()=>{
-  panel.classList.remove("show");
-
-  document.body.style.overflow = "";
-};
-
-tabPoi.onclick=()=>{
-  current="poi";
-  tabPoi.classList.add("active");
-  tabMy.classList.remove("active");
-  render();
-};
-
-tabMy.onclick=()=>{
-  current="my";
-  tabMy.classList.add("active");
-  tabPoi.classList.remove("active");
-  render();
-};
-
-gpsBtn.onclick=()=>{
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      map.setView([lat,lng],15);
-
-      if(marker){
-        map.removeLayer(marker);
-      }
-
-      marker = L.marker([lat,lng])
-        .addTo(map)
-        .bindPopup("내 위치")
-        .openPopup();
-    },
-    err=>{
-      alert("위치 오류: " + err.message);
-    },
-    {
-      enableHighAccuracy: true,  // ⭐ 정확도 ↑
-      timeout: 10000,
-      maximumAge: 0
-    }
-  );
-};
-sunBtn.onclick=()=>{
-
-  if(sunLine){
-    map.removeLayer(sunLine);
-    sunLine = null;
-    return;
-  }
-
-  const center = map.getCenter();
-
-  const lat=center.lat;
-  const lng=center.lng;
-
-  const eastLng = lng + 0.2;
-
-  sunLine = L.polyline([[lat,lng],[lat,eastLng]],{
-    color:"orange"
-  }).addTo(map);
-};
-
-addBtn.onclick=()=>{
-
- // 📱 모바일
- if(window.innerWidth < 768){
-
-   mobilePhoto.click();
-
- }else{
-
-   // 💻 PC
-   panel.classList.add("show");
-
-   current = "my";
-
-   tabMy.classList.add("active");
-   tabPoi.classList.remove("active");
-
-   render();
-
-   document.getElementById("name").focus();
- }
-
-};
-
- mobilePhoto.onchange = async()=>{
-
-   const file = mobilePhoto.files[0];
-
-   const name = prompt("촬영지 이름 입력");
-
-   const memo = prompt("메모 입력") || "";
-
-   let img = "";
-
-   if(file){
-     img = await resizeImage(file);
-   }
-
-   const c = map.getCenter();
-
-   myPlaces.push({
-     name:name,
-     memo:memo,
-     lat:c.lat,
-     lng:c.lng,
-     photo:img
-   });
-
-   localStorage.setItem(
-     "myPlaces",
-     JSON.stringify(myPlaces)
-   );
+ localStorage.setItem(
+   "myPlaces",
+   JSON.stringify(myPlaces)
+ );
 
  alert("촬영지 저장 완료");
 
-panel.classList.add("show");
+ current = "my";
 
-current = "my";
+ tabMy.classList.add("active");
+ tabPoi.classList.remove("active");
 
-tabMy.classList.add("active");
-tabPoi.classList.remove("active");
-
-render();
-
-  mobilePhoto.value = "";
- };
-
+ render();
 };
   
 /* 이미지 압축 */
@@ -853,5 +607,6 @@ search.oninput=render;
 render();
 
 </script>
+
 </body>
 </html>
