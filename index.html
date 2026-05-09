@@ -566,10 +566,19 @@ form.onsubmit=async(e)=>{
   memo:memo   // 🔥 반드시 추가
  });
 
- localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
 
- form.reset();
- render();
+// 내 촬영지 탭 유지
+current = "my";
+
+tabMy.classList.add("active");
+tabPoi.classList.remove("active");
+
+// 입력 초기화
+form.reset();
+
+// 리스트 다시 표시
+render();
 };
 
 
