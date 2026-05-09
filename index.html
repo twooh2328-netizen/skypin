@@ -390,35 +390,16 @@ sunBtn.onclick=()=>{
 
 addBtn.onclick=()=>{
 
- const name = prompt("촬영지 이름 입력");
+  panel.classList.add("show");
 
- if(!name) return;
+  current = "my";
 
- const memo = prompt("메모 입력") || "";
+  tabMy.classList.add("active");
+  tabPoi.classList.remove("active");
 
- const c = map.getCenter();
+  render();
 
- myPlaces.push({
-   name:name,
-   memo:memo,
-   lat:c.lat,
-   lng:c.lng,
-   photo:""
- });
-
- localStorage.setItem(
-   "myPlaces",
-   JSON.stringify(myPlaces)
- );
-
- alert("촬영지 저장 완료");
-
- current = "my";
-
- tabMy.classList.add("active");
- tabPoi.classList.remove("active");
-
- render();
+  document.getElementById("name").focus();
 };
   
 /* 이미지 압축 */
