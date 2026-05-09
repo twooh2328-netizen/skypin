@@ -117,7 +117,7 @@ html,body{
 }
 .card img{
  width:100%;
- max-height:100px;
+ max-height:80px;
  object-fit:cover;
  margin-top:5px;
  border-radius:5px;
@@ -558,13 +558,20 @@ form.onsubmit=async(e)=>{
 
  const c = map.getCenter();
 
- myPlaces.push({
+const newPlace = {
   name:name,
   lat:c.lat,
   lng:c.lng,
   photo:img,
-  memo:memo   // 🔥 반드시 추가
- });
+  memo:memo
+};
+
+myPlaces.push(newPlace);
+
+// 지도 핀 생성
+L.marker([newPlace.lat,newPlace.lng])
+  .addTo(map)
+  .bindPopup(newPlace.name);
 
 localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
 
