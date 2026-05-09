@@ -476,9 +476,13 @@ function createCard(p,isMy,i){
  const div = document.createElement("div");
  div.className = "card";
 
- div.innerHTML = "<b>"+p.name+"</b>";
+const title = document.createElement("b");
 
- // 📸 사진
+title.textContent = p.name;
+
+div.appendChild(title);
+
+  // 📸 사진
  if(p.photo){
   const img = document.createElement("img");
   img.src = p.photo;
