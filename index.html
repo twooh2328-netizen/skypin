@@ -454,19 +454,40 @@ function resizeImage(file){
 
 /* 렌더 */
 function render(){
- list.innerHTML="";
 
- const keyword = search.value.toLowerCase();
+  list.innerHTML = "";
 
- if(current==="poi"){
-  defaultPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach(p=>createCard(p,false));
- }else{
-  myPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach((p,i)=>createCard(p,true,i));
- }
+  const keyword = search.value.toLowerCase();
+
+  // 추천명소
+  if(current === "poi"){
+
+    defaultPlaces
+      .filter(p =>
+        p.name &&
+        p.name.toLowerCase().includes(keyword)
+      )
+      .forEach(p => createCard(p,false));
+
+  }
+
+  // 내 촬영지
+  else{
+
+    myPlaces
+      .filter(p =>
+        p &&
+        p.name &&
+        p.name.toLowerCase().includes(keyword)
+      )
+      .forEach((p,i) => {
+
+        createCard(p,true,i);
+
+      });
+
+  }
+
 }
 
 /* 카드 */
