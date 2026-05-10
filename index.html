@@ -261,10 +261,44 @@ html,body{
  const map = L.map("map", {
   doubleClickZoom: false
 }).setView([37.56,126.97],11);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
+  
+map.on("click", (e)=>{
 
-map.on("dblclick", ()=>{
+  selectedLat = e.latlng.lat;
+  selectedLng = e.latlng.lng;
+
+  // 1️⃣ 기존 선택 핀 제거
+  if(window.selectMarker){
+    map.removeLayer(window.selectMarker);
+  }
+
+  // 2️⃣ 새 선택 핀 생성
+  window.selectMarker = L.marker([selectedLat, selectedLng], {
+    zIndexOffset: 1000
+  })
+  .addTo(map)
+  .bindPopup("📍 선택 위치")
+  .openPopup();
+
+  // 3️⃣ 기존 원 제거
+  if(window.selectCircle){
+    map.removeLayer(window.selectCircle);
+  }
+
+  // 4️⃣ 선택 위치 원 생성
+  window.selectCircle = L.circle([selectedLat, selectedLng], {
+    radius: 80,
+    color: "#2196f3",
+    weight: 2,
+    fillColor: "#2196f3",
+    fillOpacity: 0.15
+  }).addTo(map);
+
+});  
+
+  map.on("dblclick", ()=>{
   panel.classList.remove("show");
 
   document.body.style.overflow = "";
@@ -272,11 +306,13 @@ map.on("dblclick", ()=>{
 
   /* 상태 */
 let current="poi";
-
 let marker = null;
 let gpsMarker = null;
-
 let sunLine = null;  // 일출선 토글용
+let selectedLat = null;
+let selectedLng = null;
+window.selectMarker = null;
+window.selectCircle = null;  
 
   /* 추천명소 20개 */
 const defaultPlaces = [
@@ -379,7 +415,7 @@ gpsBtn.onclick=()=>{
 
       map.setView([lat,lng],15);
 
-    if(gpsMarker){
+  if(gpsMarker){
   map.removeLayer(gpsMarker);
 }
 
@@ -387,6 +423,11 @@ gpsMarker = L.marker([lat,lng])
         .addTo(map)
         .bindPopup("내 위치")
         .openPopup();
+  
+      selectedLat = lat;
+    selectedLng = lng;
+
+  });
     },
  
     err=>{
@@ -407,7 +448,8 @@ sunBtn.onclick=()=>{
     return;
   }
 
-  const center = map.getCenter();
+  const lat = selectedLat ?? map.getCenter().lat;
+  const lng = selectedLng ?? map.getCenter().lng;
 
   const lat=center.lat;
   const lng=center.lng;
