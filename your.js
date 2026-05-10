@@ -1,38 +1,33 @@
 window.addEventListener("DOMContentLoaded", () => {
+
 console.log("A START");
 
-  console.log("L =", typeof L);
-  console.log("map element =", document.getElementById("map"));
+console.log("L =", typeof L);
+console.log("map element =", document.getElementById("map"));
 
-  // ===== 지도 =====
-  const map = L.map("map", {
-    doubleClickZoom: false
-  }).setView([37.56, 126.97], 11);
+// ===== 지도 =====
+const map = L.map("map", {
+  doubleClickZoom: false
+}).setView([37.56, 126.97], 11);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-  .addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
 
-  // ===== 버튼 =====
-  const menuBtn = document.getElementById("menu-btn");
-  const gpsBtn = document.getElementById("gps-btn");
-  const sunBtn = document.getElementById("sun-btn");
-  const addBtn = document.getElementById("add-btn");
+// ===== 버튼 =====
+const menuBtn = document.getElementById("menu-btn");
+const gpsBtn = document.getElementById("gps-btn");
+const sunBtn = document.getElementById("sun-btn");
+const addBtn = document.getElementById("add-btn");
 
-  console.log("menuBtn =", menuBtn);
+console.log("menuBtn =", menuBtn);
 
-  menuBtn.onclick = () => {
-    document.getElementById("panel").classList.add("show");
-  };
+menuBtn.onclick = () => {
+  document.getElementById("panel").classList.add("show");
+};
 
-  gpsBtn.onclick = () => console.log("GPS");
-  sunBtn.onclick = () => console.log("SUN");
-  addBtn.onclick = () => console.log("ADD");
-
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 100);
-
-});
+gpsBtn.onclick = () => console.log("GPS");
+sunBtn.onclick = () => console.log("SUN");
+addBtn.onclick = () => console.log("ADD");
 
 // ===== 상태 =====
 let selectedLat = null;
@@ -71,4 +66,11 @@ map.on("click", (e) => {
 map.on("dblclick", () => {
   document.getElementById("panel")?.classList.remove("show");
   document.body.style.overflow = "";
+});
+
+// 지도 렌더 안정화
+setTimeout(() => {
+  map.invalidateSize();
+}, 100);
+
 });
