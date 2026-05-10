@@ -2,8 +2,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
 console.log("A START");
 
-console.log("L =", typeof L);
-console.log("map element =", document.getElementById("map"));
+// ===== Leaflet 체크 =====
+if (!window.L) {
+  console.error("Leaflet(L) 로드 실패");
+  return;
+}
 
 // ===== 지도 =====
 const map = L.map("map", {
@@ -19,10 +22,15 @@ const gpsBtn = document.getElementById("gps-btn");
 const sunBtn = document.getElementById("sun-btn");
 const addBtn = document.getElementById("add-btn");
 
-console.log("menuBtn =", menuBtn);
+// 안전 체크
+if (!menuBtn || !gpsBtn || !sunBtn || !addBtn) {
+  console.error("버튼 DOM 없음");
+  return;
+}
 
+// ===== 패널 =====
 menuBtn.onclick = () => {
-  document.getElementById("panel").classList.add("show");
+  document.getElementById("panel")?.classList.add("show");
 };
 
 gpsBtn.onclick = () => console.log("GPS");
@@ -36,19 +44,14 @@ let selectedLng = null;
 window.selectMarker = null;
 window.selectCircle = null;
 
-// ===== 클릭 이벤트 =====
+// ===== 지도 클릭 =====
 map.on("click", (e) => {
 
   selectedLat = e.latlng.lat;
   selectedLng = e.latlng.lng;
 
-  if (window.selectMarker) {
-    map.removeLayer(window.selectMarker);
-  }
-
-  if (window.selectCircle) {
-    map.removeLayer(window.selectCircle);
-  }
+  if (window.selectMarker) map.removeLayer(window.selectMarker);
+  if (window.selectCircle) map.removeLayer(window.selectCircle);
 
   window.selectMarker = L.marker([selectedLat, selectedLng])
     .addTo(map)
@@ -68,7 +71,7 @@ map.on("dblclick", () => {
   document.body.style.overflow = "";
 });
 
-// 지도 렌더 안정화
+// ===== 렌더 보정 =====
 setTimeout(() => {
   map.invalidateSize();
 }, 100);
