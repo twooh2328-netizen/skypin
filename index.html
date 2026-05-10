@@ -297,12 +297,12 @@ map.on("click", (e)=>{
   }).addTo(map);
 
 });  
-
-  map.on("dblclick", ()=>{
-  panel.classList.remove("show");
+map.on("dblclick", ()=>{
+  document.getElementById("panel")?.classList.remove("show");
 
   document.body.style.overflow = "";
 });
+  
 
   /* 상태 */
 let current="poi";
