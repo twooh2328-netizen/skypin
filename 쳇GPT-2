@@ -71,21 +71,30 @@ html,body{
  position:fixed;
  top:0;
  right:0;
- width:65%;
+
+ width:70%;
  max-width:320px;
+
  height:100vh;
+
  background:#fff;
+
  transform:translateX(110%);
  transition:.3s ease;
+
  z-index:9999;
- padding:10px;
+
+ padding:8px;
+
  overflow-y:auto;
  overflow-x:hidden;
+
  box-sizing:border-box;
+
  pointer-events:none;
 }
 
-#panel.show{
+  #panel.show{
  transform:translateX(0);
  pointer-events:auto;
 }
@@ -99,18 +108,7 @@ html,body{
  }
 
 }
- background:#fff;
 
- transform:translateX(100%);
- transition:.3s ease;
-
- z-index:9999;
-
- padding:10px;
- overflow:auto;
-
- box-sizing:border-box;
-}/* 패널 */
 
 #panel.show{transform:translateX(0);}
 
@@ -128,7 +126,7 @@ html,body{
 }
 .card img{
  width:100%;
- max-height:100px;
+ max-height:70px;
  object-fit:cover;
  margin-top:5px;
  border-radius:5px;
@@ -197,14 +195,31 @@ html,body{
  padding-bottom:150px;
 }
 
-#panel input,
+  #panel input,
 #panel button{
+
+ width:100%;
+
+ padding:8px;
+
+ margin-bottom:6px;
+
  font-size:16px;
+
+ box-sizing:border-box;
+
 }
-  
+
+@media (min-width:768px){
+
+  #add-btn{
+    display:none;
+  }
+
+}
+
 </style>
-  
-</style>
+ 
 </head>
 
 <body>
@@ -224,7 +239,7 @@ html,body{
 
   <input id="search" placeholder="검색">
 
-  <form id="form">
+ <form id="form" autocomplete="off">
     <input id="name" placeholder="이름">
     <input type="file" id="photo">
     <button>추가</button>
@@ -400,38 +415,21 @@ sunBtn.onclick=()=>{
   }).addTo(map);
 };
 
-addBtn.onclick=()=>{
+  addBtn.onclick=()=>{
 
- const name = prompt("촬영지 이름 입력");
+  panel.classList.add("show");
 
- if(!name) return;
+  current = "my";
 
- const memo = prompt("메모 입력") || "";
+  tabMy.classList.add("active");
+  tabPoi.classList.remove("active");
 
- const c = map.getCenter();
+  render();
 
- myPlaces.push({
-   name:name,
-   memo:memo,
-   lat:c.lat,
-   lng:c.lng,
-   photo:""
- });
+  document.getElementById("name").focus();
 
- localStorage.setItem(
-   "myPlaces",
-   JSON.stringify(myPlaces)
- );
-
- alert("촬영지 저장 완료");
-
- current = "my";
-
- tabMy.classList.add("active");
- tabPoi.classList.remove("active");
-
- render();
 };
+
   
 /* 이미지 압축 */
 function resizeImage(file){
@@ -468,19 +466,40 @@ function resizeImage(file){
 
 /* 렌더 */
 function render(){
- list.innerHTML="";
 
- const keyword = search.value.toLowerCase();
+  list.innerHTML = "";
 
- if(current==="poi"){
-  defaultPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach(p=>createCard(p,false));
- }else{
-  myPlaces
-   .filter(p=>p.name.toLowerCase().includes(keyword))
-   .forEach((p,i)=>createCard(p,true,i));
- }
+  const keyword = search.value.toLowerCase();
+
+  // 추천명소
+  if(current === "poi"){
+
+    defaultPlaces
+      .filter(p =>
+        p.name &&
+        p.name.toLowerCase().includes(keyword)
+      )
+      .forEach(p => createCard(p,false));
+
+  }
+
+  // 내 촬영지
+  else{
+
+    myPlaces
+      .filter(p =>
+        p &&
+        p.name &&
+        p.name.toLowerCase().includes(keyword)
+      )
+      .forEach((p,i) => {
+
+        createCard(p,true,i);
+
+      });
+
+  }
+
 }
 
 /* 카드 */
@@ -488,17 +507,20 @@ function createCard(p,isMy,i){
  const div = document.createElement("div");
  div.className = "card";
 
- div.innerHTML = "<b>"+p.name+"</b>";
+const title = document.createElement("b");
 
- // 📸 사진
+title.textContent = p.name;
+
+div.appendChild(title);
+
+  // 📸 사진
  if(p.photo){
   const img = document.createElement("img");
   img.src = p.photo;
 
-  img.onclick = (e)=>{
-    e.stopPropagation();
-    showImage(p.photo);
-  };
+img.onclick = (e)=>{
+  e.stopPropagation();
+};
 
   div.appendChild(img);
  }
@@ -562,13 +584,14 @@ function createCard(p,isMy,i){
 
 /* 저장 */
 form.onsubmit=async(e)=>{
- e.preventDefault();
 
- if(current!=="my"){
-  alert("내 촬영지 탭에서 추가하세요");
-  return;
- }
+  e.preventDefault();
 
+  // if(current!=="my"){
+//   alert("내 촬영지 탭에서 추가하세요");
+//   return;
+// }
+  
  const name=document.getElementById("name").value;
  const file=document.getElementById("photo").files[0];
  const memo = document.getElementById("memo").value;  // ✅ 여기 추가
@@ -585,18 +608,34 @@ form.onsubmit=async(e)=>{
 
  const c = map.getCenter();
 
- myPlaces.push({
+const newPlace = {
   name:name,
   lat:c.lat,
   lng:c.lng,
   photo:img,
-  memo:memo   // 🔥 반드시 추가
- });
+  memo:memo
+};
 
- localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+myPlaces.push(newPlace);
 
- form.reset();
- render();
+// 지도 핀 생성
+L.marker([newPlace.lat,newPlace.lng])
+  .addTo(map)
+  .bindPopup(newPlace.name);
+
+localStorage.setItem("myPlaces",JSON.stringify(myPlaces));
+
+// 내 촬영지 탭 유지
+current = "my";
+
+tabMy.classList.add("active");
+tabPoi.classList.remove("active");
+
+// 입력 초기화
+form.reset();
+
+// 리스트 다시 표시
+render();
 };
 
 
