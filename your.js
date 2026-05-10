@@ -1,6 +1,5 @@
-console.log("A START");
-
 window.addEventListener("DOMContentLoaded", () => {
+console.log("A START");
 
   console.log("L =", typeof L);
   console.log("map element =", document.getElementById("map"));
