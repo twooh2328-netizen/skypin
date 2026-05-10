@@ -407,10 +407,14 @@ addBtn.onclick=()=>{
 
   panel.classList.add("show");
 
+if(window.innerWidth < 768){
+
   current = "my";
 
   tabMy.classList.add("active");
   tabPoi.classList.remove("active");
+
+}
 
   render();
 
