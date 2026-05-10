@@ -166,9 +166,8 @@ sunBtn.onclick = () => {
   }
 
   const center = map.getCenter();
-
-  const lat = center.lat;
-  const lng = center.lng;
+lat:selectedLat ?? center.lat,
+lng:selectedLng ?? center.lng
 
   sunLine = L.polyline([
     [lat, lng],
@@ -213,10 +212,15 @@ function render(){
 
       div.className = "card";
 
-      div.innerHTML = `
-        <b>${p.name}</b>
-        <div>${p.memo || ""}</div>
-      `;
+    div.innerHTML = `
+  <b>${p.name}</b>
+  <div>${p.memo || ""}</div>
+  ${
+    p.photo
+    ? `<img src="${p.photo}" style="width:100%;margin-top:5px;border-radius:6px;">`
+    : ""
+  }
+`;
 
       div.onclick = () => {
 
@@ -275,14 +279,44 @@ form.onsubmit = (e) => {
   }
 
   const center = map.getCenter();
+const photoInput = document.getElementById("photo");
 
-  const newPlace = {
-    name:name,
-    memo:memo,
-    lat:center.lat,
-    lng:center.lng
-  };
+let photo = "";
 
+if(photoInput && photoInput.files[0]){
+
+  const file = photoInput.files[0];
+
+  photo = await new Promise((resolve)=>{
+
+    const reader = new FileReader();
+
+    reader.onload = (e)=>{
+      resolve(e.target.result);
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+}
+
+const newPlace = {
+  name:name,
+  memo:memo,
+  lat:selectedLat ?? center.lat,
+  lng:selectedLng ?? center.lng,
+  photo:photo
+};
+
+if(window.selectMarker){
+  map.removeLayer(window.selectMarker);
+  window.selectMarker = null;
+}
+
+if(window.selectCircle){
+  map.removeLayer(window.selectCircle);
+  window.selectCircle = null;
+}
   myPlaces.push(newPlace);
 
   localStorage.setItem(
