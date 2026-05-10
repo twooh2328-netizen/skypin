@@ -258,11 +258,17 @@ html,body{
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 
- const map = L.map("map", {
+const map = L.map("map", {
   doubleClickZoom: false
 }).setView([37.56,126.97],11);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
+
+// ⭐ 여기 추가 (중요)
+setTimeout(()=>{
+  map.invalidateSize();
+}, 100);
   
 map.on("click", (e)=>{
 
@@ -373,9 +379,8 @@ const search = document.getElementById("search");
 
 /* 메뉴 */
 menuBtn.onclick=()=>{
-  panel.classList.add("show");
+  document.getElementById("panel")?.classList.add("show");
 
-  // 📱 모바일만 스크롤 차단
   if(window.innerWidth < 768){
     document.body.style.overflow = "hidden";
   }
@@ -383,17 +388,16 @@ menuBtn.onclick=()=>{
   render();
 };
 
-  menuBtn.ondblclick=()=>{
-  panel.classList.remove("show");
-}; 
- 
-closeBtn.onclick=()=>{
-  panel.classList.remove("show");
+menuBtn.ondblclick=()=>{
+  document.getElementById("panel")?.classList.remove("show");
+};
 
+closeBtn.onclick=()=>{
+  document.getElementById("panel")?.classList.remove("show");
   document.body.style.overflow = "";
 };
 
-tabPoi.onclick=()=>{
+  tabPoi.onclick=()=>{
   current="poi";
   tabPoi.classList.add("active");
   tabMy.classList.remove("active");
