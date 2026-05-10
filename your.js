@@ -1,4 +1,7 @@
-console.log("✔ your.js LOADED");
+console.log("A START");
+
+console.log("L =", typeof L);
+console.log("map element =", document.getElementById("map"));
 // ===== 지도 생성 =====
 const map = L.map("map", {
   doubleClickZoom: false
