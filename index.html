@@ -272,10 +272,13 @@ map.on("dblclick", ()=>{
 
   /* 상태 */
 let current="poi";
-let marker = null;
-let sunLine = null;  // 일출선 토글용 
 
- /* 추천명소 20개 */
+let marker = null;
+let gpsMarker = null;
+
+let sunLine = null;  // 일출선 토글용
+
+  /* 추천명소 20개 */
 const defaultPlaces = [
   {name:"굴업도",lat:37.186,lng:125.95,memo:"무인도 감성 / 초원+해변+능선 / 일몰"},
   {name:"제부도 바닷길",lat:37.166,lng:126.62,memo:"바다길 / 타임랩스 / 물때"},
@@ -376,15 +379,16 @@ gpsBtn.onclick=()=>{
 
       map.setView([lat,lng],15);
 
-      if(marker){
-        map.removeLayer(marker);
-      }
+    if(gpsMarker){
+  map.removeLayer(gpsMarker);
+}
 
-      marker = L.marker([lat,lng])
+gpsMarker = L.marker([lat,lng]) 
         .addTo(map)
         .bindPopup("내 위치")
         .openPopup();
     },
+ 
     err=>{
       alert("위치 오류: " + err.message);
     },
