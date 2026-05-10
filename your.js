@@ -1,4 +1,4 @@
-
+console.log("✔ your.js LOADED");
 // ===== 지도 생성 =====
 const map = L.map("map", {
   doubleClickZoom: false
