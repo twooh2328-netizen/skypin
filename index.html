@@ -506,10 +506,9 @@ div.appendChild(title);
   const img = document.createElement("img");
   img.src = p.photo;
 
-  img.onclick = (e)=>{
-    e.stopPropagation();
-    showImage(p.photo);
-  };
+img.onclick = (e)=>{
+  e.stopPropagation();
+};
 
   div.appendChild(img);
  }
