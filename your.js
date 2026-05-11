@@ -82,6 +82,14 @@ const search = document.getElementById("search");
 // 여기 추가
 const poiList = document.getElementById("poi-list");
 
+poiList.innerHTML = "";
+defaultPlaces.forEach(place => {
+  const li = document.createElement("li");
+  li.textContent = `${place.name} - ${place.memo}`;
+  poiList.appendChild(li);
+});
+
+
 
 
 // ===== 지도 클릭 =====
