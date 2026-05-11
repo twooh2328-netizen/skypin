@@ -40,37 +40,54 @@ window.selectMarker = null;
 window.selectCircle = null;
 
 // ===== 추천명소 =====
+// 추천 명소 20개 정의
 const defaultPlaces = [
-
-  {
-    name:"굴업도",
-    lat:37.186,
-    lng:125.95,
-    memo:"무인도 감성"
-  },
-
-  {
-    name:"제부도",
-    lat:37.166,
-    lng:126.62,
-    memo:"바닷길"
-  },
-
-  {
-    name:"탄도항",
-    lat:37.21,
-    lng:126.62,
-    memo:"풍차"
-  },
-
-  {
-    name:"남한산성",
-    lat:37.47,
-    lng:127.18,
-    memo:"운해"
-  }
-
+  { name: "굴업도", lat: 37.229, lng: 126.123, memo: "무인도 감성" },
+  { name: "제부도", lat: 37.209, lng: 126.681, memo: "바다길" },
+  { name: "대부도 구봉도", lat: 37.331, lng: 126.582, memo: "일몰" },
+  { name: "탄도항", lat: 37.123, lng: 126.789, memo: "풍차" },
+  { name: "지리산 천왕봉", lat: 35.321, lng: 127.730, memo: "일출" },
+  { name: "오대산 비로봉", lat: 37.749, lng: 128.592, memo: "운해" },
+  { name: "추암 촛대바위", lat: 37.505, lng: 129.124, memo: "일몰/일출" },
+  { name: "두물머리", lat: 37.545, lng: 127.327, memo: "운무/일몰" },
+  { name: "부산 해운대", lat: 35.158, lng: 129.160, memo: "일출/파도" },
+  { name: "부산 오륙도 해맞이공원", lat: 35.103, lng: 129.118, memo: "일출/섬" },
+  { name: "부산 광안리", lat: 35.153, lng: 129.118, memo: "광안대교" },
+  { name: "강원도 양양", lat: 38.075, lng: 128.618, memo: "서핑/파도" },
+  { name: "속초 영금정", lat: 38.207, lng: 128.591, memo: "일출" },
+  { name: "제주 성산일출봉", lat: 33.458, lng: 126.942, memo: "일출" },
+  { name: "안동 하회마을", lat: 36.538, lng: 128.518, memo: "전통 한옥과 낙동강" },
+  { name: "경주 불국사", lat: 35.790, lng: 129.331, memo: "사찰과 석굴암" },
+  { name: "순천만 습지", lat: 34.907, lng: 127.500, memo: "갈대밭과 일몰" },
+  { name: "보성 녹차밭", lat: 34.751, lng: 127.085, memo: "푸른 차밭" },
+  { name: "울릉도 성인봉", lat: 37.489, lng: 130.905, memo: "섬과 바다 조망" },
+  { name: "DMZ 임진강", lat: 37.890, lng: 126.700, memo: "역사적 풍경" }
 ];
+
+// 지도 초기화 함수
+function initMap() {
+  const map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 36.5, lng: 127.8 }, // 대한민국 중심 좌표
+    zoom: 7
+  });
+
+  // 각 명소에 마커와 팝업 추가
+  defaultPlaces.forEach(place => {
+    const marker = new google.maps.Marker({
+      position: { lat: place.lat, lng: place.lng },
+      map: map,
+      title: place.name
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<h3>${place.name}</h3><p>${place.memo}</p>`
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+  });
+}
 
 // ===== 저장 데이터 =====
 let myPlaces = JSON.parse(
