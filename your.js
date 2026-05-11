@@ -80,18 +80,30 @@ const form = document.getElementById("form");
 const search = document.getElementById("search");
 
 // 여기 추가
+
 const poiList = document.getElementById("poi-list");
 
-// 페이지가 다 로드된 후 실행
 window.onload = () => {
+  // ✅ 지도 초기화 코드 (예시)
+  const map = new kakao.maps.Map(document.getElementById("map"), {
+    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 좌표 예시
+    level: 7
+  });
+
+  // ✅ 추천명소 리스트 출력 코드
   poiList.innerHTML = "";
   defaultPlaces.forEach(place => {
     const li = document.createElement("li");
     li.textContent = `${place.name} - ${place.memo}`;
     poiList.appendChild(li);
+
+    // 지도에 마커도 표시하고 싶다면:
+    const marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(place.lat, place.lng),
+      map: map
+    });
   });
 };
-
 
 
 
