@@ -228,41 +228,19 @@ body{
 
 <body>
 
-<div id="map"></div>
-
-<button id="menu-btn" class="btn">
-☰
-<span>메뉴</span>
-</button>
-
-<button id="gps-btn" class="btn">
-📍
-<span>GPS</span>
-</button>
-
-<button id="sun-btn" class="btn">
-🌅
-<span>일출</span>
-</button>
-
-<button id="add-btn" class="btn">
-➕
-<span>등록</span>
-</button>
-
 <!-- ===== 패널 ===== -->
-
 <div id="panel">
+  <button id="closeBtn">닫기</button>
 
-<button id="closeBtn">
-닫기
-</button>
+  <div id="tabs">
+    <button id="tab-poi" class="active">추천명소</button>
+    <button id="tab-my">내 촬영지</button>
+  </div>
 
-<div id="tabs">
+  <!-- 추천명소 리스트 출력 영역 -->
+  <ul id="poi-list"></ul>
+</div>
 
-<button id="tab-poi" class="active">
-추천명소
-</button>
 
 <button id="tab-my">
 내 촬영지
