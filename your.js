@@ -64,31 +64,6 @@ const defaultPlaces = [
   { name: "DMZ 임진강", lat: 37.890, lng: 126.700, memo: "역사적 풍경" }
 ];
 
-// 지도 초기화 함수
-function initMap() {
-  const map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 36.5, lng: 127.8 }, // 대한민국 중심 좌표
-    zoom: 7
-  });
-
-  // 각 명소에 마커와 팝업 추가
-  defaultPlaces.forEach(place => {
-    const marker = new google.maps.Marker({
-      position: { lat: place.lat, lng: place.lng },
-      map: map,
-      title: place.name
-    });
-
-    const infoWindow = new google.maps.InfoWindow({
-      content: `<h3>${place.name}</h3><p>${place.memo}</p>`
-    });
-
-    marker.addListener("click", () => {
-      infoWindow.open(map, marker);
-    });
-  });
-}
-
 // ===== 저장 데이터 =====
 let myPlaces = JSON.parse(
   localStorage.getItem("myPlaces") || "[]"
