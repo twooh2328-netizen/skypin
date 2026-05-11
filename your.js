@@ -66,7 +66,6 @@ console.log(defaultPlaces.length);
 let myPlaces = JSON.parse(
   localStorage.getItem("myPlaces") || "[]"
 );
-
 // ===== DOM =====
 const panel = document.getElementById("panel");
 const list = document.getElementById("list");
@@ -79,6 +78,11 @@ const tabPoi = document.getElementById("tab-poi");
 const tabMy = document.getElementById("tab-my");
 const form = document.getElementById("form");
 const search = document.getElementById("search");
+
+// 여기 추가
+const poiList = document.getElementById("poi-list");
+
+
 
 // ===== 지도 클릭 =====
 map.on("click", (e) => {
