@@ -447,9 +447,12 @@ map.on("click", (e) => {
 
 menuBtn.onclick = () => {
 
-  panel.classList.add("show");
+  panel.classList.toggle("show");
 
-  render();
+  if(panel.classList.contains("show")){
+    render();
+  }
+
 };
 
 closeBtn.onclick = () => {
@@ -539,14 +542,20 @@ sunLine = L.polyline([
 
 addBtn.onclick = () => {
 
-current = "my";
+  current = "my";
 
-tabMy.classList.add("active");
-tabPoi.classList.remove("active");
+  tabMy.classList.add("active");
+  tabPoi.classList.remove("active");
 
-panel.classList.add("show");
+  panel.classList.add("show");
 
-render();
+  render();
+
+  setTimeout(() => {
+
+    document.getElementById("name")?.focus();
+
+  }, 300);
 
 };
 
