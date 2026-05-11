@@ -401,7 +401,11 @@ const search = document.getElementById("search");
 
 const saveBtn = document.getElementById("save-btn");
 
-saveBtn.onclick = savePlace;
+saveBtn.addEventListener("click", async () => {
+
+  await savePlace();
+
+});
 
 /* ===== 지도 클릭 ===== */
 
