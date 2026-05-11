@@ -444,13 +444,18 @@ map.on("click", (e) => {
 });
 
 /* ===== 패널 ===== */
-
 menuBtn.onclick = () => {
 
-  panel.classList.toggle("show");
-
   if(panel.classList.contains("show")){
+
+    panel.classList.remove("show");
+
+  } else {
+
+    panel.classList.add("show");
+
     render();
+
   }
 
 };
