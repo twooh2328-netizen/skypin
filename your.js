@@ -260,34 +260,31 @@ if(sunBtn){
 // ===== 추가 =====
 if(addBtn){
 
-addBtn.onclick = () => {
+  addBtn.addEventListener("click", () => {
 
-  if(selectedLat === null || selectedLng === null){
-
-    alert("지도에서 위치를 먼저 선택하세요");
-
-    return;
-  }
-
-  current = "my";
-
-  tabMy.classList.add("active");
-  tabPoi.classList.remove("active");
-
-  panel.classList.add("show");
-
-  render();
+  panel.classList.remove("show");
 
   setTimeout(() => {
 
-    document.getElementById("name")
-    ?.scrollIntoView({
-      behavior:"smooth"
-    });
+    panel.classList.add("show");
 
-  }, 200);
+    current = "my";
 
-};
+    tabMy.classList.add("active");
+    tabPoi.classList.remove("active");
+
+    render();
+
+    setTimeout(() => {
+
+      document.getElementById("name")
+      ?.focus();
+
+    }, 300);
+
+  }, 50);
+
+});
 
 // ===== 검색 =====
 if(search){
