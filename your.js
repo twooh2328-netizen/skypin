@@ -149,15 +149,37 @@ map.on("dblclick", () => {
 // ===== 메뉴 =====
 if(menuBtn){
 
-  menuBtn.onclick = () => {
+ let menuClickCount = 0;
+let menuClickTimer = null;
+
+menuBtn.addEventListener("click", () => {
+
+  menuClickCount++;
+
+  if(menuClickCount === 1){
 
     if(panel){
       panel.classList.add("show");
     }
 
     render();
-  };
-}
+
+    menuClickTimer = setTimeout(() => {
+      menuClickCount = 0;
+    }, 400);
+
+  } else if(menuClickCount === 2){
+
+    if(panel){
+      panel.classList.remove("show");
+    }
+
+    menuClickCount = 0;
+
+    clearTimeout(menuClickTimer);
+  }
+
+});
 
 // ===== 닫기 =====
 if(closeBtn){
