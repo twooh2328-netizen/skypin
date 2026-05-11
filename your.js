@@ -28,11 +28,9 @@ setTimeout(() => {
 
 // ===== 상태 =====
 let current = "poi";
-
 let marker = null;
 let gpsMarker = null;
 let sunLine = null;
-
 let selectedLat = null;
 let selectedLng = null;
 
@@ -72,17 +70,13 @@ let myPlaces = JSON.parse(
 // ===== DOM =====
 const panel = document.getElementById("panel");
 const list = document.getElementById("list");
-
 const menuBtn = document.getElementById("menu-btn");
 const gpsBtn = document.getElementById("gps-btn");
 const sunBtn = document.getElementById("sun-btn");
 const addBtn = document.getElementById("add-btn");
-
 const closeBtn = document.getElementById("closeBtn");
-
 const tabPoi = document.getElementById("tab-poi");
 const tabMy = document.getElementById("tab-my");
-
 const form = document.getElementById("form");
 const search = document.getElementById("search");
 
@@ -234,21 +228,16 @@ if(gpsBtn){
 
 // ===== 일출 =====
 if(sunBtn){
-
   sunBtn.onclick = () => {
-
     if(sunLine){
-
       map.removeLayer(sunLine);
       sunLine = null;
       return;
     }
 
     const center = map.getCenter();
-
     const lat = center.lat;
     const lng = center.lng;
-
     sunLine = L.polyline([
       [lat, lng],
       [lat, lng + 0.2]
@@ -261,25 +250,16 @@ if(sunBtn){
 
 // ===== 추가 =====
 if(addBtn){
-
   addBtn.addEventListener("click", () => {
-
   panel.classList.remove("show");
-
   setTimeout(() => {
-
-    panel.classList.add("show");
-
-    current = "my";
-
-    tabMy.classList.add("active");
-    tabPoi.classList.remove("active");
-
-    render();
-
-    setTimeout(() => {
-
-      document.getElementById("name")
+  panel.classList.add("show");
+  current = "my";
+  tabMy.classList.add("active");
+  tabPoi.classList.remove("active");
+  render();
+  setTimeout(() => {
+  document.getElementById("name")
       ?.focus();
 
     }, 300);
@@ -346,25 +326,17 @@ function render(){
 
       // ===== 삭제 =====
       if(current === "my"){
-
-        const del = document.createElement("button");
-
-        del.textContent = "삭제";
-
-        del.onclick = (e) => {
-
-          e.stopPropagation();
-
-          myPlaces.splice(i,1);
-
-          localStorage.setItem(
-            "myPlaces",
-            JSON.stringify(myPlaces)
+      const del = document.createElement("button");
+      del.textContent = "삭제";
+      del.onclick = (e) => {
+        e.stopPropagation();
+        myPlaces.splice(i,1);
+        localStorage.setItem(
+        "myPlaces",
+         JSON.stringify(myPlaces)
           );
-
           render();
         };
-
         div.appendChild(del);
       }
 
@@ -375,17 +347,12 @@ function render(){
 
 // ===== 저장 =====
 if(form){
-
   form.onsubmit = async (e) => {
-
-    e.preventDefault();
-
+   e.preventDefault();
     const name =
       document.getElementById("name")?.value || "";
-
     const memo =
       document.getElementById("memo")?.value || "";
-
     const photoInput =
       document.getElementById("photo");
 
@@ -395,36 +362,24 @@ if(form){
     }
 
     let photo = "";
-
     if(photoInput && photoInput.files[0]){
-
       const file = photoInput.files[0];
-
       photo = await new Promise((resolve) => {
-
         const reader = new FileReader();
-
         reader.onload = (e) => {
           resolve(e.target.result);
         };
-
         reader.readAsDataURL(file);
-
       });
     }
 
     const center = map.getCenter();
-
     const newPlace = {
 
       name:name,
-
       memo:memo,
-
       lat:selectedLat ?? center.lat,
-
       lng:selectedLng ?? center.lng,
-
       photo:photo
     };
 
@@ -440,7 +395,6 @@ if(form){
     }
 
     myPlaces.push(newPlace);
-
     localStorage.setItem(
       "myPlaces",
       JSON.stringify(myPlaces)
