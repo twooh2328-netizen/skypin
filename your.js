@@ -82,12 +82,17 @@ const search = document.getElementById("search");
 // 여기 추가
 const poiList = document.getElementById("poi-list");
 
-poiList.innerHTML = "";
-defaultPlaces.forEach(place => {
-  const li = document.createElement("li");
-  li.textContent = `${place.name} - ${place.memo}`;
-  poiList.appendChild(li);
-});
+// 페이지가 다 로드된 후 실행
+window.onload = () => {
+  poiList.innerHTML = "";
+  defaultPlaces.forEach(place => {
+    const li = document.createElement("li");
+    li.textContent = `${place.name} - ${place.memo}`;
+    poiList.appendChild(li);
+  });
+};
+
+
 
 
 
