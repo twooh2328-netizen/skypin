@@ -61,7 +61,7 @@ const defaultPlaces = [
   { name: "울릉도 성인봉", lat: 37.489, lng: 130.905, memo: "섬과 바다 조망" },
   { name: "DMZ 임진강", lat: 37.890, lng: 126.700, memo: "역사적 풍경" }
 ];
-
+console.log(defaultPlaces.length);
 // ===== 저장 데이터 =====
 let myPlaces = JSON.parse(
   localStorage.getItem("myPlaces") || "[]"
