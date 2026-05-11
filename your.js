@@ -10,8 +10,9 @@ if (!window.L) {
 
 // ===== 지도 =====
 const map = L.map("map", {
-  doubleClickZoom: false
-}).setView([37.56, 126.97], 11);
+  doubleClickZoom: false,
+  zoomSnap: 0
+}).setView([37.56,126.97],11);
 
 L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -125,11 +126,14 @@ map.on("click", (e) => {
     fillColor:"#2196f3",
     fillOpacity:0.15
   }).addTo(map);
-
 });
-map.on("dblclick", () => {
+
+map.on("dblclick", (e) => {
+
+  L.DomEvent.stopPropagation(e);
 
   panel.classList.remove("show");
+
 });
 
   // ===== 더블클릭 =====
