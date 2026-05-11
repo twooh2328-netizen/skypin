@@ -393,6 +393,10 @@ const tabMy = document.getElementById("tab-my");
 const form = document.getElementById("form");
 const search = document.getElementById("search");
 
+const saveBtn = document.getElementById("save-btn");
+
+saveBtn.onclick = savePlace;
+
 /* ===== 지도 클릭 ===== */
 
 map.on("click", (e) => {
@@ -621,44 +625,32 @@ list.appendChild(div);
 }
 
 /* ===== 저장 ===== */
+async function savePlace() {
 
-form.onsubmit = async (e) => {
-
-e.preventDefault();
-
-const name =
-document.getElementById("name").value;
-
-const memo =
-document.getElementById("memo").value;
-
-const photoInput =
-document.getElementById("photo");
+const name = document.getElementById("name").value;
+const memo = document.getElementById("memo").value;
+const photoInput = document.getElementById("photo");
 
 if(!name){
-
-alert("이름 입력");
-
-return;
+  alert("이름 입력");
+  return;
 }
 
 let photo = "";
 
 if(photoInput.files[0]){
 
-photo = await new Promise((resolve)=>{
+  photo = await new Promise((resolve)=>{
 
-const reader = new FileReader();
+    const reader = new FileReader();
 
-reader.onload = (e)=>{
-resolve(e.target.result);
-};
+    reader.onload = (e)=>{
+      resolve(e.target.result);
+    };
 
-reader.readAsDataURL(
-photoInput.files[0]
-);
+    reader.readAsDataURL(photoInput.files[0]);
 
-});
+  });
 
 }
 
@@ -666,31 +658,21 @@ const center = map.getCenter();
 
 const newPlace = {
 
-name:name,
+  name:name,
+  memo:memo,
 
-memo:memo,
+  lat:selectedLat ?? center.lat,
+  lng:selectedLng ?? center.lng,
 
-lat:selectedLat ?? center.lat,
-
-lng:selectedLng ?? center.lng,
-
-photo:photo
+  photo:photo
 
 };
-
-if(window.selectMarker){
-map.removeLayer(window.selectMarker);
-}
-
-if(window.selectCircle){
-map.removeLayer(window.selectCircle);
-}
 
 myPlaces.push(newPlace);
 
 localStorage.setItem(
-"myPlaces",
-JSON.stringify(myPlaces)
+  "myPlaces",
+  JSON.stringify(myPlaces)
 );
 
 form.reset();
@@ -699,7 +681,10 @@ current = "my";
 
 render();
 
-};
+alert("저장 완료");
+
+}
+
 
 render();
 
