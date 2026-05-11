@@ -127,8 +127,12 @@ map.on("click", (e) => {
   }).addTo(map);
 
 });
+map.on("dblclick", () => {
 
-// ===== 더블클릭 =====
+  panel.classList.remove("show");
+});
+
+  // ===== 더블클릭 =====
 map.on("dblclick", () => {
 
   if(panel){
