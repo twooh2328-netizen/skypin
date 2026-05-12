@@ -84,156 +84,110 @@ const search = document.getElementById("search");
 
  const poiList = document.getElementById("poi-list");
 window.onload = () => {
-  // ✅ Leaflet 지도 초기화 (OpenStreetMap 타일 사용)
-  const map = L.map('map').setView([37.186, 125.95], 7);
+// ===== 지도 초기화 =====
+const map = L.map('map').setView([37.186, 125.95], 7);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
 
-  // ✅ 추천명소 리스트 출력 + 마커 + 팝업
-  poiList.innerHTML = "";
-  defaultPlaces.forEach(place => {
-    const li = document.createElement("li");
-    li.textContent = `${place.name} - ${place.memo}`;
-    poiList.appendChild(li);
+// ===== 추천명소 리스트 출력 + 마커 + 팝업 =====
+poiList.innerHTML = "";
+defaultPlaces.forEach(place => {
+  const li = document.createElement("li");
+  li.textContent = `${place.name} - ${place.memo}`;
+  poiList.appendChild(li);
 
-    // 마커 생성 + 팝업 연결
-    L.marker([place.lat, place.lng])
-      .addTo(map)
-      .bindPopup(`<b>${place.name}</b><br>${place.memo}`);
-  });
-};
-
+  L.marker([place.lat, place.lng])
+    .addTo(map)
+    .bindPopup(`<b>${place.name}</b><br>${place.memo}`);
+});
 
 // ===== 지도 클릭 =====
 map.on("click", (e) => {
-
   selectedLat = e.latlng.lat;
   selectedLng = e.latlng.lng;
 
-  if(window.selectMarker){
+  if (window.selectMarker) {
     map.removeLayer(window.selectMarker);
   }
-
-  if(window.selectCircle){
+  if (window.selectCircle) {
     map.removeLayer(window.selectCircle);
   }
 
-  window.selectMarker = L.marker([
-    selectedLat,
-    selectedLng
-  ])
-  .addTo(map)
-  .bindPopup("📍 선택 위치")
-  .openPopup();
+  window.selectMarker = L.marker([selectedLat, selectedLng])
+    .addTo(map)
+    .bindPopup("📍 선택 위치")
+    .openPopup();
 
-  window.selectCircle = L.circle([
-    selectedLat,
-    selectedLng
-  ], {
-    radius:80,
-    color:"#2196f3",
-    weight:2,
-    fillColor:"#2196f3",
-    fillOpacity:0.15
+  window.selectCircle = L.circle([selectedLat, selectedLng], {
+    radius: 80,
+    color: "#2196f3",
+    weight: 2,
+    fillColor: "#2196f3",
+    fillOpacity: 0.15
   }).addTo(map);
 });
 
-map.on("dblclick", (e) => {
-
-  L.DomEvent.stopPropagation(e);
-
-  panel.classList.remove("show");
-
-});
-
-  // ===== 더블클릭 =====
+// ===== 더블클릭 =====
 map.on("dblclick", () => {
-
-  if(panel){
+  if (panel) {
     panel.classList.remove("show");
   }
-
   document.body.style.overflow = "";
 });
 
-// ===== 메뉴 =====
-if(menuBtn){
+// ===== 메뉴 버튼 =====
+if (menuBtn) {
+  menuBtn.onclick = () => {
+    if (!panel) return;
+    panel.classList.toggle("show");
 
-menuBtn.onclick = () => {
+    if (panel.classList.contains("show")) {
+      render();
+    }
+  };
+}
 
-  if(!panel) return;
-
-  panel.classList.toggle("show");
-
-  if(panel.classList.contains("show")){
-    render();
-  }
-
-};
-
-// ===== 닫기 =====
-if(closeBtn){
-
+// ===== 닫기 버튼 =====
+if (closeBtn) {
   closeBtn.onclick = () => {
-
-    if(panel){
+    if (panel) {
       panel.classList.remove("show");
     }
-
     document.body.style.overflow = "";
   };
 }
 
-// ===== 탭 =====
-if(tabPoi){
-
+// ===== 탭 전환 =====
+if (tabPoi) {
   tabPoi.onclick = () => {
-
     current = "poi";
-
     tabPoi.classList.add("active");
-
-    if(tabMy){
-      tabMy.classList.remove("active");
-    }
-
+    if (tabMy) tabMy.classList.remove("active");
     render();
   };
 }
 
-if(tabMy){
-
+if (tabMy) {
   tabMy.onclick = () => {
-
     current = "my";
-
     tabMy.classList.add("active");
-
-    if(tabPoi){
-      tabPoi.classList.remove("active");
-    }
-
+    if (tabPoi) tabPoi.classList.remove("active");
     render();
   };
 }
 
-// ===== GPS =====
-if(gpsBtn){
-
+// ===== GPS 버튼 =====
+if (gpsBtn) {
   gpsBtn.onclick = () => {
-
     navigator.geolocation.getCurrentPosition(
-
       pos => {
-
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
         map.setView([lat, lng], 15);
 
-        if(gpsMarker){
+        if (gpsMarker) {
           map.removeLayer(gpsMarker);
         }
 
@@ -241,100 +195,82 @@ if(gpsBtn){
           .addTo(map)
           .bindPopup("내 위치")
           .openPopup();
-
       },
-
       err => {
         alert("GPS 실패");
       }
-
     );
   };
 }
 
-// ===== 일출 =====
-if(sunBtn){
+// ===== 일출 버튼 =====
+if (sunBtn) {
   sunBtn.onclick = () => {
-    if(sunLine){
+    if (sunLine) {
       map.removeLayer(sunLine);
       sunLine = null;
       return;
     }
-
     const center = map.getCenter();
     const lat = center.lat;
     const lng = center.lng;
-    sunLine = L.polyline([
-      [lat, lng],
-      [lat, lng + 0.2]
-    ], {
-      color:"orange",
-      weight:3
+    sunLine = L.polyline([[lat, lng], [lat, lng + 0.2]], {
+      color: "orange",
+      weight: 3
     }).addTo(map);
   };
 }
 
-// ===== 추가 =====
-if(addBtn){
+// ===== 추가 버튼 =====
+if (addBtn) {
   addBtn.addEventListener("click", () => {
-  panel.classList.remove("show");
-  setTimeout(() => {
-  panel.classList.add("show");
-  current = "my";
-  tabMy.classList.add("active");
-  tabPoi.classList.remove("active");
-  render();
-  setTimeout(() => {
-  document.getElementById("name")
-      ?.focus();
-
-    }, 300);
-
-  }, 50);
-
-});
+    panel.classList.remove("show");
+    setTimeout(() => {
+      panel.classList.add("show");
+      current = "my";
+      tabMy.classList.add("active");
+      tabPoi.classList.remove("active");
+      render();
+      setTimeout(() => {
+        document.getElementById("name")?.focus();
+      }, 300);
+    }, 50);
+  });
+}
 
 // ===== 검색 =====
-if(search){
+if (search) {
   search.oninput = render;
 }
 
-// ===== 렌더 =====
-function render(){
-
-  if(!list) return;
-
+// ===== 렌더 함수 =====
+function render() {
+  if (!list) return;
   list.innerHTML = "";
 
-  const keyword = search
-    ? search.value.toLowerCase()
-    : "";
-
-  const data =
-    current === "poi"
-    ? defaultPlaces
-    : myPlaces;
+  const keyword = search ? search.value.toLowerCase() : "";
+  const data = current === "poi" ? defaultPlaces : myPlaces;
 
   data
-    .filter(p =>
-      p.name &&
-      p.name.toLowerCase().includes(keyword)
-    )
-    .forEach((p, i) => {
-
+    .filter(p => p.name && p.name.toLowerCase().includes(keyword))
+    .forEach(p => {
       const div = document.createElement("div");
-
       div.className = "card";
-
       div.innerHTML = `
         <b>${p.name}</b>
         <div>${p.memo || ""}</div>
         ${
           p.photo
-          ? `<img src="${p.photo}" style="width:100%;margin-top:5px;border-radius:6px;">`
-          : ""
+            ? `<img src="${p.photo}" style="width:100%;margin-top:5px;border-radius:6px;">`
+            : ""
         }
       `;
+      list.appendChild(div);
+    });
+}
+
+// ===== 최초 실행 =====
+render();
 
       div.onclick = () => {
 
@@ -438,7 +374,6 @@ function addPlace(newPlace) {
     newPlace.lng
   ], 15);
 }
-
 // ===== 최초 =====
 render();
 
