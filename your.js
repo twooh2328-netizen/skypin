@@ -80,26 +80,44 @@ const form = document.getElementById("form");
 const search = document.getElementById("search");
 
 // 여기 추가
+// ✅ 추천명소 리스트 DOM 요소 가져오기
 const poiList = document.getElementById("poi-list");
 
 window.onload = () => {
-  // ✅ 원래 쓰던 지도 초기화 코드 전체를 여기 넣으세요
+  // ✅ 지도 초기화 코드 (원래 쓰던 코드 전체를 여기에 넣으세요)
   const map = new kakao.maps.Map(document.getElementById("map"), {
-    center: new kakao.maps.LatLng(37.186, 125.95), // 예시 좌표
+    center: new kakao.maps.LatLng(37.186, 125.95), // 굴업도 좌표
     level: 7
   });
 
-  // ✅ 추천명소 리스트 출력
+  // 지도 타입 및 줌 컨트롤 추가 (선택 사항)
+  const mapTypeControl = new kakao.maps.MapTypeControl();
+  map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+
+  const zoomControl = new kakao.maps.ZoomControl();
+  map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+  // ✅ 추천명소 리스트 출력 + 마커 + 정보창
   poiList.innerHTML = "";
   defaultPlaces.forEach(place => {
     const li = document.createElement("li");
     li.textContent = `${place.name} - ${place.memo}`;
     poiList.appendChild(li);
 
-    // 지도에 마커도 표시
-    new kakao.maps.Marker({
+    // 마커 생성
+    const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(place.lat, place.lng),
       map: map
+    });
+
+    // 정보창 생성
+    const infowindow = new kakao.maps.InfoWindow({
+      content: `<div style="padding:5px;">${place.name}<br>${place.memo}</div>`
+    });
+
+    // 마커 클릭 이벤트 등록 → 정보창 표시
+    kakao.maps.event.addListener(marker, 'click', function() {
+      infowindow.open(map, marker);
     });
   });
 };
