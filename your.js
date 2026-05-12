@@ -430,16 +430,16 @@ if(form){
 
     current = "my";
 
-    render();
+function addPlace(newPlace) {
+  render();
 
-    map.setView([
-      newPlace.lat,
-      newPlace.lng
-    ], 15);
-
-  };
+  map.setView([
+    newPlace.lat,
+    newPlace.lng
+  ], 15);
 }
 
 // ===== 최초 =====
 render();
+
 
