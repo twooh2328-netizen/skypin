@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-
 <meta charset="UTF-8">
-
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1.0"
@@ -15,40 +13,34 @@
  rel="stylesheet"
  href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
-
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
-
 /* ===== 기본 ===== */
-
 html,
 body{
-
   margin:0;
   padding:0;
-
   width:100%;
   height:100%;
-
   overflow:hidden;
 }
 
 #map{
-
   width:100%;
   height:100vh;
-
   position:relative;
   z-index:1;
 }
 
 /* ===== 버튼 ===== */
-
 .btn{
+ #menu-btn { bottom:20px; background:#ff9800; }
+    #gps-btn { bottom:95px; background:#333; }
+    #sun-btn { bottom:170px; background:#333; }
+    #add-btn { bottom:245px; background:#2196f3; }
 
   position:absolute;
-
   right:15px;
-
   width:55px;
   height:55px;
 
@@ -202,7 +194,6 @@ body{
 
   cursor:pointer;
 }
-
 .card img{
 
   width:100%;
@@ -221,11 +212,10 @@ body{
   #add-btn{
     display:none;
   }
-
 }
+
 </style>
 </head>
-
 <body>
 
 <!-- ===== 패널 ===== -->
@@ -239,8 +229,17 @@ body{
 
   <!-- 추천명소 리스트 출력 영역 -->
   <ul id="poi-list"></ul>
-</div>
 
+</div>
+#poi-list {
+  margin:10px; 
+  padding:0; 
+  list-style:none;
+}
+#poi-list li {
+  padding:5px; 
+  border-bottom:1px solid #ccc;
+}
 
 <button id="tab-my">
 내 촬영지
@@ -325,39 +324,7 @@ window.selectCircle = null;
 
 /* ===== 추천명소 ===== */
 
-const defaultPlaces = [
-
-{
-  name:"굴업도",
-  lat:37.186,
-  lng:125.95,
-  memo:"무인도 감성"
-},
-
-{
-  name:"제부도",
-  lat:37.166,
-  lng:126.62,
-  memo:"바닷길"
-},
-
-{
-  name:"탄도항",
-  lat:37.21,
-  lng:126.62,
-  memo:"풍차"
-},
-
-{
-  name:"남한산성",
-  lat:37.47,
-  lng:127.18,
-  memo:"운해"
-}
-
-];
-
-/* ===== 저장 ===== */
+* ===== 저장 ===== */
 
 let myPlaces = JSON.parse(
   localStorage.getItem("myPlaces") || "[]"
