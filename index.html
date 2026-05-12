@@ -145,10 +145,11 @@
     }
   </style>
 </head>
-<body>
+ <body>
   <!-- 지도 표시 영역 -->
-  <div id="map"></div>
+  <div id="map" style="height:500px;"></div>
 
+  <!-- 나머지 버튼/패널/메뉴 코드들 -->
   <!-- 추천명소 리스트 출력 영역 -->
   <ul id="poi-list"></ul>
 
@@ -175,16 +176,19 @@
     </form>
     <div id="list"></div>
   </div>
-
 <!-- Leaflet 라이브러리 -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<!-- 프로젝트 JS 파일들 -->
+<!-- 프로젝트 JS -->
 <script src="your.js"></script>
+
+<!-- spots.js, nofly.js 파일이 실제로 있다면 유지 / 없다면 삭제 -->
 <script src="spots.js"></script>
 <script src="nofly.js"></script>
+
 </body>
 </html>
+
 
 window.addEventListener("DOMContentLoaded", () => {
 
@@ -560,9 +564,6 @@ alert("저장 완료");
 
 render();
 
-});
-
 </script>
-
 </body>
 </html>
