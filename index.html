@@ -2,10 +2,12 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0"/>
+
   <title>SkyPin FINAL</title>
 
-  <!-- Leaflet -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet"
         href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -75,6 +77,16 @@
       background:#2196f3;
     }
 
+    /* ===== PC에서는 Add 숨김 ===== */
+
+    @media screen and (min-width:768px){
+
+      #add-btn{
+        display:none !important;
+      }
+
+    }
+
     /* ===== 패널 ===== */
 
     #panel{
@@ -86,7 +98,7 @@
       width:320px;
       max-width:85%;
 
-      height:100dvh;
+      height:100vh;
 
       background:white;
 
@@ -161,17 +173,10 @@
       padding:8px;
       cursor:pointer;
     }
-/* ===== PC에서는 Add 버튼 숨김 ===== */
 
-@media screen and (min-width:768px){
-
-  #add-btn{
-    display:none !important;
-  }
-
-}
   </style>
 </head>
+
 <body>
 
   <!-- 지도 -->
@@ -213,19 +218,37 @@
       </button>
     </div>
 
-    <input id="search" placeholder="검색"/>
+    <input id="search"
+           placeholder="검색"
+           autocomplete="off"/>
 
     <form id="form">
 
-      <input id="name" placeholder="장소 이름"/>
+      <input id="name"
+             placeholder="장소 이름"
+             autocomplete="off"/>
+
+      <!-- 사진첩 -->
+      <label for="photo-gallery">
+        사진첩
+      </label>
+
+      <input type="file"
+             id="photo-gallery"
+             accept="image/*">
+
+      <!-- 카메라 -->
+      <label for="photo-camera">
+        카메라
+      </label>
+
+      <input type="file"
+             id="photo-camera"
+             accept="image/*"
+             capture="environment">
 
       <textarea id="memo"
-        placeholder="메모"></textarea>
-
-      <input
-        type="file"
-        id="photo"
-        accept="image/*">
+                placeholder="메모"></textarea>
 
       <button type="submit">
         저장
@@ -240,7 +263,10 @@
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- JS -->
+  <!-- 추천명소 -->
+  <script src="places.js"></script>
+
+  <!-- 메인 -->
   <script src="your.js"></script>
 
 </body>
