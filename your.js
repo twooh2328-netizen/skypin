@@ -106,7 +106,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   search.oninput = render;
 
-    /* ===== 렌더 ===== */
+  /* ===== 렌더 ===== */
   function render() {
     list.innerHTML = "";
     const keyword = search.value.toLowerCase();
@@ -191,4 +191,3 @@ window.addEventListener("DOMContentLoaded", () => {
   // ===== 최초 실행 =====
   render();
 });
-                      
