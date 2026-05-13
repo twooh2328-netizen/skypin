@@ -215,10 +215,9 @@ let selectedLng = null;
 
 let selectMarker = null;
 let selectCircle = null;
-* =========================
-   추천명소 마커
+/* =========================
+   추천명소
 ========================= */
-
 const poiMarkers = [];
 /* =========================
    저장 데이터
