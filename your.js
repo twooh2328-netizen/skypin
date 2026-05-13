@@ -309,4 +309,6 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
-             
+  render();
+
+});           
