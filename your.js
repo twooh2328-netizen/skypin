@@ -2,9 +2,7 @@ window.addEventListener("DOMContentLoaded", () => {
   console.log("SkyPin START");
 
   /* ===== 지도 ===== */
-  const map = L.map("map", {
-    doubleClickZoom: false
-  }).setView([37.56, 126.97], 11);
+  const map = L.map("map", { doubleClickZoom: false }).setView([37.56, 126.97], 11);
 
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -24,7 +22,7 @@ window.addEventListener("DOMContentLoaded", () => {
   window.selectMarker = null;
   window.selectCircle = null;
 
-  /* ===== 추천명소 (20개 확장) ===== */
+  /* ===== 추천명소 (20개 전체 유지) ===== */
   const defaultPlaces = [
     { name: "굴업도", lat: 37.229, lng: 126.123, memo: "무인도 감성" },
     { name: "제부도", lat: 37.209, lng: 126.681, memo: "바다길" },
@@ -88,12 +86,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
   gpsBtn.onclick = () => {
     navigator.geolocation.getCurrentPosition(
-      pos => {
+      (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         map.setView([lat, lng], 15);
         if (gpsMarker) map.removeLayer(gpsMarker);
-        gpsMarker = L.marker([lat, lng]).addTo(map).bindPopup("내 위치").openPopup();
+        gpsMarker = L.marker([lat, lng])
+          .addTo(map)
+          .bindPopup("내 위치")
+          .openPopup();
       },
       () => alert("GPS 실패")
     );
@@ -106,9 +107,13 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const center = map.getCenter();
-    sunLine = L.polyline([[center.lat, center.lng], [center.lat, center.lng + 0.2]], {
-      color: "orange"
-    }).addTo(map);
+    sunLine = L.polyline(
+      [
+        [center.lat, center.lng],
+        [center.lat, center.lng + 0.2],
+      ],
+      { color: "orange" }
+    ).addTo(map);
   };
 
   addBtn.onclick = () => {
@@ -140,87 +145,83 @@ window.addEventListener("DOMContentLoaded", () => {
     const keyword = search.value.toLowerCase();
     const data = current === "poi" ? defaultPlaces : myPlaces;
 
-    data.filter(p => p.name.toLowerCase().includes(keyword)).forEach((p, i) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <b>${p.name}</b>
-        <div>${p.memo || ""}</div>
-        ${p.photo ? `<img src="${p.photo}">` : ""}
-      `;
+    data
+      .filter((p) => p.name.toLowerCase().includes(keyword))
+      .forEach((p, i) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <b>${p.name}</b>
+          <div>${p.memo || ""}</div>
+          ${p.photo ? `<img src="${p.photo}">` : ""}
+        `;
 
-      div.onclick = () => {
-        map.setView([p.lat, p.lng], 15);
-        if (marker) map.removeLayer(marker);
-        marker = L.marker([p.lat, p.lng]).addTo(map).bindPopup(p.name).openPopup();
-      };
-
-      if (current === "my") {
-        const del = document.createElement("button");
-        del.textContent = "삭제";
-        del.onclick = e => {
-          e.stopPropagation();
-          myPlaces.splice(i, 1);
-          localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
-          render();
+        div.onclick = () => {
+          map.setView([p.lat, p.lng], 15);
+          if (marker) map.removeLayer(marker);
+          marker = L.marker([p.lat, p.lng])
+            .addTo(map)
+            .bindPopup(p.name)
+            .openPopup();
         };
-        div.appendChild(del);
-      }
 
-      list.appendChild(div);
-    });
+        if (current === "my") {
+          const del = document.createElement("button");
+          del.textContent = "삭제";
+          del.onclick = (e) => {
+            e.stopPropagation();
+            myPlaces.splice(i, 1);
+            localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
+            render();
+          };
+          div.appendChild(del);
+        }
+
+        list.appendChild(div);
+      });
   }
 
   /* ===== 저장 ===== */
-async function savePlace() {
-  const name = document.getElementById("name").value;
-  const memo = document.getElementById("memo").value;
+  async function savePlace() {
+    const name = document.getElementById("name").value;
+    const memo = document.getElementById("memo").value;
 
-  if (!name) {
-    alert("이름 입력");
-    return;
+    if (!name) {
+      alert("이름 입력");
+      return;
+    }
+
+    // 두 입력 필드 확인
+    const galleryInput = document.getElementById("photo-gallery");
+    const cameraInput = document.getElementById("photo-camera");
+    const file = galleryInput?.files[0] || cameraInput?.files[0];
+
+    let photo = "";
+    if (file) {
+      photo = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const center = map.getCenter();
+    const newPlace = {
+      name,
+      memo,
+      lat: selectedLat ?? center.lat,
+      lng: selectedLng ?? center.lng,
+      photo,
+    };
+
+    myPlaces.push(newPlace);
+    localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
+    render();
+    panel.classList.remove("show");
   }
 
-  // 두 입력 필드 확인
-  const galleryInput = document.getElementById("photo-gallery");
-  const cameraInput = document.getElementById("photo-camera");
-  const file = galleryInput?.files[0] || cameraInput?.files[0];
+  saveBtn.onclick = savePlace;
 
-  let photo = "";
-  if (file) {
-    photo = await new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  const center = map.getCenter();
-  const newPlace = {
-    name,
-    memo,
-    lat: selectedLat ?? center.lat,
-    lng: selectedLng ?? center.lng,
-    photo
-  };
-
-  myPlaces.push(newPlace);
-  localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
-
-  form.reset();
-  current = "my";
-  render();
-
-  // 저장 후 지도 이동
-  map.setView([newPlace.lat, newPlace.lng], 15);
-}
-
-saveBtn.addEventListener("click", async e => {
-  e.preventDefault();
-  await savePlace();
-});
-
-
-  // ===== 최초 실행 =====
   render();
 });
+```
