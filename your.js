@@ -545,14 +545,19 @@ photo:photo
 
 };
 
-myPlaces.push(newPlace);
+const updatedPlaces = [
+  ...myPlaces,
+  newPlace
+];
 
 try{
 
 localStorage.setItem(
   "myPlaces",
-  JSON.stringify(myPlaces)
+  JSON.stringify(updatedPlaces)
 );
+
+myPlaces = updatedPlaces;
 
 }catch(err){
 
@@ -565,6 +570,19 @@ return;
 }
 
 form.reset();
+
+selectedLat = null;
+selectedLng = null;
+
+if(selectMarker){
+  map.removeLayer(selectMarker);
+  selectMarker = null;
+}
+
+if(selectCircle){
+  map.removeLayer(selectCircle);
+  selectCircle = null;
+}
 
 current = "my";
 
