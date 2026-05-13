@@ -298,17 +298,19 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       myPlaces.push(newPlace);
-      localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
+localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
 
-      form.reset();
-      current = "my";
-      render();
+form.reset();
+current = "my";
+render();
 
-      // 저장 후 지도 이동
-      map.setView([newPlace.lat, newPlace.lng], 15);
+// 저장 후 지도 이동
+map.setView([newPlace.lat, newPlace.lng], 15);
     };
   }
 });
-  render();
 
-});           
+// ===== 최초 실행 =====
+render();
+
+});
