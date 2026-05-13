@@ -204,7 +204,11 @@ let selectedLng = null;
 
 let selectMarker = null;
 let selectCircle = null;
+* =========================
+   추천명소 마커
+========================= */
 
+const poiMarkers = [];
 /* =========================
    저장 데이터
 ========================= */
@@ -399,19 +403,7 @@ search.oninput = render;
 /* =========================
    렌더
 ========================= */
-
 function render(){
-
-list.innerHTML = "";
-
-const keyword =
-search.value.toLowerCase();
-
-const data =
-current === "poi"
-? defaultPlaces
-: myPlaces;
-
 data
 .filter(p =>
   p.name.toLowerCase().includes(keyword)
@@ -517,17 +509,7 @@ cameraInput.files[0];
 
 if(selectedFile){
 
-photo = await new Promise((resolve)=>{
-
-const reader = new FileReader();
-
-reader.onload = (e)=>{
-  resolve(e.target.result);
-};
-
-reader.readAsDataURL(selectedFile);
-
-});
+photo = await compressImage(selectedFile);
 
 }
 
@@ -599,3 +581,65 @@ alert("저장 완료");
 render();
 
 });
+  이미지 압축
+========================= */
+
+function compressImage(file){
+
+return new Promise((resolve)=>{
+
+const reader = new FileReader();
+
+reader.readAsDataURL(file);
+
+reader.onload = (event)=>{
+
+const img = new Image();
+
+img.src = event.target.result;
+
+img.onload = ()=>{
+
+const canvas =
+document.createElement("canvas");
+
+const maxWidth = 1200;
+
+let width = img.width;
+let height = img.height;
+
+if(width > maxWidth){
+
+height *= maxWidth / width;
+width = maxWidth;
+
+}
+
+canvas.width = width;
+canvas.height = height;
+
+const ctx =
+canvas.getContext("2d");
+
+ctx.drawImage(
+  img,
+  0,
+  0,
+  width,
+  height
+);
+
+resolve(
+  canvas.toDataURL(
+    "image/jpeg",
+    0.7
+  )
+);
+
+};
+
+};
+
+});
+
+}
