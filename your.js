@@ -24,12 +24,28 @@ window.addEventListener("DOMContentLoaded", () => {
   window.selectMarker = null;
   window.selectCircle = null;
 
-  /* ===== 추천명소 ===== */
+  /* ===== 추천명소 (20개 확장) ===== */
   const defaultPlaces = [
     { name: "굴업도", lat: 37.229, lng: 126.123, memo: "무인도 감성" },
     { name: "제부도", lat: 37.209, lng: 126.681, memo: "바다길" },
     { name: "지리산 천왕봉", lat: 35.321, lng: 127.730, memo: "일출" },
-    { name: "제주 성산일출봉", lat: 33.458, lng: 126.942, memo: "일출" }
+    { name: "제주 성산일출봉", lat: 33.458, lng: 126.942, memo: "일출" },
+    { name: "설악산 대청봉", lat: 38.119, lng: 128.465, memo: "일출 명소" },
+    { name: "남해 금산", lat: 34.817, lng: 127.892, memo: "해돋이" },
+    { name: "속초 영금정", lat: 38.207, lng: 128.591, memo: "바다 전망" },
+    { name: "울산 대왕암", lat: 35.499, lng: 129.436, memo: "해돋이" },
+    { name: "강릉 경포대", lat: 37.795, lng: 128.896, memo: "호수와 바다" },
+    { name: "부산 해운대", lat: 35.158, lng: 129.160, memo: "해변" },
+    { name: "여수 향일암", lat: 34.691, lng: 127.749, memo: "일출" },
+    { name: "안면도 꽃지해수욕장", lat: 36.493, lng: 126.331, memo: "석양" },
+    { name: "무등산 정상", lat: 35.146, lng: 126.999, memo: "광주 전망" },
+    { name: "팔공산 갓바위", lat: 35.985, lng: 128.693, memo: "불교 성지" },
+    { name: "청평호반", lat: 37.735, lng: 127.423, memo: "호수 풍경" },
+    { name: "대청호", lat: 36.402, lng: 127.489, memo: "호수" },
+    { name: "태안 안면도", lat: 36.493, lng: 126.331, memo: "바다" },
+    { name: "포항 호미곶", lat: 36.075, lng: 129.569, memo: "손 모양 조형물" },
+    { name: "거제 바람의 언덕", lat: 34.769, lng: 128.621, memo: "풍차" },
+    { name: "인천 월미도", lat: 37.471, lng: 126.604, memo: "바다와 놀이공원" }
   ];
 
   let myPlaces = JSON.parse(localStorage.getItem("myPlaces") || "[]");
@@ -105,6 +121,18 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   search.oninput = render;
+
+  /* ===== 지도 클릭으로 위치 선택 ===== */
+  map.on("click", (e) => {
+    selectedLat = e.latlng.lat;
+    selectedLng = e.latlng.lng;
+
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([selectedLat, selectedLng])
+      .addTo(map)
+      .bindPopup("선택한 위치")
+      .openPopup();
+  });
 
   /* ===== 렌더 ===== */
   function render() {
