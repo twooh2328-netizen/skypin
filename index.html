@@ -5,562 +5,235 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SkyPin FINAL</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <!-- Leaflet -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
   <style>
-    /* ===== 추천명소 리스트 ===== */
-    #poi-list-panel {
-      margin:10px;
+
+    html, body{
+      margin:0;
       padding:0;
-      list-style:none;
-    }
-    #poi-list-panel li {
-      padding:5px;
-      border-bottom:1px solid #ccc;
+      height:100%;
     }
 
-    /* ===== 기본 ===== */
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
+    #map{
+      width:100%;
+      height:100dvh;
     }
 
-    #map {
-      width: 100%;
-      height: 100dvh; /* 모바일에서도 전체 화면 높이 반영 */
-    }
+    /* ===== 버튼 ===== */
 
-    .card img {
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    /* ===== 버튼 공통 ===== */
-    .btn {
+    .btn{
       position:absolute;
       right:15px;
+
       width:55px;
       height:55px;
+
       border:none;
       border-radius:50%;
+
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
+
+      color:white;
       font-size:18px;
       font-weight:bold;
-      color:white;
+
       cursor:pointer;
+
       z-index:30000;
-      pointer-events:auto;
+
       box-shadow:0 4px 12px rgba(0,0,0,0.3);
-      transition:0.15s;
     }
-    .btn span {
+
+    .btn span{
       font-size:10px;
       margin-top:2px;
     }
-    .btn:active {
-      transform:scale(0.95);
+
+    #menu-btn{
+      bottom:20px;
+      background:#ff9800;
     }
-    #menu-btn { bottom:20px; background:#ff9800; }
-    #gps-btn { bottom:95px; background:#333; }
-    #sun-btn { bottom:170px; background:#333; }
-    #add-btn { bottom:245px; background:#2196f3; }
+
+    #gps-btn{
+      bottom:95px;
+      background:#333;
+    }
+
+    #sun-btn{
+      bottom:170px;
+      background:#333;
+    }
+
+    #add-btn{
+      bottom:245px;
+      background:#2196f3;
+    }
 
     /* ===== 패널 ===== */
-    #panel {
+
+    #panel{
       position:fixed;
+
       top:0;
       right:0;
+
       width:320px;
       max-width:85%;
-      height:100dvh; /* 모바일에서도 패널 전체 높이 반영 */
-      background:#fff; /* 투명하지 않게 */
+
+      height:100dvh;
+
+      background:white;
+
       z-index:20000;
+
       padding:10px;
-      overflow-y:auto;
       box-sizing:border-box;
+
+      overflow-y:auto;
+
       transform:translateX(110%);
-      transition:0.3s ease;
-      /* pointer-events:none; 제거 */
+      transition:0.3s;
     }
-    #panel.show {
+
+    #panel.show{
       transform:translateX(0);
-      pointer-events:auto;
     }
 
     /* ===== 탭 ===== */
-    #tabs {
+
+    #tabs{
       display:flex;
       gap:5px;
       margin-bottom:10px;
     }
-    #tabs button {
+
+    #tabs button{
       flex:1;
       padding:10px;
       border:none;
-      background:#ddd;
       cursor:pointer;
+      background:#ddd;
     }
-    #tabs .active {
+
+    #tabs .active{
       background:#333;
       color:white;
     }
 
     /* ===== 입력 ===== */
+
     #panel input,
-    #panel button,
-    #panel textarea {
+    #panel textarea,
+    #panel button{
       width:100%;
-      padding:10px;
       margin-bottom:8px;
+      padding:10px;
       box-sizing:border-box;
     }
 
     /* ===== 카드 ===== */
-    .card {
+
+    .card{
       background:#f3f3f3;
       padding:10px;
       margin-bottom:8px;
       border-radius:8px;
       cursor:pointer;
     }
-    .card img {
+
+    .card img{
       width:100%;
-      margin-top:5px;
       border-radius:6px;
-    }
-    #list {
-      padding-bottom:100px;
+      margin-top:5px;
     }
 
-    @media (min-width:768px) {
-      #add-btn { display:none; }
+    .delete-btn{
+      margin-top:8px;
+      background:#e53935;
+      color:white;
+      border:none;
+      padding:8px;
+      cursor:pointer;
     }
+
   </style>
 </head>
 <body>
-  <!-- 지도 표시 영역 -->
+
+  <!-- 지도 -->
   <div id="map"></div>
 
-  <!-- 버튼들 -->
-  <button id="menu-btn" class="btn">메뉴<span>Menu</span></button>
-  <button id="gps-btn" class="btn">GPS<span>위치</span></button>
-  <button id="sun-btn" class="btn">☀<span>Sun</span></button>
-  <button id="add-btn" class="btn">＋<span>Add</span></button>
+  <!-- 버튼 -->
+  <button id="menu-btn" class="btn">
+    ☰
+    <span>Menu</span>
+  </button>
+
+  <button id="gps-btn" class="btn">
+    GPS
+    <span>위치</span>
+  </button>
+
+  <button id="sun-btn" class="btn">
+    ☀
+    <span>Sun</span>
+  </button>
+
+  <button id="add-btn" class="btn">
+    ＋
+    <span>Add</span>
+  </button>
 
   <!-- 패널 -->
   <div id="panel">
+
     <button id="closeBtn">닫기</button>
+
     <div id="tabs">
-      <button id="tab-poi" class="active">추천명소</button>
-      <button id="tab-my">내 촬영지</button>
+      <button id="tab-poi" class="active">
+        추천명소
+      </button>
+
+      <button id="tab-my">
+        내 촬영지
+      </button>
     </div>
-    <ul id="poi-list-panel"></ul>
+
     <input id="search" placeholder="검색"/>
+
     <form id="form">
-      <input id="name" placeholder="이름"/>
 
-      <!-- 사진첩에서 선택 -->
-      <label for="photo-gallery">사진첩</label>
-      <input type="file" id="photo-gallery" accept="image/*">
+      <input id="name" placeholder="장소 이름"/>
 
-      <!-- 카메라 촬영 -->
-      <label for="photo-camera">카메라</label>
-      <input type="file" id="photo-camera" accept="image/*" capture="environment">
+      <textarea id="memo"
+        placeholder="메모"></textarea>
 
-      <input id="memo" placeholder="메모"/>
-      <button id="save-btn" type="submit">저장</button>
+      <input
+        type="file"
+        id="photo"
+        accept="image/*">
+
+      <button type="submit">
+        저장
+      </button>
+
     </form>
+
     <div id="list"></div>
+
   </div>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- 프로젝트 JS -->
+  <!-- JS -->
   <script src="your.js"></script>
-</body>
-</html>
 
-window.addEventListener("DOMContentLoaded", () => {
-
-console.log("SkyPin START");
-
-/* ===== 지도 ===== */
-
-const map = L.map("map", {
-  doubleClickZoom:false
-}).setView([37.56,126.97],11);
-
-L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    maxZoom:19
-  }
-).addTo(map);
-
-setTimeout(() => {
-  map.invalidateSize();
-}, 300);
-
-/* ===== 상태 ===== */
-
-let current = "poi";
-
-let marker = null;
-let gpsMarker = null;
-let sunLine = null;
-
-let selectedLat = null;
-let selectedLng = null;
-
-window.selectMarker = null;
-window.selectCircle = null;
-
-/* ===== 추천명소 ===== */
-
-* ===== 저장 ===== */
-
-let myPlaces = JSON.parse(
-  localStorage.getItem("myPlaces") || "[]"
-);
-
-/* ===== DOM ===== */
-
-const panel = document.getElementById("panel");
-const list = document.getElementById("list");
-
-const menuBtn = document.getElementById("menu-btn");
-const gpsBtn = document.getElementById("gps-btn");
-const sunBtn = document.getElementById("sun-btn");
-const addBtn = document.getElementById("add-btn");
-
-const closeBtn = document.getElementById("closeBtn");
-
-const tabPoi = document.getElementById("tab-poi");
-const tabMy = document.getElementById("tab-my");
-
-const form = document.getElementById("form");
-const search = document.getElementById("search");
-
-const saveBtn = document.getElementById("save-btn");
-
-saveBtn.addEventListener("click", async () => {
-
-  await savePlace();
-
-});
-
-/* ===== 지도 클릭 ===== */
-
-map.on("click", (e) => {
-
-  selectedLat = e.latlng.lat;
-  selectedLng = e.latlng.lng;
-
-  if(window.selectMarker){
-    map.removeLayer(window.selectMarker);
-  }
-
-  if(window.selectCircle){
-    map.removeLayer(window.selectCircle);
-  }
-
-  window.selectMarker = L.marker([
-    selectedLat,
-    selectedLng
-  ])
-  .addTo(map)
-  .bindPopup("📍 선택 위치")
-  .openPopup();
-
-  window.selectCircle = L.circle([
-    selectedLat,
-    selectedLng
-  ],{
-    radius:80,
-    color:"#2196f3",
-    weight:2,
-    fillColor:"#2196f3",
-    fillOpacity:0.15
-  }).addTo(map);
-
-});
-
-/* ===== 패널 ===== */
-menuBtn.onclick = () => {
-
-  if(panel.classList.contains("show")){
-
-    panel.classList.remove("show");
-
-  } else {
-
-    panel.classList.add("show");
-
-    render();
-
-  }
-
-};
-
-closeBtn.onclick = () => {
-
-  panel.classList.remove("show");
-};
-
-/* ===== 탭 ===== */
-
-tabPoi.onclick = () => {
-
-  current = "poi";
-
-  tabPoi.classList.add("active");
-  tabMy.classList.remove("active");
-
-  render();
-};
-
-tabMy.onclick = () => {
-
-  current = "my";
-
-  tabMy.classList.add("active");
-  tabPoi.classList.remove("active");
-
-  render();
-};
-
-/* ===== GPS ===== */
-
-gpsBtn.onclick = () => {
-
-navigator.geolocation.getCurrentPosition(
-
-(pos) => {
-
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
-
-map.setView([lat,lng],15);
-
-if(gpsMarker){
-  map.removeLayer(gpsMarker);
-}
-
-gpsMarker = L.marker([lat,lng])
-.addTo(map)
-.bindPopup("내 위치")
-.openPopup();
-
-},
-
-() => {
-  alert("GPS 실패");
-}
-
-);
-
-};
-
-/* ===== 일출 ===== */
-
-sunBtn.onclick = () => {
-
-if(sunLine){
-
-map.removeLayer(sunLine);
-
-sunLine = null;
-
-return;
-}
-
-const center = map.getCenter();
-
-sunLine = L.polyline([
-  [center.lat, center.lng],
-  [center.lat, center.lng + 0.2]
-],{
-  color:"orange"
-}).addTo(map);
-
-};
-
-/* ===== 추가 ===== */
-
-addBtn.onclick = () => {
-
-  current = "my";
-
-  tabMy.classList.add("active");
-  tabPoi.classList.remove("active");
-
-  panel.classList.add("show");
-
-  render();
-
-  setTimeout(() => {
-
-    document.getElementById("name")?.focus();
-
-  }, 300);
-
-};
-
-/* ===== 검색 ===== */
-
-search.oninput = render;
-
-/* ===== 렌더 ===== */
-
-function render(){
-
-list.innerHTML = "";
-
-const keyword = search.value.toLowerCase();
-
-const data =
-current === "poi"
-? defaultPlaces
-: myPlaces;
-
-data
-.filter(p =>
-  p.name.toLowerCase().includes(keyword)
-)
-.forEach((p,i) => {
-
-const div = document.createElement("div");
-
-div.className = "card";
-
-div.innerHTML = `
-  <b>${p.name}</b>
-  <div>${p.memo || ""}</div>
-
-  ${
-    p.photo
-    ? `<img src="${p.photo}">`
-    : ""
-  }
-`;
-
-div.onclick = () => {
-
-map.setView([p.lat,p.lng],15);
-
-if(marker){
-  map.removeLayer(marker);
-}
-
-marker = L.marker([p.lat,p.lng])
-.addTo(map)
-.bindPopup(p.name)
-.openPopup();
-
-};
-
-if(current === "my"){
-
-const del = document.createElement("button");
-
-del.textContent = "삭제";
-
-del.onclick = (e) => {
-
-e.stopPropagation();
-
-myPlaces.splice(i,1);
-
-localStorage.setItem(
-  "myPlaces",
-  JSON.stringify(myPlaces)
-);
-
-render();
-
-};
-
-div.appendChild(del);
-
-}
-
-list.appendChild(div);
-
-});
-
-}
-
-/* ===== 저장 ===== */
-async function savePlace() {
-
-const name = document.getElementById("name").value;
-const memo = document.getElementById("memo").value;
-const photoInput = document.getElementById("photo");
-
-if(!name){
-  alert("이름 입력");
-  return;
-}
-
-let photo = "";
-
-if(photoInput.files[0]){
-
-  photo = await new Promise((resolve)=>{
-
-    const reader = new FileReader();
-
-    reader.onload = (e)=>{
-      resolve(e.target.result);
-    };
-
-    reader.readAsDataURL(photoInput.files[0]);
-
-  });
-
-}
-
-const center = map.getCenter();
-
-const newPlace = {
-
-  name:name,
-  memo:memo,
-
-  lat:selectedLat ?? center.lat,
-  lng:selectedLng ?? center.lng,
-
-  photo:photo
-
-};
-
-myPlaces.push(newPlace);
-
-localStorage.setItem(
-  "myPlaces",
-  JSON.stringify(myPlaces)
-);
-
-form.reset();
-
-current = "my";
-
-render();
-
-alert("저장 완료");
-
-}
-
-
-render();
-
-</script>
 </body>
 </html>
