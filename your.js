@@ -20,26 +20,26 @@ L.Icon.Default.mergeOptions({
 const defaultPlaces = [
 
 {
-  name:"남산타워",
-  memo:"서울 야경 촬영 명소",
-  lat:37.5512,
-  lng:126.9882,
+  name:"두물머리",
+  memo:"물안개와 일출 촬영 명소",
+  lat:37.5457,
+  lng:127.3230,
   photo:""
 },
 
+{
+  name:"추암 촛대바위",
+  memo:"동해 일출 촬영 명소",
+  lat:37.4749,
+  lng:129.1595,
+  photo:""
+},
+  
 {
   name:"하늘공원",
   memo:"억새와 노을 촬영",
   lat:37.5686,
   lng:126.8850,
-  photo:""
-},
-
-{
-  name:"북한산 백운대",
-  memo:"일출 촬영 추천",
-  lat:37.6587,
-  lng:126.9770,
   photo:""
 },
 
@@ -124,26 +124,10 @@ const defaultPlaces = [
 },
 
 {
-  name:"담양 메타세쿼이아길",
-  memo:"감성 도로 촬영",
-  lat:35.3217,
-  lng:126.9870,
-  photo:""
-},
-
-{
   name:"마이산",
   memo:"안개 풍경 촬영",
   lat:35.7442,
   lng:127.4257,
-  photo:""
-},
-
-{
-  name:"태백산",
-  memo:"설산 촬영 명소",
-  lat:37.0963,
-  lng:128.9167,
   photo:""
 },
 
