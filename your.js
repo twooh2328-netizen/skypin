@@ -172,49 +172,54 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ===== 저장 ===== */
-  async function savePlace() {
-    const name = document.getElementById("name").value;
-    const memo = document.getElementById("memo").value;
-    const photoInput = document.getElementById("photo");
+async function savePlace() {
+  const name = document.getElementById("name").value;
+  const memo = document.getElementById("memo").value;
 
-    if (!name) {
-      alert("이름 입력");
-      return;
-    }
-
-    let photo = "";
-    if (photoInput.files[0]) {
-      photo = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(photoInput.files[0]);
-      });
-    }
-
-    const center = map.getCenter();
-    const newPlace = {
-      name,
-      memo,
-      lat: selectedLat ?? center.lat,
-      lng: selectedLng ?? center.lng,
-      photo
-    };
-
-    myPlaces.push(newPlace);
-    localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
-
-    form.reset();
-    current = "my";
-    render();
-
-    // 저장 후 지도 이동
-    map.setView([newPlace.lat, newPlace.lng], 15);
+  if (!name) {
+    alert("이름 입력");
+    return;
   }
 
-  saveBtn.addEventListener("click", async e => {
-    e.preventDefault();
-    await savePlace();
-  });
+  // 두 입력 필드 확인
+  const galleryInput = document.getElementById("photo-gallery");
+  const cameraInput = document.getElementById("photo-camera");
+  const file = galleryInput?.files[0] || cameraInput?.files[0];
+
+  let photo = "";
+  if (file) {
+    photo = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const center = map.getCenter();
+  const newPlace = {
+    name,
+    memo,
+    lat: selectedLat ?? center.lat,
+    lng: selectedLng ?? center.lng,
+    photo
+  };
+
+  myPlaces.push(newPlace);
+  localStorage.setItem("myPlaces", JSON.stringify(myPlaces));
+
+  form.reset();
+  current = "my";
+  render();
+
+  // 저장 후 지도 이동
+  map.setView([newPlace.lat, newPlace.lng], 15);
+}
+
+saveBtn.addEventListener("click", async e => {
+  e.preventDefault();
+  await savePlace();
+});
+
 
   // ===== 최초 실행 =====
   render();
