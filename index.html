@@ -29,7 +29,7 @@
 
 #map {
   width: 100%;
-  height: 100vh; /* 화면 전체 높이 */
+  height: 100dvh; /* 모바일에서도 화면 높이 반영 */
 }
 
 .card img {
@@ -79,7 +79,7 @@
       right:0;
       width:320px;
       max-width:85%;
-      height:100vh;
+      height:100dvh; 모바일에서도 패널 전체 높이
       background:white;
       z-index:20000;
       padding:10px;
@@ -153,28 +153,36 @@
   <button id="sun-btn" class="btn">☀<span>Sun</span></button>
   <button id="add-btn" class="btn">＋<span>Add</span></button>
 
-  <!-- 패널 -->
-  <div id="panel">
-    <button id="closeBtn">닫기</button>
-    <div id="tabs">
-      <button id="tab-poi" class="active">추천명소</button>
-      <button id="tab-my">내 촬영지</button>
-    </div>
-    <ul id="poi-list-panel"></ul>
-    <input id="search" placeholder="검색"/>
-    <form id="form">
-      <input id="name" placeholder="이름"/>
-      <input type="file" id="photo" accept="image/*" capture="environment"/>
-      <input id="memo" placeholder="메모"/>
-      <button id="save-btn" type="submit">저장</button>
-    </form>
-    <div id="list"></div>
+ <div id="panel">
+  <button id="closeBtn">닫기</button>
+  <div id="tabs">
+    <button id="tab-poi" class="active">추천명소</button>
+    <button id="tab-my">내 촬영지</button>
   </div>
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <ul id="poi-list-panel"></ul>
+  <input id="search" placeholder="검색"/>
+  <form id="form">
+    <input id="name" placeholder="이름"/>
 
-  <!-- 프로젝트 JS -->
-  <script src="your.js"></script>
+    <!-- 사진첩에서 선택 -->
+    <label for="photo-gallery">사진첩</label>
+    <input type="file" id="photo-gallery" accept="image/*">
+
+    <!-- 카메라 촬영 -->
+    <label for="photo-camera">카메라</label>
+    <input type="file" id="photo-camera" accept="image/*" capture="environment">
+
+    <input id="memo" placeholder="메모"/>
+    <button id="save-btn" type="submit">저장</button>
+  </form>
+  <div id="list"></div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- 프로젝트 JS -->
+<script src="your.js"></script>
 </body>
 </html>
 
