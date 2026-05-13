@@ -17,7 +17,6 @@ L.Icon.Default.mergeOptions({
 /* =========================
    추천명소
 ========================= */
-
 const defaultPlaces = [
 
 {
