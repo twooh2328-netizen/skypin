@@ -414,6 +414,40 @@ search.oninput = render;
    렌더
 ========================= */
 function render(){
+
+list.innerHTML = "";
+
+poiMarkers.forEach(m => {
+  map.removeLayer(m);
+});
+
+poiMarkers.length = 0;
+
+const keyword =
+search.value.toLowerCase();
+
+const data =
+current === "poi"
+? defaultPlaces
+: myPlaces;
+
+if(current === "poi"){
+
+  data.forEach((p) => {
+
+    const poiMarker = L.marker([
+      p.lat,
+      p.lng
+    ])
+    .addTo(map)
+    .bindPopup(`📍 ${p.name}`);
+
+    poiMarkers.push(poiMarker);
+
+  });
+
+}
+
 data
 .filter(p =>
   p.name.toLowerCase().includes(keyword)
@@ -482,7 +516,6 @@ list.appendChild(div);
 });
 
 }
-
 /* =========================
    저장
 ========================= */
