@@ -3,6 +3,174 @@ window.addEventListener("DOMContentLoaded", () => {
 console.log("SkyPin START");
 
 /* =========================
+   추천명소
+========================= */
+
+const defaultPlaces = [
+
+{
+  name:"남산타워",
+  memo:"서울 야경 촬영 명소",
+  lat:37.5512,
+  lng:126.9882,
+  photo:""
+},
+
+{
+  name:"하늘공원",
+  memo:"억새와 노을 촬영",
+  lat:37.5686,
+  lng:126.8850,
+  photo:""
+},
+
+{
+  name:"북한산 백운대",
+  memo:"일출 촬영 추천",
+  lat:37.6587,
+  lng:126.9770,
+  photo:""
+},
+
+{
+  name:"광안리 해수욕장",
+  memo:"드론 야경 촬영",
+  lat:35.1532,
+  lng:129.1186,
+  photo:""
+},
+
+{
+  name:"해운대",
+  memo:"바다 일출 명소",
+  lat:35.1587,
+  lng:129.1604,
+  photo:""
+},
+
+{
+  name:"안반데기",
+  memo:"은하수 촬영 명소",
+  lat:37.6208,
+  lng:128.7457,
+  photo:""
+},
+
+{
+  name:"정동진",
+  memo:"동해 일출 촬영",
+  lat:37.6893,
+  lng:129.0336,
+  photo:""
+},
+
+{
+  name:"울릉도",
+  memo:"드론 절경 촬영",
+  lat:37.4844,
+  lng:130.9057,
+  photo:""
+},
+
+{
+  name:"제주 성산일출봉",
+  memo:"제주 대표 일출 명소",
+  lat:33.4589,
+  lng:126.9425,
+  photo:""
+},
+
+{
+  name:"섭지코지",
+  memo:"제주 해안 촬영",
+  lat:33.4240,
+  lng:126.9275,
+  photo:""
+},
+
+{
+  name:"대관령 양떼목장",
+  memo:"풍경 촬영 추천",
+  lat:37.7011,
+  lng:128.7588,
+  photo:""
+},
+
+{
+  name:"순천만 습지",
+  memo:"노을 촬영 명소",
+  lat:34.8852,
+  lng:127.5095,
+  photo:""
+},
+
+{
+  name:"보성 녹차밭",
+  memo:"초록 풍경 촬영",
+  lat:34.7604,
+  lng:127.0802,
+  photo:""
+},
+
+{
+  name:"담양 메타세쿼이아길",
+  memo:"감성 도로 촬영",
+  lat:35.3217,
+  lng:126.9870,
+  photo:""
+},
+
+{
+  name:"마이산",
+  memo:"안개 풍경 촬영",
+  lat:35.7442,
+  lng:127.4257,
+  photo:""
+},
+
+{
+  name:"태백산",
+  memo:"설산 촬영 명소",
+  lat:37.0963,
+  lng:128.9167,
+  photo:""
+},
+
+{
+  name:"오이도",
+  memo:"서해 노을 촬영",
+  lat:37.3450,
+  lng:126.6873,
+  photo:""
+},
+
+{
+  name:"굴업도",
+  memo:"별사진 촬영 추천",
+  lat:37.1917,
+  lng:126.0383,
+  photo:""
+},
+
+{
+  name:"독도",
+  memo:"대한민국 동쪽 끝",
+  lat:37.2419,
+  lng:131.8644,
+  photo:""
+},
+
+{
+  name:"한라산 백록담",
+  memo:"제주 산악 촬영",
+  lat:33.3617,
+  lng:126.5292,
+  photo:""
+}
+
+];
+
+/* =========================
    지도
 ========================= */
 
@@ -20,6 +188,7 @@ L.tileLayer(
 setTimeout(() => {
   map.invalidateSize();
 }, 500);
+
 /* =========================
    상태
 ========================= */
@@ -35,35 +204,6 @@ let selectedLng = null;
 
 let selectMarker = null;
 let selectCircle = null;
-
-/* =========================
-   기본 추천명소
-========================= */
-
-const defaultPlaces = [
-
-{
-  name:"남산타워",
-  memo:"서울 야경 촬영 명소",
-  lat:37.5512,
-  lng:126.9882
-},
-
-{
-  name:"하늘공원",
-  memo:"노을 촬영 추천",
-  lat:37.5686,
-  lng:126.8850
-},
-
-{
-  name:"부산 광안리",
-  memo:"드론 야경 촬영",
-  lat:35.1532,
-  lng:129.1186
-}
-
-];
 
 /* =========================
    저장 데이터
@@ -129,7 +269,7 @@ selectCircle = L.circle([
 });
 
 /* =========================
-   메뉴
+   패널
 ========================= */
 
 menuBtn.onclick = () => {
@@ -207,7 +347,7 @@ gpsMarker = L.marker([lat,lng])
 };
 
 /* =========================
-   일출 방향
+   Sun
 ========================= */
 
 sunBtn.onclick = () => {
@@ -234,7 +374,7 @@ sunLine = L.polyline([
 };
 
 /* =========================
-   추가 버튼
+   Add
 ========================= */
 
 addBtn.onclick = () => {
@@ -355,8 +495,11 @@ document.getElementById("name").value;
 const memo =
 document.getElementById("memo").value;
 
-const photoInput =
-document.getElementById("photo");
+const galleryInput =
+document.getElementById("photo-gallery");
+
+const cameraInput =
+document.getElementById("photo-camera");
 
 if(!name){
 
@@ -368,21 +511,21 @@ return;
 
 let photo = "";
 
-if(photoInput.files[0]){
+const selectedFile =
+galleryInput.files[0] ||
+cameraInput.files[0];
+
+if(selectedFile){
 
 photo = await new Promise((resolve)=>{
 
 const reader = new FileReader();
 
 reader.onload = (e)=>{
-
-resolve(e.target.result);
-
+  resolve(e.target.result);
 };
 
-reader.readAsDataURL(
-  photoInput.files[0]
-);
+reader.readAsDataURL(selectedFile);
 
 });
 
@@ -404,10 +547,22 @@ photo:photo
 
 myPlaces.push(newPlace);
 
+try{
+
 localStorage.setItem(
   "myPlaces",
   JSON.stringify(myPlaces)
 );
+
+}catch(err){
+
+alert("저장 용량 초과");
+
+console.error(err);
+
+return;
+
+}
 
 form.reset();
 
