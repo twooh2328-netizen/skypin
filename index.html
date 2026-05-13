@@ -21,23 +21,22 @@
     }
 
     /* ===== 기본 ===== */
-   html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
 
-#map {
-  width: 100%;
-  height: 100dvh; /* 모바일에서도 화면 높이 반영 */
-}
+    #map {
+      width: 100%;
+      height: 100dvh; /* 모바일에서도 전체 화면 높이 반영 */
+    }
 
-.card img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
+    .card img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
 
     /* ===== 버튼 공통 ===== */
     .btn {
@@ -79,15 +78,15 @@
       right:0;
       width:320px;
       max-width:85%;
-      height:100dvh; 모바일에서도 패널 전체 높이
-      background:white;
+      height:100dvh; /* 모바일에서도 패널 전체 높이 반영 */
+      background:#fff; /* 투명하지 않게 */
       z-index:20000;
       padding:10px;
       overflow-y:auto;
       box-sizing:border-box;
       transform:translateX(110%);
       transition:0.3s ease;
-      pointer-events:none;
+      /* pointer-events:none; 제거 */
     }
     #panel.show {
       transform:translateX(0);
@@ -114,7 +113,8 @@
 
     /* ===== 입력 ===== */
     #panel input,
-    #panel button {
+    #panel button,
+    #panel textarea {
       width:100%;
       padding:10px;
       margin-bottom:8px;
@@ -153,36 +153,37 @@
   <button id="sun-btn" class="btn">☀<span>Sun</span></button>
   <button id="add-btn" class="btn">＋<span>Add</span></button>
 
- <div id="panel">
-  <button id="closeBtn">닫기</button>
-  <div id="tabs">
-    <button id="tab-poi" class="active">추천명소</button>
-    <button id="tab-my">내 촬영지</button>
+  <!-- 패널 -->
+  <div id="panel">
+    <button id="closeBtn">닫기</button>
+    <div id="tabs">
+      <button id="tab-poi" class="active">추천명소</button>
+      <button id="tab-my">내 촬영지</button>
+    </div>
+    <ul id="poi-list-panel"></ul>
+    <input id="search" placeholder="검색"/>
+    <form id="form">
+      <input id="name" placeholder="이름"/>
+
+      <!-- 사진첩에서 선택 -->
+      <label for="photo-gallery">사진첩</label>
+      <input type="file" id="photo-gallery" accept="image/*">
+
+      <!-- 카메라 촬영 -->
+      <label for="photo-camera">카메라</label>
+      <input type="file" id="photo-camera" accept="image/*" capture="environment">
+
+      <input id="memo" placeholder="메모"/>
+      <button id="save-btn" type="submit">저장</button>
+    </form>
+    <div id="list"></div>
   </div>
-  <ul id="poi-list-panel"></ul>
-  <input id="search" placeholder="검색"/>
-  <form id="form">
-    <input id="name" placeholder="이름"/>
 
-    <!-- 사진첩에서 선택 -->
-    <label for="photo-gallery">사진첩</label>
-    <input type="file" id="photo-gallery" accept="image/*">
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- 카메라 촬영 -->
-    <label for="photo-camera">카메라</label>
-    <input type="file" id="photo-camera" accept="image/*" capture="environment">
-
-    <input id="memo" placeholder="메모"/>
-    <button id="save-btn" type="submit">저장</button>
-  </form>
-  <div id="list"></div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<!-- 프로젝트 JS -->
-<script src="your.js"></script>
+  <!-- 프로젝트 JS -->
+  <script src="your.js"></script>
 </body>
 </html>
 
