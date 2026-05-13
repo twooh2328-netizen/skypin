@@ -17,6 +17,9 @@ L.tileLayer(
   }
 ).addTo(map);
 
+setTimeout(() => {
+  map.invalidateSize();
+}, 500);
 /* =========================
    상태
 ========================= */
