@@ -191,6 +191,7 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    const center = map.getCenter
     const center = map.getCenter();
     const newPlace = {
       name,
