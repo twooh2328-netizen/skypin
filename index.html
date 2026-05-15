@@ -164,16 +164,52 @@
       margin-top:5px;
     }
 
-    .delete-btn{
-      margin-top:8px;
-      background:#e53935;
-      color:white;
-      border:none;
-      padding:8px;
-      cursor:pointer;
-    }
+  .delete-btn{
+  margin-top:8px;
+  background:#e53935;
+  color:white;
+  border:none;
+  padding:8px;
+  cursor:pointer;
+}
 
-  </style>
+/* ===== 썸네일 리스트 ===== */
+
+.thumb-wrap{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.thumb{
+  width:70px;
+  height:70px;
+  object-fit:cover;
+  border-radius:8px;
+  flex-shrink:0;
+}
+
+.thumb.empty{
+  width:70px;
+  height:70px;
+  background:#ddd;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:8px;
+
+  font-size:24px;
+}
+
+.thumb-text{
+  flex:1;
+  font-size:14px;
+}
+
+</style>
+
 </head>
 
 <body>
