@@ -427,14 +427,22 @@ const div = document.createElement("div");
 div.className = "card";
 
 div.innerHTML = `
-  <b>${p.name}</b>
-  <div>${p.memo || ""}</div>
+
+<div class="thumb-wrap">
 
   ${
     p.photo
-    ? `<img src="${p.photo}">`
-    : ""
+    ? `<img class="thumb" src="${p.photo}">`
+    : `<div class="thumb empty">📷</div>`
   }
+
+  <div class="thumb-text">
+    <b>${p.name}</b>
+    <div>${p.memo || ""}</div>
+  </div>
+
+</div>
+
 `;
 
 div.onclick = () => {
