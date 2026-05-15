@@ -215,6 +215,14 @@
   font-size:14px;
 }
 
+@media (min-width:768px){
+
+  .mobile-only{
+    display:none;
+  }
+
+}
+
 </style>
 
 </head>
@@ -280,6 +288,7 @@
              accept="image/*">
 
       <!-- 카메라 -->
+     <div class="mobile-only">
       <label for="photo-camera">
         카메라
       </label>
@@ -288,7 +297,7 @@
              id="photo-camera"
              accept="image/*"
              capture="environment">
-
+</div>
       <textarea id="memo"
                 placeholder="메모"></textarea>
 
