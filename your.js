@@ -24,7 +24,6 @@ const defaultPlaces = [
   memo:"물안개와 일출 촬영 명소",
   lat:37.5457,
   lng:127.3230,
-  photo:""
 },
 
 {
@@ -32,7 +31,6 @@ const defaultPlaces = [
   memo:"동해 일출 촬영 명소",
   lat:37.4749,
   lng:129.1595,
-  photo:""
 },
   
 {
@@ -40,7 +38,6 @@ const defaultPlaces = [
   memo:"억새와 노을 촬영",
   lat:37.5686,
   lng:126.8850,
-  photo:""
 },
 
 {
@@ -48,7 +45,6 @@ const defaultPlaces = [
   memo:"드론 야경 촬영",
   lat:35.1532,
   lng:129.1186,
-  photo:""
 },
 
 {
@@ -56,15 +52,13 @@ const defaultPlaces = [
   memo:"바다 일출 명소",
   lat:35.1587,
   lng:129.1604,
-  photo:""
-},
+ },
 
 {
   name:"안반데기",
   memo:"은하수 촬영 명소",
   lat:37.6208,
   lng:128.7457,
-  photo:""
 },
 
 {
@@ -72,23 +66,20 @@ const defaultPlaces = [
   memo:"동해 일출 촬영",
   lat:37.6893,
   lng:129.0336,
-  photo:""
-},
+ },
 
 {
   name:"울릉도",
   memo:"드론 절경 촬영",
   lat:37.4844,
   lng:130.9057,
-  photo:""
-},
+ },
 
 {
   name:"제주 성산일출봉",
   memo:"제주 대표 일출 명소",
   lat:33.4589,
   lng:126.9425,
-  photo:""
 },
 
 {
@@ -96,15 +87,13 @@ const defaultPlaces = [
   memo:"제주 해안 촬영",
   lat:33.4240,
   lng:126.9275,
-  photo:""
-},
+ },
 
 {
   name:"대관령 양떼목장",
   memo:"풍경 촬영 추천",
   lat:37.7011,
   lng:128.7588,
-  photo:""
 },
 
 {
@@ -112,31 +101,27 @@ const defaultPlaces = [
   memo:"노을 촬영 명소",
   lat:34.8852,
   lng:127.5095,
-  photo:""
-},
+ },
 
 {
   name:"보성 녹차밭",
   memo:"초록 풍경 촬영",
   lat:34.7604,
   lng:127.0802,
-  photo:""
-},
+  },
 
 {
   name:"마이산",
   memo:"안개 풍경 촬영",
   lat:35.7442,
   lng:127.4257,
-  photo:""
-},
+ },
 
 {
   name:"오이도",
   memo:"서해 노을 촬영",
   lat:37.3450,
   lng:126.6873,
-  photo:""
 },
 
 {
@@ -144,15 +129,13 @@ const defaultPlaces = [
   memo:"별사진 촬영 추천",
   lat:37.1917,
   lng:126.0383,
-  photo:""
-},
+ },
 
 {
   name:"독도",
   memo:"대한민국 동쪽 끝",
   lat:37.2419,
   lng:131.8644,
-  photo:""
 },
 
 {
@@ -160,8 +143,7 @@ const defaultPlaces = [
   memo:"제주 산악 촬영",
   lat:33.3617,
   lng:126.5292,
-  photo:""
-}
+ }
 
 ];
 
